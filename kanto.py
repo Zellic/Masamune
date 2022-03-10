@@ -127,9 +127,17 @@ def get_issues(_findings_info):
                 """
 
     return total_found_issues
+
 def main():
-    all_findings_issues = load_findings_info('all_findings_issues.json')
-    print(len(all_findings_issues))
+    # all_findings_issues = load_findings_info('all_findings_issues.json')
+    # print(all_findings_issues)
+    # print(len(all_findings_issues))
+    all_repos = get_repos()
+    findings_info = get_repo_info(all_repos)
+    # save_findings_info('all_findings_issues.json', findings_info)
+    all_findings_issues = get_issues(findings_info)
+    save_findings_info('all_findings_issues', all_findings_issues)
+    
 
 if __name__ == "__main__":
     main()
