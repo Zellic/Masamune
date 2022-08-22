@@ -12,7 +12,9 @@ def get_repos():
     """
     all_repos = []
     page = 0
-    while page < 3: # 400 repos basically
+    while page < 10: # 1000 repos basically
+        # TODO: update this so it knows the last updated repo and start from there on...
+        
         repos_api_path = f"https://api.github.com/orgs/code-423n4/repos?per_page=100&page={page}"
         page += 1
         res = requests.get(repos_api_path).json()
