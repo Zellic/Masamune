@@ -14,7 +14,6 @@ def get_repos():
     page = 0
     while page < 10: # 1000 repos basically
         # TODO: update this so it knows the last updated repo and start from there on...
-        
         repos_api_path = f"https://api.github.com/orgs/code-423n4/repos?per_page=100&page={page}"
         page += 1
         res = requests.get(repos_api_path).json()
@@ -94,49 +93,11 @@ def get_issues(_findings_info):
                 }
                 total_found_issues.append(found_issue)
 
-                """
-
-                TODO: add option to only add 'Confirmed' labelled issues to the dataset;
-                or create a separate dataset altogether
-
-                Valid labels:
-                id = "2879876984" -> 1 (Low Risk)
-                id = "2877268383" -> 2 (Med Risk)
-                id = "2878045993" -> 3 (High Risk)
-                id = "2984571655" -> G (Gas Optimization)
-
-                Labels structure:
-                'labels': [
-                    {
-                        'id': 2876959822, 
-                        'node_id': 'MDU6TGFiZWwyODc2OTU5ODIy', 
-                        'url': 'https://api.github.com/repos/code-423n4/2021-04-marginswap-findings/labels/bug', 
-                        'name': 'bug', 
-                        'color': 'BFD4F2', 
-                        'default': True, 
-                        'description': "Something isn't working"
-                    }, 
-                    {
-                        'id': 2879876984, 
-                        'node_id': 'MDU6TGFiZWwyODc5ODc2OTg0', 
-                        'url': 'https://api.github.com/repos/code-423n4/2021-04-marginswap-findings/labels/1%20(Low%20Risk)',
-                        'name': '1 (Low Risk)',
-                        'color': '1D76DB', 
-                        'default': False, 
-                        'description': ''
-                        }
-                ]
-                """
-
     return total_found_issues
 
 def main():
-    # all_findings_issues = load_findings_info('all_findings_issues.json')
-    # print(all_findings_issues)
-    # print(len(all_findings_issues))
     all_repos = get_repos()
     findings_info = get_repo_info(all_repos)
-    # save_findings_info('all_findings_issues.json', findings_info)
     all_findings_issues = get_issues(findings_info)
     save_findings_info('all_findings_issues', all_findings_issues)
     

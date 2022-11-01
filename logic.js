@@ -45,8 +45,14 @@ var controls = {
         }
 
         dataset.forEach(e => {
-            // this goes the same, just as for dataset title and target
-            if ((e.title + e.target).toLowerCase().match(regex)) results.push(e);
+            // this goes the same, just as for dataset title and target this basically checks the regex against the fields from the dataset entries
+            // concatenate e.labels
+            var labels = '';
+            e.labels.forEach(t => {
+                labels += t + ' ';
+            });
+                
+            if ((e.title + e.target + labels).toLowerCase().match(regex)) results.push(e);
         });
         return results;
     },
@@ -73,16 +79,21 @@ var controls = {
             results.forEach(r => {
 
                 let labels = r.labels;
-                // [
-                //     0: "bug"
-                //     1: "2 (Med Risk)"
-                //     2: "VaderPoolV2"
-                // ]
+                
+                // concatenate all labels into a single string
+                let labelString = '';
+                for (let i = 0; i < labels.length; i++) {
+                    labelString += labels[i];
+                    if (i != labels.length - 1) {
+                        labelString += ', ';
+                    }
+                }
+
                 el = searchResultFormat
-                    .replace('$target', r.target)
+                    .replace('$target', r.target) // if r.target is not available, use r.title
                     .replace('$title', r.title)
                     .replace('$link', r.html_url)
-                    .replace('$tag', labels[1]);
+                    .replace('$tag', labelString);
 
                 // TODO: highlight the APPROVED issues' labels
 

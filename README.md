@@ -10,13 +10,21 @@
 
 3. Retrieve all the issues from the subsequent `-findings` repositories.
 
-### Search based on the title + "target" of the findings.
+### Adding the previous hacks via `shikoku.py`:
 
-> Note: for now, Masamune only handles findings from code4rena repositories.
+1. Lists all hacks that have been added to this [page](https://wooded-meter-1d8.notion.site/0e85e02c5ed34df3855ea9f3ca40f53b?v=22e5e2c506ef4caeb40b4f78e23517ee).
+
+2. Scrapes the page, retrieving the labels, title, etc. 
+
+3. Adds everything as new entries to the `all_findings_issues.json`.
+
+### Search based on the title + "target" or "labels" of the findings.
+
+> Note: for now, Masamune handles findings from the code4rena contests, as well as some previous hacks(listed [here](https://wooded-meter-1d8.notion.site/0e85e02c5ed34df3855ea9f3ca40f53b?v=22e5e2c506ef4caeb40b4f78e23517ee) ).
 
 ### What's next?
 
-I aim at creating datasets from all the existing audits from all reliable security audit companies and organize them in a similar manner. Let's boost smart contract security. Want to help with that? Message me on [Twitter](https://twitter.com/VladToie).
+I aim to create a huuuge dataset from all the existing audits of most reliable security audit companies and organize them in a similar manner. Let's boost smart contract security. Want to help with that? Message me on [Twitter](https://twitter.com/VladToie).
 
 ### Credits:
 
