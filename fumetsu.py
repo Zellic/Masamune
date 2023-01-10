@@ -1,3 +1,6 @@
+import requests
+import json
+
 """
 Retrieve the latest BugFixesReviews from the Immunefi Github.
 
@@ -8,39 +11,61 @@ https://raw.githubusercontent.com/immunefi-team/Web3-Security-Library/main/BugFi
 The resource is updated every once in a while.
 """
 
-import requests
 
-# Query the resource
-response = requests.get("https://raw.githubusercontent.com/immunefi-team/Web3-Security-Library/main/BugFixReviews/README.md")
+def get_filter_bugfixreviews():
+    """
+    Retrieve the latest BugFixesReviews from the Immunefi Github, and filter them to return only the relevant information.
+    """
 
-# Parse the response, adding each line to a list
-lines = response.text.splitlines()
+    # Query the resource
+    response = requests.get("https://raw.githubusercontent.com/immunefi-team/Web3-Security-Library/main/BugFixReviews/README.md")
 
-# Filter the list, keeping only the lines that start with "### [" which point to the Hacks, and the immediate next line, and the one that start with " - Vulnerability Type: " which point to the type of the hack
-filtered_lines = {line[3:]: [lines[i+2], lines[i+4] if lines[i+4].startswith("-") or lines[i+4].startswith("Vulnerability") else lines[i+3]] for i, line in enumerate(lines) if line.startswith("### [") or line.startswith(" ### [")}
+    # Parse the response, adding each line to a list
+    lines = response.text.splitlines()
 
-resulting_dict = {}
+    # Filter the list, keeping only the lines that start with "### [" which point to the Hacks, and the immediate next line, and the one that start with " - Vulnerability Type: " which point to the type of the hack
+    filtered_lines = {line[3:]: [lines[i+2], lines[i+4] if lines[i+4].startswith("-") or lines[i+4].startswith("Vulnerability") else lines[i+3]] for i, line in enumerate(lines) if line.startswith("### [") or line.startswith(" ### [")}
 
-#
-for key, value in filtered_lines.items():
+    resulting_array = []
 
-    hack_name = key.split("]")[0][1:].strip(" [")
-    hack_link = key.split("(")[1][:-1]
+    for key, value in filtered_lines.items():
 
-    hack_description = value[0].strip(" #")
-    if hack_description == "":
-        hack_description = "Unknown, check manually"
+        hack_name = key.split("]")[0][1:].strip(" [")
+        hack_link = key.split("(")[1][:-1]
 
-    try:
-        hack_type = value[1].strip(" -").split(":")[1].strip(" ")
-    except IndexError:
-        hack_type = "Unknown, check manually"
+        hack_description = value[0].strip(" #")
+        if hack_description == "":
+            hack_description = "Unknown, check manually"
+
+        try:
+            hack_type = value[1].strip(" -").split(":")[1].strip(" ")
+        except IndexError:
+            hack_type = "Unknown, check manually"
+        
+        if hack_type == "":
+            hack_type = "Unknown, check manually"
+
+        resulting_array.append({
+            "title": hack_name,
+            "html_url": hack_link, 
+            "description": hack_description, 
+            "labels": [hack_type]
+        })
+
+    return resulting_array
+
+def save_result(results_array):
+    """
+    Save the results to a json file.
+    """
     
-    if hack_type == "":
-        hack_type = "Unknown, check manually"
+    # Update the `immunefi_findings.json` file
+    with open("immunefi_findings.json", "w") as f:
+        json.dump(
+            results_array,
+            f
+        )
 
-    resulting_dict[hack_name] = {"link": hack_link, "description": hack_description, "type": hack_type}
-
-for hack, info in resulting_dict.items():
-    print(f"Name: {hack}\n  - Link: {info['link']}\n  - Description: {info['description']}\n  - Type: {info['type']}\n")
-    
+if __name__ == "__main__":
+    resulting_array = get_filter_bugfixreviews()
+    save_result(resulting_array)

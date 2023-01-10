@@ -7,8 +7,6 @@ from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
 import pandas as pd
 import json
-import math
-import os
 import time
 
 def get_divs(_page):
@@ -77,14 +75,11 @@ def get_divs(_page):
     driver.quit()
 
     # add each result to the `all_findings_issues.json` file
-    with open("all_findings_issues.json", "r") as f:
-        all_findings_issues = json.load(f)
-
-    for result in beautified_results:
-        all_findings_issues.append(result)
-
-    with open("all_findings_issues.json", "w") as f:
-        json.dump(all_findings_issues, f)
+    with open("hacklabs_findings.json", "w") as f:
+        json.dump(
+            beautified_results, 
+            f
+        )
 
 if __name__ == "__main__":
     get_divs("https://wooded-meter-1d8.notion.site/0e85e02c5ed34df3855ea9f3ca40f53b?v=22e5e2c506ef4caeb40b4f78e23517ee")

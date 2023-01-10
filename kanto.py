@@ -1,10 +1,12 @@
-"""
-This script enumerates all code-423n4's findings repositories.
-"""
 import requests
 import json
 import math
 import os
+
+"""
+This script retrieves all the findings from the code-423n4 github organization, and saves them to a json file.
+"""
+
 
 def get_repos():
     """
@@ -46,7 +48,7 @@ def load_findings_info(_findings_filename):
     """
     Loads the findings info from a json file.
     """
-    with open(_findings_filename, 'r') as f:
+    with open(f'{_findings_filename}.json', 'r') as f:
         return json.load(f)
 
 def get_issues(_findings_info):
@@ -99,7 +101,7 @@ def main():
     all_repos = get_repos()
     findings_info = get_repo_info(all_repos)
     all_findings_issues = get_issues(findings_info)
-    save_findings_info('all_findings_issues', all_findings_issues)
+    save_findings_info('codearena_findings', all_findings_issues)
     
 
 if __name__ == "__main__":
