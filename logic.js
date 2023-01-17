@@ -165,13 +165,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // fetch all the .json files(immunefi_findings.json, hacklabs_findings.json, codearena_findings.json) and concatenate them into a single array
     // then update the results table with the new dataset
     const fetchAll = async () => {
-        const immunefi = await fetch('../results/immunefi_findings.json');
+        const immunefi = await fetch('./results/immunefi_findings.json');
         const immunefiJson = await immunefi.json();
 
-        const hacklabs = await fetch('../results/hacklabs_findings.json');
+        const hacklabs = await fetch('./results/hacklabs_findings.json');
         const hacklabsJson = await hacklabs.json();
 
-        const codearena = await fetch('../results/codearena_findings.json');
+        const codearena = await fetch('./results/codearena_findings.json');
         const codearenaJson = await codearena.json();
 
         const dataset = immunefiJson.concat(hacklabsJson, codearenaJson);
