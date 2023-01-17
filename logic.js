@@ -52,7 +52,11 @@ var controls = {
                 labels += t + ' ';
             });
                 
-            if ((e.title + e.target + labels).toLowerCase().match(regex)) results.push(e);
+            // TODO how can this be more efficient?
+            if ((e.title + e.target + labels + e.description).toLowerCase().match(regex)) {
+                results.push(e);
+            }
+
         });
         return results;
     },
@@ -78,6 +82,8 @@ var controls = {
 
             results.forEach(r => {
 
+                console.log(results);
+
                 let labels = r.labels;
                 
                 // concatenate all labels into a single string
@@ -90,12 +96,12 @@ var controls = {
                 }
 
                 el = searchResultFormat
-                    .replace('$target', r.target) // if r.target is not available, use r.title
-                    .replace('$title', r.title)
+                    .replace('$target', r.target ? r.target : r.title) // if r.target is not available, use r.title
+                    .replace('$title', r.target ? r.title : r.description)
                     .replace('$link', r.html_url)
                     .replace('$tag', labelString);
 
-                // TODO: highlight the APPROVED issues' labels
+                // TODO highlight the APPROVED issues' labels
 
                 var wrapper = document.createElement('table');
                 wrapper.innerHTML = el;
@@ -133,7 +139,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.body.classList.add('fade');
 
     var currentSet = [];
-    var oldSearchValue = '';
 
     function doSearch(event) {
         var val = searchValue.value;
@@ -141,7 +146,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (val != '') {
             controls.displayResults();
             currentSet = window.dataset;
-            oldSearchValue = val;
 
             currentSet = window.controls.doSearch(val, currentSet);
             if (currentSet.length < totalLimit) window.controls.setColor(colorUpdate, currentSet.length == 0 ? 'no-results' : 'results-found');
@@ -157,16 +161,36 @@ document.addEventListener('DOMContentLoaded', function() {
         if (event.type == 'submit') event.preventDefault();
     }
 
-    fetch('./all_findings_issues.json')
-        .then(res => res.json())
-        .then(data => {
-            window.dataset = data;
-            currentSet = window.dataset;
-            window.controls.updateResults(resultsTable, window.dataset);
-            doSearch({ type: 'none' });
-        });
+    
+    // fetch all the .json files(immunefi_findings.json, hacklabs_findings.json, codearena_findings.json) and concatenate them into a single array
+    // then update the results table with the new dataset
+    const fetchAll = async () => {
+        const immunefi = await fetch('./immunefi_findings.json');
+        const immunefiJson = await immunefi.json();
+
+        const hacklabs = await fetch('./hacklabs_findings.json');
+        const hacklabsJson = await hacklabs.json();
+
+        const codearena = await fetch('./codearena_findings.json');
+        const codearenaJson = await codearena.json();
+
+        const dataset = immunefiJson.concat(hacklabsJson, codearenaJson);
+        window.dataset = dataset;
+        currentSet = window.dataset;
+        window.controls.updateResults(resultsTable, window.dataset);
+        doSearch({ type: 'none' });
+    }
+
+    fetchAll();
 
     form.submit(doSearch);
 
-    searchValue.addEventListener('input', doSearch);
+    // wait for the user to stop typing for 500ms before searching
+    var typingTimer;
+    searchValue.addEventListener('keyup', function() {
+        clearTimeout(typingTimer);
+
+        typingTimer = setTimeout(doSearch, 500);
+
+    });
 });

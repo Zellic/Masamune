@@ -18,6 +18,9 @@
 
 3. Adds everything as new entries to the `all_findings_issues.json`.
 
+### Adding immunefi findings via `fumetsu.py`:
+
+
 ### Search based on the title + "target" or "labels" of the findings.
 
 > Note: for now, Masamune handles findings from the code4rena contests, as well as some previous hacks(listed [here](https://wooded-meter-1d8.notion.site/0e85e02c5ed34df3855ea9f3ca40f53b?v=22e5e2c506ef4caeb40b4f78e23517ee) ).

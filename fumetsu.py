@@ -45,11 +45,14 @@ def get_filter_bugfixreviews():
         if hack_type == "":
             hack_type = "Unknown, check manually"
 
+        # hack_type may be a list, so we need to split it by comma
+        hack_type = hack_type.split(",")
+
         resulting_array.append({
             "title": hack_name,
             "html_url": hack_link, 
             "description": hack_description, 
-            "labels": [hack_type]
+            "labels": hack_type
         })
 
     return resulting_array
