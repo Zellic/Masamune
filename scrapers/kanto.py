@@ -8,16 +8,32 @@ This script retrieves all the findings from the code-423n4 github organization, 
 """
 
 
-def get_repos():
+def get_repos(cache):
     """
     Returns a list of all the repositories of code-423n4
     """
+
+    if cache:
+        with open('../cache/repos.json', 'r') as f:
+            return json.load(f)
+
     all_repos = []
     page = 0
     while page < 10: # 1000 repos basically
         # TODO: update this so it knows the last updated repo and start from there on...
         repos_api_path = f"https://api.github.com/orgs/code-423n4/repos?per_page=100&page={page}"
-        res = requests.get(repos_api_path).json()
+
+        if not os.environ.get('GITHUB_TOKEN'):
+            raise Exception("GITHUB_TOKEN not set")
+            
+        headers = {
+            'Authorization': 'token ' + os.environ['GITHUB_TOKEN']
+        }
+
+        res = requests.get(
+            repos_api_path,
+            headers=headers
+        ).json()
 
         print(f"{len(res)} repos found on page {page}")
         all_repos += res
@@ -27,12 +43,21 @@ def get_repos():
             
         page += 1
     
+    # if not cache:
+    with open('../cache/repos.json', 'w') as f:
+        json.dump(all_repos, f)
+
     return all_repos
 
-def get_repo_info(_repos):
+def get_repo_info(_repos, cache):
     """
     Returns a dict with all the individual "findings"-repositories and some info about them.
     """
+
+    if cache:
+        with open('../cache/repo_info.json', 'r') as f:
+            return json.load(f)
+
     individual_repos = {}
     for _, repo in enumerate(_repos):
         if repo['name'][-8:] == "findings":
@@ -42,6 +67,11 @@ def get_repo_info(_repos):
                 'issues_url': repo['issues_url'][:-9], # get rid of '{/number}'
                 'nr_issues': repo['open_issues']
             }
+
+    if not cache:
+        with open('../cache/repo_info.json', 'w') as f:
+            json.dump(individual_repos, f)
+
     return individual_repos
 
 def save_findings_info(_filename, _findings_info):
@@ -58,10 +88,15 @@ def load_findings_info(_findings_filename):
     with open(f'../results/{_findings_filename}.json', 'r') as f:
         return json.load(f)
 
-def get_issues(_findings_info):
+def get_issues(_findings_info, cache):
     """
     Returns a list of all the issues of the findings repos.
     """
+
+    if cache:
+        with open('../cache/issues.json', 'r') as f:
+            return json.load(f)
+
     total_found_issues =  []
 
     for finding in _findings_info:
@@ -102,13 +137,94 @@ def get_issues(_findings_info):
                 }
                 total_found_issues.append(found_issue)
 
+    if not cache:
+        with open('../cache/issues.json', 'w') as f:
+            json.dump(total_found_issues, f)
+
     return total_found_issues
 
+def get_issues_text(_issues, cache):
+    """
+    @param _issues: list of issues, which have the format:
+    {'title': 'Unnecessary function calls in `addLiquidity`', 'html_url': 'https://github.com/code-423n4/2021-04-vader-findings/issues/320', 'labels': ['bug', 'G (Gas Optimization)'], 'target': '2021-04-vader-findings'}
+
+    Returns a the text of the issues if the particular issue had one of the following labels:
+    "sponsor acknowledged", "2 (Med Risk)", "3 (High Risk)" or "addressed", "sponsor confirmed"
+    """
+
+    if cache:
+        with open('../cache/issues_text.json', 'r') as f:
+            return json.load(f)
+
+    selected_issues = []
+    
+    for issue in _issues:
+        # if "sponsor acknowledged" in issue['labels'] or "2 (Med Risk)" in issue['labels'] or "3 (High Risk)" in issue['labels'] or "addressed" in issue['labels']:
+        if "sponsor confirmed" in issue['labels'] or "addressed" in issue['labels']:
+            # get the api path
+            api_path = issue['html_url'].replace('https://github.com/', 'https://api.github.com/repos/')
+            # 
+            
+            # set authorization token for github api
+            # needed for more than 1 request / sec
+            if not os.environ.get('GITHUB_TOKEN'):
+                raise Exception("GITHUB_TOKEN not set")
+            
+            headers = {
+                'Authorization': 'token ' + os.environ['GITHUB_TOKEN']
+            }
+
+            req = requests.get(api_path, headers=headers).json()
+            
+            try:
+                issue['body'] = req['body'].replace("\n", " ").replace("\t", " ")
+            except:
+                print("HAD TO SKIP AT ISSUE: " + issue['html_url'])
+                break
+
+            issue['target'] = issue['target']
+
+            selected_issues.append(issue)
+
+    if not cache:
+        with open('../cache/issues_text.json', 'w') as f:
+            json.dump(selected_issues, f)
+
+    return selected_issues
+
+def extract_text_and_save(_issues):
+    """
+    Extracts the text from the issues and saves it to a json file.
+    """
+
+    print(f"Extracting text from {len(_issues)} relevant issues...")
+
+    for index, issue in enumerate(_issues):
+
+        print(f"Extracting text from issue {index + 1} of {len(_issues)}...")
+
+        with open(f'../findings_text/{issue["target"]}.txt', 'a+') as f:
+            f.write(issue['body'] + "\n")
+
 def main():
-    all_repos = get_repos()
-    findings_info = get_repo_info(all_repos)
-    all_findings_issues = get_issues(findings_info)
-    save_findings_info('codearena_findings', all_findings_issues)
+
+    # by default
+    cache = False
+
+    print("Step 1: Getting all the repositories...")
+    all_repos = get_repos(cache)
+
+    print("Step 2: Getting all the findings repositories...")
+    findings_info = get_repo_info(all_repos, cache)
+
+    print("Step 3: Getting all the issues of the findings repositories...")
+    all_findings_issues = get_issues(findings_info, cache)
+
+    print("Step 4: Getting the text of the issues...")
+    selected_issues = get_issues_text(all_findings_issues, cache)
+
+    print("Step 5: Saving the text of the issues to a file...")
+    extract_text_and_save(selected_issues)
     
 
 if __name__ == "__main__":
