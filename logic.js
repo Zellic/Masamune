@@ -97,7 +97,7 @@ var controls = {
 
                 el = searchResultFormat
                     .replace('$target', r.target ? r.target : r.title) // if r.target is not available, use r.title
-                    .replace('$title', r.target ? r.title : r.description)
+                    .replace('$title', r.target ? r.title : r.description.substring(0, 400) + '...')
                     .replace('$link', r.html_url)
                     .replace('$tag', labelString);
 
@@ -174,7 +174,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const codearena = await fetch('./results/codearena_findings.json');
         const codearenaJson = await codearena.json();
 
-        const dataset = immunefiJson.concat(hacklabsJson, codearenaJson);
+        const gitbook_docs = await fetch('./results/gitbook_docs.json');
+        const gitbook_docsJson = await gitbook_docs.json();
+
+        const dataset = immunefiJson.concat(hacklabsJson, codearenaJson, gitbook_docsJson);
         window.dataset = dataset;
         currentSet = window.dataset;
         window.controls.updateResults(resultsTable, window.dataset);
