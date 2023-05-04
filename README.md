@@ -25,6 +25,7 @@ Currently, Masamune works on the following data sources:
 1. [Code4rena findings](https://code4rena.com/reports).
 2. [Immunefi bugfixes](https://github.com/immunefi-team/Web3-Security-Library).
 3. [DeFi Hacks Analysis](https://wooded-meter-1d8.notion.site/0e85e02c5ed34df3855ea9f3ca40f53b).
+4. Various Gitbooks, such as the [Layer Zero Docs](https://layerzero.gitbook.io), [Curve Finance Docs](https://resources.curve.fi/), [MEV Wiki](https://www.mev.wiki/), etc.
 
 ### Credits:
 
