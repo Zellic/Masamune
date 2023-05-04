@@ -1,5 +1,0 @@
-{
-    "liveServer.settings.port": 5501,
-    "python.linting.pylintPath": "venv/bin/pylint",
-    "editor.maxTokenizationLineLength": 100000000 
-}
