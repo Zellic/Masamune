@@ -151,4 +151,17 @@ if __name__ == "__main__":
 
     for json_file in os.listdir("../pdfs"):
         jsonify_findings(json_file)
+
+    # only keep unique findings, the file contains an array of findings
+    with open("../results/tob_findings.json", "r") as f:
+        findings = json.load(f)
+
+    unique_findings = []
+    for finding in findings:
+        if finding not in unique_findings:
+            unique_findings.append(finding)
+
+    with open("../results/tob_findings.json", "w") as f:
+        json.dump(unique_findings, f, indent=4)
+
     
