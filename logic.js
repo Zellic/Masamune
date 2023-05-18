@@ -174,10 +174,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const codearena = await fetch('./results/codearena_findings.json');
         const codearenaJson = await codearena.json();
 
-        const gitbook_docs = await fetch('./results/gitbook_docs.json');
-        const gitbook_docsJson = await gitbook_docs.json();
+        // const gitbook_docs = await fetch('./results/gitbook_docs.json');
+        // const gitbook_docsJson = await gitbook_docs.json();
 
-        const dataset = immunefiJson.concat(hacklabsJson, codearenaJson, gitbook_docsJson);
+        const tob = await fetch('./results/tob_findings.json');
+        const tobJson = await tob.json();
+
+        const dataset = immunefiJson.concat(hacklabsJson, codearenaJson, /*gitbook_docsJson,*/ tobJson);
         window.dataset = dataset;
         currentSet = window.dataset;
         window.controls.updateResults(resultsTable, window.dataset);
