@@ -1,0 +1,48 @@
+[
+    {
+        "title": "3.1 Missing test suite code coverage",
+        "target": " MultiRateLimited",
+        "category": " Code Maturity",
+        "severity": " Low",
+        "likelihood": " n/a ",
+        "impact": " Informational ",
+        "bodyDescription": "Some functions in the smart contract are not covered by any unit or integration tests, to the best of our knowledge. We ran both the Hardhat test suite and the Forge tests. The following functions do not have test coverage:  MultiRateLimited.sol: getLastBufferUsedTime  These functions are extremely simple, so we do not see this as a significant issue.  We reviewed all untested functions with increased scrutiny. Fortunately, we did not find any additional vulnerabilities.  Other than these minor flaws, the code base otherwise has nearly 100% code cov- erage as of the time of writing. We applaud Volt Protocol for their commitment to thorough testing. ",
+        "bodyImpact": "Because correctness is so critically important when developing smart contracts, we recommend that all projects strive for 100% code coverage. Testing should be an essential part of the software development lifecycle. Nomatter how simple a function may be, untested code is always prone to bugs. ",
+        "bodyRecommendations": "Expand the test suite so that all functions and their branches are covered by unit or integration tests. ",
+        "remediation": "The issue has been acknowledged by Volt Protocol, and a fix is pending.  Zellic 7 Volt Protocol   "
+    },
+    {
+        "title": "3.2 Time functions rely on an unverified external date library",
+        "target": " ScalingPriceOracle",
+        "category": " Business Logic",
+        "severity": " n/a",
+        "likelihood": " n/a ",
+        "impact": " Informational ",
+        "bodyDescription": "The ScalingPriceOracle is designed so that new CPI data from the chainlink oracle can be requested once a month: at least 28 days between requests, and only on the 15th day of the month or later. To calculate the current day, the contract uses block.timestamp and the popular BokkyPooBah's DateTime Library. This library con- tains an algorithm to convert from Unix timestamp days since epoch to the current calendar date.  int256 __days = int256(_days);  int256 L = __days + 68569 + OFFSET19700101; int256 N = (4 * L) / 146097; L = L - (146097 * N + 3) / 4; int256 _year = (4000 * (L + 1)) / 1461001; L = L - (1461 * _year) / 4 + 31; int256 _month = (80 * L) / 2447; int256 _day = L - (2447 * _month) / 80; L = _month / 11; _month = _month + 2 - 12 * L; _year = 100 * (N - 49) + _year + L;  Since this code is crucial to the functionality of the contract, and its design is not clearly documented, we considered the risk of a possible bug in this dependency.  A bug in the dependency could cause the ScalingPriceOracle to malfunction or lock up. This is mitigated by the fact that the ScalingPriceOracle is kept behind a proxy )OraclePassThrough), but we still wanted to verify the correctness of this function.  To do so, we compared the results of the BokkyPooBah algorithmwith a knownground truth )Python's datetime library). We computed values with both methods for all timestamp values +/- 30 years from the current date, and found that the results were all correct.  We also formally verified the correctness of the algorithm against musl libc's gmtime function by using an SMT solver.  Zellic 8 Volt Protocol  https://github.com/bokkypoobah/BokkyPooBahsDateTimeLibrary https://linux.die.net/man/3/gmtime  ",
+        "bodyRecommendations": "In the future, continue to carefully verify the correctness of external dependencies when adding them to the code base. There have been several well-known security incidents caused by external dependencies in the past. ",
+        "remediation": "No remediation is necessary, aswe successfully verified the dependencies are correct.  Zellic 9 Volt Protocol  https://en.wikipedia.org/wiki/Log4Shell  "
+    },
+    {
+        "title": "3.3 Some functions can be implemented more efficiently",
+        "target": " Deviation",
+        "category": " Gas Optimization",
+        "severity": " Low",
+        "likelihood": " n/a ",
+        "impact": " Informational ",
+        "bodyDescription": "The function calculateDeviationThresholdBasisPoints calculates an absolute differ- ence of two numbers. It computes the absolute value of both the numerator and denominator separately, which is less efficient than computing the absolute value of the overall result.  function calculateDeviationThresholdBasisPoints(int256 a, int256 b) public pure returns (uint256)  { ///)) delta can only be positive uint256 delta = ((a < b) ? (b - a) : (a - b)).toUint256();  return (delta * Constants.BASIS_POINTS_GRANULARITY) / (a < 0 ? a * -1 : a).toUint256();  } ",
+        "bodyRecommendations": "The code can be refactored to compute the absolute value of the quotient at the end, rather than computing the quotient of two absolute values. This would eliminate a ternary expression. ",
+        "remediation": "Volt Protocol acknowledged and optimized the code based on our suggestions.  Zellic 10 Volt Protocol   "
+    },
+    {
+        "title": "3.4 Some variable names do not follow naming conventions",
+        "* Target": " IScalingPriceOracle",
+        "* Severity": " n/a",
+        "* Impact": " Informational ",
+        "* Category": " Code Maturity",
+        "* Likelihood": " n/a ",
+        "Description": "The functions TIMEFRAME and MAXORACLEDEVIATION do not follow Solidity's mixedCase naming convention for functions. ",
+        "Impact": "Code comprehension may be diminished, possibly hindering developers' ability to easily read and understand the code. ",
+        "Recommendations": "We recommend renaming these functions using camelCase. The intention behind capitalizing TIMEFRAME and MAXORACLEDEVIATION is to distinguish them as an important functions so consider highlighting their importance in a code comment. ",
+        "Remediation": "The issue has been acknowledged by Volt Protocol.  Zellic 11 Volt Protocol  https://docs.soliditylang.org/en/latest/style-guide.html#function-names https://docs.soliditylang.org/en/latest/style-guide.html#function-names   4 Discussion  In this section, we discussmiscellaneous interesting observations during the audit that are noteworthy and merit some consideration.  Volt's test suite is exceptionally thorough. Across the core code base, there is high test coverage, with both unit and integration tests. They have also adopted Forge and plan to add fuzz tests in the future. Lastly, Volt has adopted continuous testing as part of their development process; tests are run byCI for allmerge requests. We applaudVolt for their commitment to thorough testing, and recommend other projects to adopt similar practices.  It is important to note that 100% branch coverage is not a security guarantee. Even if all lines of code are covered by tests, the state space of all possible variables values is not necessarily covered. For this reason, we also recommend adopting fuzz testing to cover more of this aforementioned variable state space. Notwithstanding that, not even fuzz testing is infallible. Only formal verification would approach the level as- surance needed for such a guarantee. Therefore, we also recommend that projects explore formal verification of their Solidity code.  Zellic 12 Volt Protocol  https://www.paradigm.xyz/2021/12/introducing-the-foundry-ethereum-development-toolbox https://circleci.com/gh/volt-protocol/volt-protocol-core https://docs.soliditylang.org/en/v0.8.11/smtchecker.html  \tAbout Zellic \tIntroduction \tAbout Volt Protocol \tMethodology \tScope \tProject Overview \tDisclaimer  \tExecutive Summary \tDetailed Findings \tMissing test suite code coverage \tTime functions rely on an unverified external date library \tSome functions can be implemented more efficiently \tSome variable names do not follow naming conventions  \tDiscussion "
+    }
+]

@@ -1,0 +1,14 @@
+[
+    {
+        "title": "3.1 transfer function usage",
+        "* Target": " DaoTreasury ",
+        "* Category": " Business Logic",
+        "* Likelihood": " N/A ",
+        "* Severity": " Informational",
+        "* Impact": " Informational ",
+        "Description": "The transferEth function calls the transfer function to send requested Ether amount.  function transferEth(address payable to, uint256 amount) public onlyRole( MANAGER_ROLE) whenNotPaused {  to.transfer(amount); ...))  } ",
+        "Impact": "The transfer function uses a hardcoded amount of GAS and will fail if GAS costs in- crease in the future, so it is no longer recommended for use. ",
+        "Recommendations": "Consider using to.call{value: amount}(\"\") function:  function transferEth(address payable to, uint256 amount) public onlyRole( MANAGER_ROLE) whenNotPaused { (bool sent, bytes memory data) = to.call{value: amount}(\"\"); require(sent, \"Failed to send Ether\"); ...)) ",
+        "Remediation": "The issue has been acknowledged by TrueFi. The TrueFi decided not to support ETH transfers and functionality was deleted in commit 0b0ca5f.  Zellic 7 TrueFi  https://solidity-by-example.org/sending-ether/ https://github.com/trusttoken/contracts-tequila/commit/0b0ca5fb8559bf8432ba00b54ff65a579c0ecab3   4 Audit Results  At the time of our audit, the code was not deployed to mainnet evm.  During our audit, we discovered one finding. This one finding was suggestions (infor- mational). TrueFi acknowledged all findings and implemented fixes.  4.1 Disclaimers  This assessment does not provide any warranties about finding all possible issues within its scope; in other words, the evaluation results do not guarantee the absence of any subsequent issues. Zellic, of course, also cannot make guarantees about any additional code added to the assessed project after the audit version of our assess- ment. Furthermore, because a single assessment can never be considered compre- hensive, we always recommendmultiple independent assessments pairedwith a bug bounty program.  For each finding, Zellic provides a recommended solution. All code in these recom- mendations are intended to convey how an issue may be resolved (i.e., the idea), but they may not be tested or functional code.  Finally, the contents of this assessment report are for informational purposes only; do not construe any information in this report as legal, tax, investment, or financial advice. Nothing contained in this report constitutes a solicitation or endorsement of a project by Zellic.  Zellic 8 TrueFi   \tAbout Zellic \tExecutive Summary \tIntroduction \tAbout TrustToken \tMethodology \tScope \tProject Overview \tProject Timeline  \tDetailed Findings \ttransfer function usage  \tAudit Results \tDisclaimers  "
+    }
+]

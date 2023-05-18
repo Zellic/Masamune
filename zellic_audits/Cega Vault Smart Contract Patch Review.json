@@ -1,0 +1,12 @@
+[
+    {
+        "* Target": " LOVProduct ",
+        "* Category": " Coding Mistakes",
+        "* Likelihood": " N/A ",
+        "* Severity": " Informational",
+        "* Impact": " N/A ",
+        "Description": "The removeVault function does not check if the i argument exists in the array. Passing an invalid value reverts with reverted with panic code 0x32 (Array accessed at an out-of-bounds or negative index).  function removeVault(uint256 i) public onlyDefaultAdmin { address vaultAddress = vaultAddresses[i]; vaultAddresses[i] = vaultAddresses[vaultAddresses.length - 1]; vaultAddresses.pop(); delete vaults[vaultAddress]; emit VaultRemoved(vaultAddress);  } ",
+        "Impact": "An operator admin could lock deposited funds by removing a leverage value with deposits from the allowlist.  We consider this a bug because creating a vault or processing these records requires interaction from the trader admin, but re-allowing a leverage value requires the op- erator admin's interaction. ",
+        "Recommendations": "Require that the value is less than the length of the array.  Zellic 8 Cega   \tAbout Zellic \tIntroduction \tScope \tDisclaimer  \tSmart Contract Patch Review \tFunds can be locked using minimum withdrawals \tReliance on central roles \tVaults with withdrawals can be removed \tRemoving a leverage from the allowlist leaves records queued \tThe removeVault function improperly checks index  "
+    }
+]

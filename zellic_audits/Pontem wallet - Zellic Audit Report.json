@@ -1,0 +1,50 @@
+[
+    {
+        "title": "3.1 Malformed responses to the coinInfo API can soft lock the",
+        "target": " src/data/queries/coinInfo.ts",
+        "category": " Coding Mistakes",
+        "severity": " Medium",
+        "likelihood": " Low ",
+        "impact": " Medium ",
+        "bodyDescription": "A request is automatically sent to the following endpoint /v1/accounts/0x1/resource /0x1:)coin:)CoinInfo%3C0x1:)aptos_coin:)AptosCoin%3E during startup. The handler fails to check for errors, leading to a permanent soft lock when malformed data is returned.  There are multiple scenarios where this could happen:  * RPC endpoint encounters an error * RPC endpoint is malicious  The requests are repeated, so the extension stays bricked as long as the returned data is malformed.  async () => { return aptos.getAccountResource(extractAddressFromType(token as string), composeType(network.structs.CoinInfo, [token as string])) .then((value: AptosResource<AptosCoinInfoResource>) => {  const type = token as string; const decimals = +value.data.decimals; const name = value.data.name; const symbol = value.data.symbol; const alias = network.tokenAlias[token as string]  ?) value.data.symbol; addTokenInfo({ name, symbol, decimals }); return { type, decimals, name, symbol, alias };  }) }, {  ...))RefetchOptions.INFINITY,  Zellic 8 Pontem Technology Ltd.    enabled: !)token } ",
+        "bodyImpact": "It leads to a permanent soft lock of the whole extension. It can be fixed by directly visiting chrome-extension:))<extensionId>/index.html#/settings/ and switching the network or reinstalling the extension. ",
+        "bodyRecommendations": "We recommend additional error handling when handling RPC responses. ",
+        "remediation": "A fix was introduced in commit 9b4ad36e by incorporating error handling into the function, effectively preventing the wallet extension from experiencing a persistent, endless loop in the event of receiving malformed data.  Zellic 9 Pontem Technology Ltd.  https://github.com/pontem-network/pontem-pitaka/commit/9b4ad36e67efdead26a0275c535d5c79d4b82780  "
+    },
+    {
+        "title": "3.2 Low password complexity threshold",
+        "target": " src/extension/modules/SignUp/SetPasswordForm/index.tsx",
+        "category": " Coding Mistakes",
+        "severity": " Low",
+        "likelihood": " Medium ",
+        "impact": " High ",
+        "bodyDescription": "The only requirement for the keyring password is that it needs to be at least six char- acters long.  const validate = (values: SubmitPasswordFormValues) => { const errors: SubmitPasswordFormErrors = {};  if (!values.password) { errors.password = \"Password required\";  } else if (values.password.length < MIN_PASSWORD_LENGTH) { errors.password = `Password length should contain minimum ${MIN_PASSWORD_LENGTH} characters`;  }  if (!values.confirm) { errors.confirm = \"Password confirmation required\";  } else if (values.confirm.length < MIN_PASSWORD_LENGTH) { errors.confirm = `Password confirmation length should contain minimum ${MIN_PASSWORD_LENGTH} characters`;  } else if (values.confirm !==)) values.password) { errors.confirm = \"Password confirmation not similar\";  }  if (!values.agreed) { errors.agreed = \"You need to agree with terms and conditions\";  }  return errors; }; ",
+        "bodyImpact": "A six-character password can be bruteforced in a matter of seconds, leading to a compromise of the wallet.  Zellic 10 Pontem Technology Ltd.   ",
+        "bodyRecommendations": "We recommend Pontem Technology Ltd. increase the length requirements alongwith mandating special characters and lowercase and uppercase letters. ",
+        "remediation": "A fix was introduced in commit e6ad1094 by adding multiple requirements on pass- word entry such as minimum password length and special characters.  Zellic 11 Pontem Technology Ltd.  https://github.com/pontem-network/pontem-pitaka/commit/e6ad1094cb03b4de40e7abba1015bf250ea23092  "
+    },
+    {
+        "title": "3.3 Cleartext password in the browser's session storage",
+        "target": " src/auth/hooks/useKeyring.ts",
+        "category": " Coding Mistakes",
+        "severity": " Low",
+        "likelihood": " Low ",
+        "impact": " High ",
+        "bodyDescription": "After a user creates or unlocks their wallet, their password is stored in plaintext in the session storage. This is a critical piece of information and should never be available in plaintext form.  const createWallet = async (password: string) => { const address = await controller.createNewKeychain(password); if (IS_EXTENSION_RUNTIME) {  await extension.storage.session.set({ storedPassword: password }); }  return address; };  const unlock = async (password: string) => { const keyrings = await controller.unlock(password); if (IS_EXTENSION_RUNTIME) {  await extension.storage.session.set({ storedPassword: password }); }  return keyrings; }; ",
+        "bodyImpact": "An attacker with physical access to the machine or a cross-domain exploit can leak the plaintext password and mnemonic phrase. ",
+        "bodyRecommendations": "Handling of the plaintext password should be kept to the minimum and should be immediately deleted or encrypted after use.  Zellic 12 Pontem Technology Ltd.    Figure 3.1: Example of cleartext password in session storage. ",
+        "remediation": "Afixwas introduced in commit 0b6c08fb by encrypting the password before setting it in the local storage. A refactor of the flow is planned, whichwill remove the password from storage entirely. It's worth noting that the password is not stored permanently and is automatically deleted after five minutes of inactivity.  Zellic 13 Pontem Technology Ltd.  https://github.com/pontem-network/pontem-pitaka/commit/0b6c08fb5b06c2b21634cbf714fa84de5b1d107a  "
+    },
+    {
+        "title": "3.4 RPC responses can overwrite local state",
+        "* Target": " src/app/InitNetworks.tsx",
+        "* Category": " Coding Mistakes",
+        "* Likelihood": " Low ",
+        "* Severity": " Low",
+        "* Impact": " Medium ",
+        "Description": "The extension implicity trusts all the information from the RPC API, even overriding local variables/state. We can see the local chainId has been overwritten with the chainId of the devnet via a malicious API response.  Figure 3.2: Devnet chainId in localstorage.  Zellic 14 Pontem Technology Ltd.    Figure 3.3: Local chainId set to the same value as the devnet chainId. ",
+        "Impact": "Amalicious RPC can override locally stored variables like chainId, later prompting the users to sign messages with the overriden chainId. This may mislead the user as they would not expect a network to sign messages with a chainId they did not configure. ",
+        "Recommendations": "Users should be prompted for additional network information that should never de- viate, such as the chainId. The RPC responses can then be compared with the local variables and rejected if they do not match. ",
+        "Remediation": "The flowwas overhauled in commit 9c7aa600 to be in line with the APTOS standard.  Zellic 18 Pontem Technology Ltd.  https://github.com/pontem-network/pontem-pitaka/commit/9c7aa600344a5254dca3bfa6d525cd05aa9cd59a   5 Audit Results  During our audit, we discovered four findings. Of these, one was medium severity, and the remaining findingswere low severity. Pontem Technology Ltd. acknowledged all findings and implemented fixes.  5.1 Disclaimers  This assessment does not provide any warranties about finding all possible issues within its scope; in other words, the evaluation results do not guarantee the absence of any subsequent issues. Zellic, of course, also cannot make guarantees about any additional code added to the assessed project after the audit version of our assess- ment. Furthermore, because a single assessment can never be considered compre- hensive, we always recommendmultiple independent assessments pairedwith a bug bounty program.  For each finding, Zellic provides a recommended solution. All code in these recom- mendations are intended to convey how an issue may be resolved (i.e., the idea), but they may not be tested or functional code.  Finally, the contents of this assessment report are for informational purposes only; do not construe any information in this report as legal, tax, investment, or financial advice. Nothing contained in this report constitutes a solicitation or endorsement of a project by Zellic.  Zellic 19 Pontem Technology Ltd.   \tAbout Zellic \tExecutive Summary \tIntroduction \tAbout Pontem Aptos Wallet \tMethodology \tScope \tProject Overview \tProject Timeline  \tDetailed Findings \tMalformed responses to the coinInfo API can soft lock the wallet \tLow password complexity threshold \tCleartext password in the browser's session storage \tRPC responses can overwrite local state  \tDiscussion \tNew wallet creation workflow does not prompt a re-enter of seed phrase \tKey derivation function may be potentially insecure \tTypographical error in result structure \tUnclear message signing flow  \tAudit Results \tDisclaimers  "
+    }
+]

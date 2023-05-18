@@ -1,0 +1,20 @@
+[
+    {
+        "title": "3.1 Transfers can be stuck indefinitely"
+    },
+    {
+        "title": "3.2 Wrapped CoinType can be created using Aptos VAA"
+    },
+    {
+        "title": "3.3 Initial guardian's length not checked"
+    },
+    {
+        "title": "3.4 Use of custom serialization libraries"
+    },
+    {
+        "title": "3.5 Integrate native data-types when released"
+    },
+    {
+        "title": "3.6 Misleading name of get_external_address function"
+    }
+]

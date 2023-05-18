@@ -1,0 +1,46 @@
+[
+    {
+        "title": "3.1 Unnecessary use of the receive() function",
+        "target": " valts.sol ",
+        "category": " Coding Mistakes",
+        "severity": " Low",
+        "likelihood": " Low ",
+        "impact": " Low ",
+        "bodyDescription": "The receive() function is typically used when the contract is supposed to receive ETH. In this case, the contract is expected not to receive any ETH, and for that reason, a revert is put in place so that it does not happen.  receive () external payable { revert();  } ",
+        "bodyRecommendations": "We recommend removing the receive() function altogether, such that no ETH can be manually transferred by an EOA to the contract. ",
+        "remediation": "The issue has been fixed in commit 2124d1a.  Zellic 7 Valts  https://github.com/ValtsCo/valts-erc20/tree/2124d1a99b451105cf85ec497b324d0a0cf37334  "
+    },
+    {
+        "title": "3.2 Inconsistent usage of modifiers",
+        "target": " valts.sol, Valts1155.sol ",
+        "category": " Coding Mistakes",
+        "severity": " Informational",
+        "likelihood": " N/A ",
+        "impact": " N/A ",
+        "bodyDescription": "In wipeApproval, the onlyRole(OWNER_ROLE) can be enforced over the current require statement.  function wipeApproval(ApprovalType approvalType, address to, uint256 amount) external { require(hasRole(OWNER_ROLE, msg.sender), \"Owner required\"); cleanupApproval(makeKey(approvalType, to, amount));  } ",
+        "bodyRecommendations": "We recommend using the onlyRolemodifier.  function wipeApproval(ApprovalType approvalType, address to, uint256 amount) external onlyRole(OWNER_ROLE) { cleanupApproval(makeKey(approvalType, to, amount));  } ",
+        "remediation": "The issue has been fixed in commits 8bbb42b and 2124d1a.  Zellic 8 Valts  https://github.com/ValtsCo/valts-erc1155/tree/8bbb42b46c3d41b0e43850ccc59b1397b7dd2fbc https://github.com/ValtsCo/valts-erc20/tree/2124d1a99b451105cf85ec497b324d0a0cf37334  "
+    },
+    {
+        "title": "3.3 Role checks are redundant",
+        "target": " Valts1155.sol ",
+        "category": " Coding Mistakes",
+        "severity": " Informational",
+        "likelihood": " N/A ",
+        "impact": " N/A ",
+        "bodyDescription": "In remminter and addminter, there is a check on whether the account whose role is about to be changed actually has that role or not. The check does not need to be per- formed at the function level, since _revokeRole and _grantRole perform the necessary checks and reverts in the case those fail.  function remminter(address account) external onlyRole(OWNER_ROLE) { require(hasRole(MINTER_ROLE, account), \"Not a minter\"); _revokeRole(MINTER_ROLE, account);  }  function addminter(address account) external onlyRole(OWNER_ROLE) { require(!hasRole(MINTER_ROLE, account), \"Already a minter\"); _grantRole(MINTER_ROLE, account);  } ",
+        "bodyRecommendations": "We recommend removing the require statements.  function remminter(address account) external onlyRole(OWNER_ROLE) { _revokeRole(MINTER_ROLE, account);  }  function addminter(address account) external onlyRole(OWNER_ROLE) { _grantRole(MINTER_ROLE, account);  } ",
+        "remediation": "The issue has been fixed in commit 8bbb42b.  Zellic 9 Valts  https://github.com/ValtsCo/valts-erc1155/tree/8bbb42b46c3d41b0e43850ccc59b1397b7dd2fbc  "
+    },
+    {
+        "title": "3.4 Unnecessary function statements",
+        "* Target": " valts.sol, Valts1155.sol ",
+        "* Category": " Coding Mistakes",
+        "* Likelihood": " N/A ",
+        "* Severity": " Informational",
+        "* Impact": " N/A ",
+        "Description": "In the cleanupApproval() function, a delete statement is executed on the _approvals.  function cleanupApproval(bytes32 hashKey) private {  for(uint8 i=0; i<_oracles.length; i+)) { _approvals[hashKey].approvers[_oracles[i]] = false;  }  _approvals[hashKey].count = 0; _approvals[hashKey].hasowner = false; delete _approvals[hashKey];  }  There is no need to reset the variables manually, since the delete statement handles that on its own. Moreover, removing the unnecessary statements would lead to less gas being consumed on the function call. ",
+        "Recommendations": "We recommend removing the statements, adjusting the functions as so:  function cleanupApproval(bytes32 hashKey) private {  for(uint8 i=0; i<_oracles.length; i+)) { _approvals[hashKey].approvers[_oracles[i]] = false;  }  delete _approvals[hashKey]; }  Zellic 10 Valts  https://docs.soliditylang.org/en/v0.8.17/types.html?highlight=delete#delete https://docs.soliditylang.org/en/v0.8.17/types.html?highlight=delete#delete  ",
+        "Remediation": "The issue has been fixed in commits 8bbb42b and 2124d1a.  Zellic 11 Valts  https://github.com/ValtsCo/valts-erc1155/tree/8bbb42b46c3d41b0e43850ccc59b1397b7dd2fbc https://github.com/ValtsCo/valts-erc20/tree/2124d1a99b451105cf85ec497b324d0a0cf37334   4 Discussion  The purpose of this section is to document miscellaneous observations that we made during the assessment.  4.1 Formatting of code is inconsistent  In both valts.sol and Valts1155.sol, there are inconsistencies with naming, indentation, and line separation.  For example, there is a function in Valts1155.sol called hasConsensus and one called addoracle. The latter function could be called addOracle to match the style of the former. There are multiple variables, arguments, and events in both contracts that use different naming conventions.  Furthermore, the line spacing is inconsistent in both contracts. Auditors have ob- served one, two, three, four, five, and zero spaces of indentation throughout both files.  Finally, there seems to not be agreement on when a line separator should be used. One example is the supportsInterface and mintBatch functions in Valts1155.sol (both function declarations span multiple lines). The supportsInterface function has its first modifer on a different line while mintBatch has it on the first line of the function dec- laration. Additionally, the opening curly brace of mintBatch is on the same line as the function's return valuewhile the opening curly brace of supportsInterface has its own line.  These issues do not affect the security of the code. However, they do hamper read- ability.  4.2 Adding oracles decreases the percentage of oracles required to reach consensus  In both tokens the hasConsensus function requires that two or three oracles approve of an action. These numbers are hardcoded and it should be noted that there is no limit on the number of oracles that can be added. Initially, 50% or 75% of the ora- cles need to approve of an action. However, as oracles are added, the percentage of oracles required for consensus goes down. This is not necessarily being treated as a centralization risk because adding an oracle does require consensus among the teller (in valts.sol) and three oracles.  Zellic 12 Valts    5 Audit Results  At the time of our audit, the code was not deployed to mainnet evm.  During our audit, we discovered four findings. Of these, one was low risk and three were suggestions (informational).  5.1 Disclaimers  This assessment does not provide any warranties about finding all possible issues within its scope; in other words, the evaluation results do not guarantee the absence of any subsequent issues. Zellic, of course, also cannot make guarantees about any additional code added to the assessed project after the audit version of our assess- ment. Furthermore, because a single assessment can never be considered compre- hensive, we always recommendmultiple independent assessments pairedwith a bug bounty program.  For each finding, Zellic provides a recommended solution. All code in these recom- mendations are intended to convey how an issue may be resolved (i.e., the idea), but they may not be tested or functional code.  Finally, the contents of this assessment report are for informational purposes only; do not construe any information in this report as legal, tax, investment, or financial advice. Nothing contained in this report constitutes a solicitation or endorsement of a project by Zellic.  Zellic 13 Valts   \tAbout Zellic \tExecutive Summary \tIntroduction \tAbout Valts \tMethodology \tScope \tProject Overview \tProject Timeline  \tDetailed Findings \tUnnecessary use of the receive() function \tInconsistent usage of modifiers \tRole checks are redundant \tUnnecessary function statements  \tDiscussion \tFormatting of code is inconsistent \tAdding oracles decreases the percentage of oracles required to reach consensus  \tAudit Results \tDisclaimers  "
+    }
+]

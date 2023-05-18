@@ -1,0 +1,25 @@
+[
+    {
+        "title": "3.1 Out-of-bounds read from toAddressBytes allows undefined",
+        "target": " OFTCore, ONFT721Core, ONFT1155Core ",
+        "category": " Coding Mistakes",
+        "severity": " Informational",
+        "likelihood": " N/A ",
+        "impact": " Informational ",
+        "bodyDescription": "The following assembly code may read up to 32 bytes out of bounds of toAddressByt es because the size of toAddressBytes is not checked:  address toAddress; assembly {  toAddress :) mload(add(toAddressBytes, 20)) } ",
+        "bodyImpact": "There is no direct security impact of this instance of out-of-bounds read. However, this code pattern allows undefined behavior and is potentially dangerous. In the past, even low-level vulnerabilities have been chained with other bugs to achieve critical security compromises. ",
+        "bodyRecommendations": "The size of a uint is 32 bytes. So, the branch that uses the MLOAD instruction should require that the size of toAddressBytes is greater than or equal to the read size of 32 bytes. ",
+        "remediation": "TBD  Zellic 8 LayerZero Labs  https://sector7.computest.nl/post/2021-08-zoom/  "
+    },
+    {
+        "title": "3.2 Messaging library provides a function to renounce owner-",
+        "* Target": " LzApp ",
+        "* Category": " Business Logic",
+        "* Likelihood": " N/A ",
+        "* Severity": " Informational",
+        "* Impact": " Informational ",
+        "Description": "The abstract LzApp contract implements Ownable which provides a method named renounceOwnership that removes the current owner (reference). This is likely not a desired feature. ",
+        "Impact": "If renounceOwnership were called for any reason, the contract would be left without an owner.  In the case of the PausableOFT contract, if an owner were to pause the token and renounce ownership, transactions would be blocked forever. Of course, pausable tokens have centralization risk as an owner can choose to make the token worthless at any time.  Also, the impact of the renounceOwnershipmethod call is for a LzApp.sol contract that in case the receiving of messages from the another chain is blocked due to failed re- ceiving, the call of forceResumeReceive function will not be possible.  Recommendation  Override the renounceOwnership function:  function renounceOwnership() public { revert(\"This feature is not available.\");  } ",
+        "Remediation": "TBD  Zellic 9 LayerZero Labs  https://docs.openzeppelin.com/contracts/2.x/api/ownership#Ownable-renounceOwnership--   4 Discussion  The purpose of this section is to document miscellaneous observations the we made during the assessment.  4.1 Inherent centralization risk  In LzApp.sol the contract's admin has full control over the trustedRemoteLookup list via setTrustedRemote function and central authority over functions such as setConfig.  function setTrustedRemote(uint16 _srcChainId, bytes calldata _srcAddress) external onlyOwner { trustedRemoteLookup[_srcChainId] = _srcAddress; emit SetTrustedRemote(_srcChainId, _srcAddress);  }  function setConfig(uint16 _version, uint16 _chainId, uint _configType, bytes calldata _config) external override onlyOwner { lzEndpoint.setConfig(_version, _chainId, _configType, _config);  }  In case of a private key compromise, an attacker could:  * change UltraLightNode configuration for the current user application. For ex- ample, set the addresses of the fully controlled oracle and relayer contracts.  * add a trusted remote that causes _creditTo to be called fraudulently * remove all trusted remotes, causing the token not to be sendable cross-chains (which may render some tokens worthless).  We strongly recommend using a multi-signature address wallet. This would prevent an attacker if a private key were compromised. Also, users should be aware of the possibility of suspending or completely stopping the cross-chain messages transfer via this user application contract from the owner of the contract. So there is a possi- bility that the sent tokens will not be delivered.  Zellic 10 LayerZero Labs   \tAbout Zellic \tIntroduction \tAbout LayerZero Solidity Examples \tMethodology \tScope \tProject Overview \tProject Timeline \tDisclaimer  \tExecutive Summary \tDetailed Findings \tOut-of-bounds read from toAddressBytes allows undefined behavior \tMessaging library provides a function to renounce ownership  \tDiscussion \tInherent centralization risk  "
+    }
+]

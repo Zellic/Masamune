@@ -1,0 +1,62 @@
+[
+    {
+        "title": "3.1 Ability to force tests to fail with gas limit",
+        "target": " AntePool",
+        "category": " Coding Mistakes",
+        "severity": " Critical",
+        "likelihood": " Medium ",
+        "impact": " Critical ",
+        "bodyDescription": "It is possible for attackers to force tests to fails by setting the gas limit to a very specific value to where:  * it is low enough that the inner call to checkTestPasses runs out of gas, but * it is high enough that the outer checkTest/checkTestNoRevert functions finish ex- ecuting.  This is possible because of a feature in Solidity where try/catch statements revert before the last 1/64th of the transaction gas limit is consumed (Source):  The caller always retains at least 1/64th of the gas in a call and thus even if the called contract goes out of gas, the caller still has some gas left.  So, if 1/64th of the maximum gas value that causes the test to revert is enough to execute the remainder of checkTest, it is possible to force a test to fail.  Zellic wrote a proof of concept exploit to verify the exploitability of this issue. ",
+        "bodyImpact": "An attacker could force certain pools to fail and claim their rewards. Note that as of the time of this writing, no community-written, deployed tests are vulnerable. ",
+        "bodyRecommendations": "It is not currently possible to directly detect an out-of-gas error in a try/catch. Zellic and Ante Labs determined that the best solution is to implement magic return values so that pools can distinguish between a \"false\" returned by an out-of-gas reversion and a test failure (indicated by returning false or manual reversion).  Zellic 7 Ante Labs  https://docs.soliditylang.org/en/v0.8.12/control-structures.html#try-catch  ",
+        "remediation": "Ante Labs acknowledged this finding and plans to implement a fix--most likely using the magic return value method described in the Recommendations section.  In the meantime, Ante Labs plans to provide analysis tools to community test writers to lower the likelihood of a vulnerable test being deployed. Note that no community- written, deployed tests are vulnerable as of the time of this writing.  Zellic 8 Ante Labs   "
+    },
+    {
+        "title": "3.2 Number of challengers is constrained by block gas limit",
+        "target": " AntePool",
+        "category": " Coding Mistakes",
+        "severity": " High",
+        "likelihood": " Low ",
+        "impact": " Critical ",
+        "bodyDescription": "An attacker can freeze funds for a low cost by causing the _calculateChallengerEligi bility function to hit the block gas limit. Since the loop iterates over every challenger in storage, if enough challengers are registered, the checkTest function will not be callable when the test fails. ",
+        "bodyImpact": "* Front-running bots may be able to claim the majority of rewards by exploiting the block gas limit issue using the following steps:  1. Upon detecting a failed check, depositing a large amount of capital as chal- lenger.  2. Locking checkTest by registering many challengers.  3. Twelve blocks later, unlocking checkTest by removing them.  4. Calling checkTest to claim rewards and 5% bounty.  * Stakers could prevent checkTest from running until their funds are unstaked after realizing a test is going to fail.  * Anattacker could performgriefing attacks to prevent payouts from failed checks.  Note that this vulnerability can be chainedwith the MIN_CHALLENGER_STAKE bypass vul- nerability to significantly lower the attack cost. We determined that in practice, ex- ploiting these two vulnerabilities together to lock funds would cost approximately $60,000 USD due to block gas as of the time of this writing. An attack is especially likely if the profit of delaying checkTest exceeds the cost of the attack. ",
+        "bodyRecommendations": "We recommend dynamically calculating the MIN_CHALLENGER_STAKE so that it is eco- nomically impractical to perform this attack.  For recommendations on mitigating the minimum challenger stake bypass vulnera- bility, see the finding in section 3.3.  Zellic 9 Ante Labs   ",
+        "remediation": "Ante Labs acknowledged this finding and implemented a fix in commit a9490290d231 91d2bbcc2acfce5c901aed1bb5d2.  Zellic 10 Ante Labs   "
+    },
+    {
+        "title": "3.3 Bypassable minimum challenger stake",
+        "target": " AntePool",
+        "category": " Coding Mistakes",
+        "severity": " Low",
+        "likelihood": " High ",
+        "impact": " Low ",
+        "bodyDescription": "It is possible to bypass the following check in the stake function. This would allow malicious challengers to stake less than theminimumof MIN_CHALLENGER_STAKE (default 1e16 or 0.01 ether) ether:  require(amount >) MIN_CHALLENGER_STAKE, \"ANTE: Challenger must stake more than 0.01 ETH\");  To bypass the MIN_CHALLENGER_STAKE, challengers can  1. Call the stake function to stake MIN_CHALLENGER_STAKE  2. In the same transaction, call the unstake (internally _unstake) function to unstake MIN_CHALLENGER_STAKE - 1  Now, the challenger is still registeredwhile only costing 1 base unit (0.00000001 ether) and block gas fees. ",
+        "bodyImpact": "Front-running bots could register a challenger on every test for a very low cost to steal the 5% bounty when a test fails. ",
+        "bodyRecommendations": "If challengerswish towithdraw enough challenger stake that their total staked amount becomes less than MIN_CHALLENGER_STAKE, require that all of their stake be removed:  function _unstake( uint256 amount, bool isChallenger, PoolSideInfo storage side, UserInfo storage user  ) internal {  Zellic 11 Ante Labs    /) Calculate how much the user has available to unstake, including the /) effects of any previously accrued decay. /) prevAmount = startAmount * decayMultiplier / startDecayMultiplier uint256 prevAmount = _storedBalance(user, side);  if (prevAmount == amount) { user.startAmount = 0; user.startDecayMultiplier = 0; side.numUsers = side.numUsers.sub(1);  /) Remove from set of existing challengers if (isChallenger) challengers.remove(msg.sender);  } else { require(amount <) prevAmount, \"ANTE: Withdraw request exceeds  balance.\"); require(!isChallenger  |) prevAmount.sub(amount) > MIN_CHALLENGER_STAKE, \"ANTE: must withdraw at least MIN_CHALLENGER_STAKE\");  user.startAmount = prevAmount.sub(amount); /) Reset the startDecayMultiplier for this user, since we've  updated /) the startAmount to include any already-accrued decay. user.startDecayMultiplier = side.decayMultiplier;  } side.totalAmount = side.totalAmount.sub(amount);  emit Unstake(msg.sender, amount, isChallenger); }  For recommendations on mitigating the maximum challengers limit due to block gas limit vulnerability, see the finding in section 3.2. ",
+        "remediation": "Ante Labs acknowledged this finding and implemented a fix in commit 8e4db312c704 6db3f76146080f166baeab025acb.  Zellic 12 Ante Labs   "
+    },
+    {
+        "title": "3.4 Reentrant checkTest allows pool draining",
+        "target": " AntePool",
+        "category": " Coding Mistakes",
+        "severity": " Medium",
+        "likelihood": " Low ",
+        "impact": " Critical ",
+        "bodyDescription": "Because checkTest allows reentrancy, in specific cases, an attacker may be able to drain AntePool by  1. Calling checkTest on a test that returns false (not one that reverts). The test must be written in a way that causes the contract to make an external call to an attacker contract. The attacker contract repeats step 1 asmany times as desired.  2. After entering the if condition, the _verifier is changed to the current caller.  3. The current caller calls claim after checkTest returns.  Steps 2-3 repeat for each reentrant call to checkTest, causing the 5% bounty to be claimed multiple times.  For this to be exploitable, a test must  * be able to return falsewithout reverting. * not have a checkTestPasses function that is view or pure. * call a function on the tested contract that internally makes an external call (e.g. to fallback or receive) to an attacker-controlled contract, for whatever reason. ",
+        "bodyImpact": "If a test fails on a contract matching certain requirements, an attacker could drain the majority of the pool by repeatedly changing the verifier and claiming bounties. ",
+        "bodyRecommendations": "We recommend using the nonReentrantmodifier or otherwise preventing the checkT est function from allowing reentrancy. ",
+        "remediation": "Ante Labs acknowledged this finding and implemented a fix in commit 8448a63d3c7f 7303e35cfc63807cdad540d3aa85.  Zellic 13 Ante Labs   "
+    },
+    {
+        "title": "3.5 Late challengers receive no payout",
+        "* Target": " AntePool",
+        "* Category": " Business Logic",
+        "* Likelihood": " Low ",
+        "* Severity": " Low",
+        "* Impact": " Low ",
+        "Description": "Challengers who stake funds within the 12-block delay period before a check fails do not receive any payout because the stake function only tracks the block number of the most recent staking:  function stake(bool isChallenger) external payable override testNotFailed { ...)) if (isChallenger) {  ...))  /) Record challenger info for future use /) Challengers are not eligible for rewards if challenging within  12 block window of test failure challengers.insert(msg.sender); eligibilityInfo.lastStakedBlock[msg.sender] = block.number;  } else { side = stakingInfo;  }  ...)) } ",
+        "Impact": "If a long-time challenger happens to stake additional funds within the last 12 blocks before a test fails, they will receive no payout--even for their older stake. ",
+        "Recommendations": "Fix the logic to appropriately pay challengers based onwhen they chose to stake. The purpose of the 12-block window is to make front running more difficult. Only new challengers should be penalized for challenging within the 12-block window.  Zellic 14 Ante Labs   ",
+        "Remediation": "Ante Labs noted that the security benefits of having the 12-block period strongly out- weigh the risk presented by this issue.  Zellic 15 Ante Labs    4 Discussion  The purpose of this section is to document miscellaneous observations the we made during the assessment.  4.1 Ante test vulnerabilities  An interesting fact about Ante we wanted to note is that tests themselves may be vulnerable. Tests must be written with care to ensure they do not fail (revert or return false) for any reason other than the tested invariants failing.  4.2 Known issues  As of the time of this writing, Ante lists the following known issues on their documen- tation website:  * Challenger decay calculation is inaccurate and slightly overestimates the decay paid by challengers (overall error is < 1%/year even in the worst case scenario). Calculation is more accurate the more often updateDecay() is called.  * Staker and challenger balances are slightly underestimated due to rounding is- sues in intermediate calculations; overall loss is small relative to total pool bal- ance flux (< 0.1%).  * Test verification can be front run by challengers who stake small amounts of ether in every pool.  * checkTest gas usage can be unbounded as it scales linearly with number of unique challengers.  Zellic 16 Ante Labs  https://docs.ante.finance/antev05/about/security#known-issues https://docs.ante.finance/antev05/about/security#known-issues  \tAbout Zellic \tIntroduction \tAbout Ante \tMethodology \tScope \tProject Overview \tProject Timeline \tDisclaimer  \tExecutive Summary \tDetailed Findings \tAbility to force tests to fail with gas limit \tNumber of challengers is constrained by block gas limit \tBypassable minimum challenger stake \tReentrant checkTest allows pool draining \tLate challengers receive no payout  \tDiscussion \tAnte test vulnerabilities \tKnown issues  "
+    }
+]
