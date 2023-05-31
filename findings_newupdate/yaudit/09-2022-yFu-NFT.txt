@@ -1,0 +1,15 @@
+1. No function to freeze transfers after unfreezing them Severity: Medium Difficulty: n/a Type: n/a Target: n/a Description: YFUtechne.sol#L16, YFUtechne.sol#L33-L35 
+2. Fix supportsInterface() Severity: Low Difficulty: n/a Type: n/a Target: n/a Description: YFUtechne.sol#L65-L72 
+3. NFT minting might be unfair if demand is high Severity: Low Difficulty: n/a Type: n/a Target: n/a Description: YFUtechne.sol#L41-L50 
+4. Add sweep functions for Ether and ERC20 tokens Severity: Low Difficulty: n/a Type: n/a Target: n/a Description: YFUtechne.sol 
+5. Use call to transfer Ether Severity: Low Difficulty: n/a Type: n/a Target: n/a Description: YFUtechne.sol#L45: The mint fee is transferred to depositAddress as follows: depositAddress.transfer(PRICE); 
+6. Use constant and internal variables Severity: Gas Difficulty: n/a Type: n/a Target: n/a Description: YFUtechne.sol#L13-L14 
+7. Mark public functions as external Severity: Gas Difficulty: n/a Type: n/a Target: n/a Description: YFUtechne.sol#L25-L50 
+8. Use OpenZeppelin's Ownable instead of AccessControl Severity: Gas Difficulty: n/a Type: n/a Target: n/a Description: YFUtechne.sol#L5 
+9. Don't transfer mint fee to depositAddress on each mint Severity: Gas Difficulty: n/a Type: n/a Target: n/a Description: YFUtechne.sol#L45 
+10. Use uint256 for _tokenIdCounter Severity: Gas Difficulty: n/a Type: n/a Target: n/a Description: YFUtechne.sol#L11, YFUtechne.sol#L47-L49 
+11. Explore solmate's ERC721 and ERC1155 implementation Severity: Gas Difficulty: n/a Type: n/a Target: n/a Description: solmate's ERC721.sol, solmate's ERC1155.sol 
+12. Make sure to add / at the end of IPFS base URI Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: OpenZeppelin's ERC721.sol#L97 
+13. _beforeTokenTransfer() should be marked as view Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: YFUtechne.sol#L52 
+14. Add unit tests to gain confidence Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: YFUtechne.sol 
+15. Follow Solidity style guide Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: YFUtechne.sol 
