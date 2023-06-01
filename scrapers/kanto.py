@@ -209,6 +209,7 @@ def extract_text_and_save(_issues):
 def main():
 
     # by default
+    
     cache = False
 
     print("Step 1: Getting all the repositories...")
