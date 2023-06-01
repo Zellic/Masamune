@@ -1,0 +1,1 @@
+# Handle  pauliax   # Vulnerability details  ## Impact functions setWithdrawalSafetyCheck, setHarvestOnRebalance, setProcessLocksOnReinvest, and setProcessLocksOnRebalance are public but can be external as they are only supposed to be invoked from the outside.   

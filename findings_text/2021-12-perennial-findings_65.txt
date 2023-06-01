@@ -1,0 +1,1 @@
+# Handle  0x0x0x   # Vulnerability details  At `Product.sol#closeAll` cache `_position[account]` to save gas.   In the first line of the function `_position[account]` is used twice and gas can be saved by caching it.  

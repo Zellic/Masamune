@@ -1,0 +1,1 @@
+# Handle  pauliax   # Vulnerability details  ## Impact contract PoolTransferVerification sets thresholdBps but in calculations uses only ```(10000 - thresholdBps)```. Consider pre-calculating to avoid re-evaluation again and again when this function is invoked.  

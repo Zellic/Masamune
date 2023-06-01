@@ -1,0 +1,1 @@
+# Handle  cmichel   # Vulnerability details  The `LeveragedPool.transferGovernance` function emits an event and reads the new governance variable from storage.  ```solidity emit ProvisionalGovernanceChanged(provisionalGovernance); ```  It is cheaper to use the `_governance` parameter instead which is the same value.   

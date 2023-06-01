@@ -1,0 +1,1 @@
+# Handle  cmichel   # Vulnerability details  The `ConcentratedLiquidityPoolManager.addIncentive` function can add an incentive that already has a non-zero `incentive.secondsClaimed`.  ## Impact Rewards will be wrong.  ## Recommended Mitigation Steps Add a check: `require(incentive.secondsClaimed == 0, "!secondsClaimed")`.   

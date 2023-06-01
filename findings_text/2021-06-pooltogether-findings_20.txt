@@ -1,0 +1,1 @@
+# Handle  pauliax   # Vulnerability details  ## Impact function _getRefferalCode() in ATokenYieldSource just returns a constant of uint16(188). To save some gas and improve the readability this can be extracted to a constant variable and used where necessary.  ## Recommended Mitigation Steps  uint16 internal constant REFFERAL_CODE = uint16(188);  

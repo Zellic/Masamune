@@ -1,0 +1,1 @@
+# Handle  cmichel   # Vulnerability details  When `LibMath.sumN` function does not check if `n <= arr.length` and can therefore fail if called with `n > arr.length`.  ## Impact The caller must always check that it's called with an argument that is less than `n` which is inconvenient.  ## Recommendation Change the condition to iterate up to `min(n, arr.length)`.   

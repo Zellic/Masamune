@@ -1,0 +1,1 @@
+# Handle  cmichel   # Vulnerability details  If all masks match the `DrawCalculator._calculateTierIndex` function returns `masksLength - numberOfMatches` but it will always be zero at this point as `masksLength == numberOfMatches`. So just returning zero here would lead to saving a checked subtraction.  

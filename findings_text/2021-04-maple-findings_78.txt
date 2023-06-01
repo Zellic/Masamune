@@ -1,0 +1,1 @@
+# Handle  a_delamo   # Vulnerability details  ## Impact  Low  ## Proof of Concept  Here you have a gist: https://gist.github.com/alexon1234/7b51e901ac50e524369549af70ca9eeb   

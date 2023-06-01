@@ -1,0 +1,1 @@
+# Handle  hickuphh3   # Vulnerability details  ### Impact  The only value from poolStorage in `updateData()` is the `sherXUnderlying` value. It is cheaper to pass this `uint256` variable instead of the storage variable itself.  ### Recommended Mitigation Steps  Change `PoolStorage.Base storage ps` to `uint256 sherXUnderlying`, saves about ~160 gas.  

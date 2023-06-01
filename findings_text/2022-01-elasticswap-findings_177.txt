@@ -1,0 +1,1 @@
+# Handle  pauliax   # Vulnerability details  ## Impact Using the unchecked keyword to avoid redundant arithmetic checks and save gas when an underflow/overflow cannot happen, e.g.: ```solidity     if (rootK > rootKLast) {         uint256 numerator =             _totalSupplyOfLiquidityTokens * (rootK - rootKLast); ``` rootK - rootKLast will never underflow here.   

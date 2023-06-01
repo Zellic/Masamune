@@ -1,0 +1,1 @@
+# Handle  pauliax   # Vulnerability details  ## Impact Consider caching decimals when initializing malt and collateralToken to avoid repeated external calls, as they are not supposed to change unless initialized again: ```solidity   uint256 maltDecimals = malt.decimals();   uint256 decimals = collateralToken.decimals(); ```   

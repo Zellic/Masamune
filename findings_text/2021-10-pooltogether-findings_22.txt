@@ -1,0 +1,1 @@
+# Handle  cmichel   # Vulnerability details  The `_calculatePrizeTierFraction` docs say "returns the fraction of the total prize (base 1e18)", but it's base 1e9. Code seems to be correct.  

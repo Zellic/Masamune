@@ -1,0 +1,1 @@
+https://github.com/code-423n4/2022-03-rolla/blob/main/quant-protocol/contracts/options/OptionsFactory.sol#L101 Consider using openzeppelin clones in order to save gas, because contract deployment on ethereum is very expensive.

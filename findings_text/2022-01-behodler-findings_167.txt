@@ -1,0 +1,1 @@
+# Handle  cmichel   # Vulnerability details  The error message for the `uniLPs` is still referring to `Sushi` instead of `Uniswap`  ```solidity require(UniPairLike(uniLPs[i]).factory() == uniFactory, "LimboDAO: invalid Sushi LP"); ```  

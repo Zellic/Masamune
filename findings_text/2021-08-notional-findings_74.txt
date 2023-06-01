@@ -1,0 +1,1 @@
+# Handle  cmichel   # Vulnerability details  ## Vulnerability Details The `NoteERC20.initialize` function does not emit an initial `OwnershipTransferred` event.  ## Recommended Mitigation Steps In `initialize`, emit `OwnershipTransferred(address(0), owner_)`.   

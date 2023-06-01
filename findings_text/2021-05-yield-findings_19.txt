@@ -1,0 +1,1 @@
+# Handle  pauliax   # Vulnerability details  ## Impact In the contract ChainlinkMultiOracle both functions 'peek' and 'get' are identical. They are declared as views while based on IOracle interface 'get' should be transactional.   

@@ -203,13 +203,17 @@ def extract_text_and_save(_issues):
 
         print(f"Extracting text from issue {index + 1} of {len(_issues)}...")
 
-        with open(f'../findings_text/{issue["target"]}.txt', 'a+') as f:
+        # from the html_url get the issue number, which is the last text after the last '/'
+        issue_number = issue['html_url'].split('/')[-1]
+
+        # save as "target_issuenr.txt"
+        with open(f'../findings_text/{issue["target"]}_{issue_number}.txt', 'w') as f:
             f.write(issue['body'] + "\n")
+
 
 def main():
 
     # by default
-    
     cache = False
 
     print("Step 1: Getting all the repositories...")

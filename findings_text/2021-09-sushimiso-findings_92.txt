@@ -1,0 +1,1 @@
+# Handle  pauliax   # Vulnerability details  ## Impact function lockTokens in contract TokenVault should check that _withdrawer is not empty (0x0) to prevent accidentally locked forever (burned) tokens.  ## Recommended Mitigation Steps require(_withdrawer != address(0));  

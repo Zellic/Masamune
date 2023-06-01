@@ -1,0 +1,1 @@
+# Handle  cmichel   # Vulnerability details  The `Parameters.setLowerSlack/setUpperSlack` functions do not check that the new value does still satisfy the `_lowerSlack <= _upperSlack` condition.  ## Recommended Mitigation Steps Check that `_lowerSlack <= _upperSlack`  is still satisfied in these functions.   

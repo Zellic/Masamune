@@ -1,0 +1,1 @@
+# Handle  cmichel   # Vulnerability details  The initial `SetTransferService` event in `Malt.initialize` is not emitted.  ## Impact Off-chain programs might not correctly track the initial `transferService` variable as the initial event is missing.  ## Recommended Mitigation Steps Emit it in `initialize`.  

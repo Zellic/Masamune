@@ -1,0 +1,1 @@
+## Low and Non-critical * You should declare that the `RevenueDistributionToken` contract implements the IERC4626 interface * Forgot TODO comments before `updateVestingSchedule` and `_reduceCallerAllowance` functions in the `RevenueDistributionToken` contract * The `ERC20` contract's solidity version is ^0.8.7, while the other contracts' version is 0.8.7 

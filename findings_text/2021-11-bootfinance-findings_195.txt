@@ -1,0 +1,1 @@
+# Handle  Meta0xNull   # Vulnerability details  ## Impact Verify Airdrop Address Holders On Chain by Spending Gas is Unnecessary and probably cost a lot after adding up everyone cost.  ## Recommended At UI Frontend, wallet eg. Metamask allow UI to Verify Address Holders Without Spending Any Gas.  

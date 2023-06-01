@@ -1,0 +1,1 @@
+# Handle  pauliax   # Vulnerability details  ## Impact INestedToken is declared as an abstract contract, yet it contains no function bodies and is located under the interfaces directory, so I think it should be declared as an interface.  ## Recommended Mitigation Steps Consider making INestedToken an interface.  

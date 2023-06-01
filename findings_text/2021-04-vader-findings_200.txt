@@ -1,0 +1,1 @@
+# Handle  jvaqa   # Vulnerability details  ## Impact Gas Optimization: DAO.sol Unnecessary Multiple Return Statements  ## Recommended Mitigation Steps  In DAO.sol, replace this:  if(votes > consensus){     return true; } else {     return false; }  With this:  return (votes > consensus)  

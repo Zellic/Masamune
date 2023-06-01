@@ -1,0 +1,1 @@
+# Handle  cmichel   # Vulnerability details  The `if`-branch of `Basket.changeLicenseFee` function ensures that `pendingLicenseFee.licenseFee == newLicenseFee` which means setting `licenseFee = newLicenseFee` is equivalent to `licenseFee = pendingLicenseFee.licenseFee` but the former saves an expensive storage load operation.  

@@ -1,0 +1,1 @@
+# Handle  cmichel   # Vulnerability details  `LaunchEvent.getReserves`: The comment says: `@notice Returns the current balance of the pool`. The "of the pool" part can be misleading as the `tokenIncentivesBalance` are never part of the _pool pair_. Consider changing this to "Returns the outstanding balance of the launch event contract".  

@@ -1,0 +1,1 @@
+Judge has assessed an item in Issue #345 as 2 risk. The relevant finding follows:   Issue #2 - Undermining the fairness of the protocol in swapSource() and possibilities for stealing a jackpot

@@ -1,0 +1,1 @@
+# Handle  hickuphh3   # Vulnerability details  ### Impact  The `latest()` function is unused and can be removed.  ### Recommended Mitigation Steps  Remove L68-L71  

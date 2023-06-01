@@ -1,0 +1,1 @@
+# Handle  tensors   # Vulnerability details  Constants of form 10**X can be rewritten as 1eX and this will save gas.  

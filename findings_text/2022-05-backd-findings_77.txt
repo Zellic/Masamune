@@ -1,0 +1,1 @@
+# gas opt `object`++ cost more then ++`object` . (same for --)  `object`+ 1 cost more then ++`object` .  caculate with unchecked cost less.   ## BkdLocker.sol  ``` line 140 - i = i - 1; ```  ``` fix - unchecked{ --i; } ``` 

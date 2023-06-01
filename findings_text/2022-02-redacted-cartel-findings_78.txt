@@ -1,0 +1,1 @@
+https://github.com/code-423n4/2022-02-redacted-cartel/blob/main/contracts/TokemakBribe.sol#L38  `rewardForwarding` is redundant as it's not used. also, the function that sets it is redundant. https://github.com/code-423n4/2022-02-redacted-cartel/blob/main/contracts/TokemakBribe.sol#L298

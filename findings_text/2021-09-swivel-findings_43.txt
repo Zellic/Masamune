@@ -1,0 +1,1 @@
+# Handle  pants   # Vulnerability details  At both line 59 and 61 the code reads o[i]. It happens inside a loop therefore the best practice which is more gas efficient is to cache o[i] once and use it instead.  https://github.com/Swivel-Finance/gost/blob/v2/test/swivel/Swivel.sol#L59  ## Tool Used Manual code review.   

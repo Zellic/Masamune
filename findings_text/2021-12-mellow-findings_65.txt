@@ -1,0 +1,1 @@
+# Handle  0x0x0x   # Vulnerability details  In `protocolGovernance.sol`, there is parameter `maxTokensPerVault`. This parameter is never utilized, therefore does not provide the functionality stated in comments.  

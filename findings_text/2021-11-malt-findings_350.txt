@@ -1,0 +1,1 @@
+# Handle  pauliax   # Vulnerability details  ## Impact In functions transferAndCall and transferWithPermit the condition should be AND, not OR: ```solidity   require(to != address(0) || to != address(this)); ```  ## Recommended Mitigation Steps ```solidity   require(to != address(0) && to != address(this)); ```   

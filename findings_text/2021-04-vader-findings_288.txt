@@ -1,0 +1,1 @@
+# Handle  paulius.eth   # Vulnerability details  ## Impact a bit cheapier when you replace:   require(inited == false); with:   require(!inited); same with variable == true.  

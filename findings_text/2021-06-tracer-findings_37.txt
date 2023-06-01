@@ -1,0 +1,1 @@
+# Handle  hrkrshnn   # Vulnerability details  ## Impact  Gas optimization.  ## Use at least 0.8.4 instead of 0.8.0  It has an important optimization improvement: a low level inliner. Especially since you have several small functions.  The current hardhat config indicates that version `0.8.0` is being used.    

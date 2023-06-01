@@ -1,0 +1,1 @@
+# Handle  cmichel   # Vulnerability details  The `Strategy.Divest` event is not fired.  ## Impact Off-chain scripts that rely on this event won't work.  ## Recommended Mitigation Steps Emit this event in `endPool`.  

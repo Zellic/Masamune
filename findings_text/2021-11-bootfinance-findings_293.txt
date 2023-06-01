@@ -1,0 +1,1 @@
+# Handle  pauliax   # Vulnerability details  ## Impact functions validate and modifyInvestor do not need nonReentrant modifier as they do not execute any external calls where you can hook up to re-enter.   

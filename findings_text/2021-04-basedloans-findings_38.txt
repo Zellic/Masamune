@@ -1,0 +1,1 @@
+# Handle  @cmichelio   # Vulnerability details   ## Vulnerability Details  `UniswapAnchoredView`'s `PriceUpdated` event is never fired.  ## Impact  Unused code can hint at programming or architectural errors.  ## Recommended Mitigation Steps  Use it or remove it.   

@@ -1,0 +1,1 @@
+# Handle  paulius.eth   # Vulnerability details  ## Vulnerability details  function triggerDefault should call _emitBalanceUpdateEventForCollateralLocker to emit event as the balance of CollateralLocker changes after calling LoanLib.liquidateCollateral.   

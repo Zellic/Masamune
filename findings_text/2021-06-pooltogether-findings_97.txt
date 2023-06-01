@@ -1,0 +1,1 @@
+# Handle  cmichel   # Vulnerability details  In `PrizePool._updateCreditBalance` the `CreditBurned` event is emitted even if nothing was burned. Not emitting this event when nothing happened can save gas and also seems better semantically.  

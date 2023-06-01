@@ -1,0 +1,1 @@
+# Handle  pants   # Vulnerability details  Declaration inside a loop is less gas efficient than before it. See line 462 for example.  

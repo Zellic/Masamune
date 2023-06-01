@@ -1,0 +1,1 @@
+# Handle  cmichel   # Vulnerability details  The return value is never used and should be removed to save some gas.  

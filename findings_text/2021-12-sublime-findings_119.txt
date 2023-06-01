@@ -1,0 +1,1 @@
+# Handle  pmerkleplant   # Vulnerability details  ## Impact  The local variables `_receivedToken` in the functions `SavingsAccount.withdraw` and `SavingsAccount.withdrawFrom` are unused.  Removing them would save gas.  ## Tools used  slither  

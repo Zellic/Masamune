@@ -1,0 +1,1 @@
+# Handle  hickuphh3   # Vulnerability details  ### Impact  The `FundsTransferred()` event in `_transferFunds()` will report a smaller amount than expected if `currentBalance > _amount`.  This would affect applications utilizing event logs like subgraphs.  ### Recommended Mitigation Steps  Update the event emission to `emit FundsTransferred(_yieldSource, currentBalance);`  

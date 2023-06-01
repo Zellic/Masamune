@@ -1,0 +1,1 @@
+# Handle  hickuphh3   # Vulnerability details  ### Impact  The `setWithdrawalSafetyCheck()`, `setHarvestOnRebalance()`, `setProcessLocksOnReinvest()` and `setProcessLocksOnRebalance()` functions are unused internally but have `public` visibility. Their visibility can be changed to `external`.  

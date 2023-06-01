@@ -1,0 +1,1 @@
+# Handle  pauliax   # Vulnerability details  ## Impact function setBigFishThreshold should require that _percent is not above PERCENTAGE_DECIMAL_FACTOR if it is not intended to have it over 100%.  ## Recommended Mitigation Steps require _percent <= PERCENTAGE_DECIMAL_FACTOR  

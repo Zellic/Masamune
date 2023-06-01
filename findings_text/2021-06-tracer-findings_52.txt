@@ -1,0 +1,1 @@
+# Handle  pauliax   # Vulnerability details  ## Impact Trader function executeTrade calculates executionPrice, newMakeAverage, newTakeAverage, then calls the market, and only if it succeeds it uses these variables.  ## Recommended Mitigation Steps Better first call the market and only then calculate and use these variables to avoid useless calculations and gas costs.  

@@ -1,0 +1,1 @@
+# Handle  WatchPug   # Vulnerability details  Based on the context, the functions listed below are not expected to be overridden, thus the use of the keyword `virtual` is redundant.  - transfer() - updatePricePerShare() - transferFrom() - pricePerShare()  ### Recommendation  Consider removing `virtual` for these functions.  

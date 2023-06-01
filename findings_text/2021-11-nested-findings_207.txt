@@ -1,0 +1,1 @@
+# Handle  pauliax   # Vulnerability details  ## Impact This can be simplified to reduce gas costs by eliminating math operation: ```solidity   // before   require(_accountIndex + 1 <= shareholders.length, "FeeSplitter: INVALID_ACCOUNT_INDEX");   // after   require(_accountIndex < shareholders.length, "FeeSplitter: INVALID_ACCOUNT_INDEX");  ```  

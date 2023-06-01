@@ -1,0 +1,1 @@
+# Handle  pauliax   # Vulnerability details  ## Impact Result of this.totalSupply() could be cached to avoid duplicate calls: ```solidity   require(this.totalSupply() > 0, "Exchange: INSUFFICIENT_LIQUIDITY");   ...   uint256 totalSupplyOfLiquidityTokens = this.totalSupply(); ```   

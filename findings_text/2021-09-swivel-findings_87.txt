@@ -1,0 +1,1 @@
+# Handle  cmichel   # Vulnerability details  The `Swivel` contract approves the `cToken` address whenever it wants to mint `cTokens` upon order fulfilment, see `initiateVaultFillingZcTokenInitiate`.  It could just approve the `cToken` contract once for each market underlying it supports with the max value and save the approval call for each order fulfilment.   

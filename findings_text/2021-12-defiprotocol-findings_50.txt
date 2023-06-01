@@ -1,0 +1,1 @@
+# Handle  neslinesli93   # Vulnerability details  ## Impact The `initialized` variable has its visibility set to `public`, while it should be private. The reason is that any contract that inherits from `Auction.sol` or `Basket.sol` may reset the value for  the `initialized` variable  ## Recommended Mitigation Steps Reduce `initialized` visibility to `private` in both contracs  

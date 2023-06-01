@@ -1,0 +1,1 @@
+# Handle  pauliax   # Vulnerability details  ## Impact Contracts SingleTokenJoinV2 and SingleNativeTokenExitV2 initialize uniSwapLikeRouter, but never actually use it, as swap.exchange is used instead. So it basically trusts the user input. Consider removing uniSwapLikeRouter if that was the intention to save some gas.  

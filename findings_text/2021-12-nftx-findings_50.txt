@@ -1,0 +1,1 @@
+# Handle  ych18   # Vulnerability details  In If the Vault owner decides to set factoryMintFee and factoryRandomRedeemFee to zero, any user could call the function NFTXVaultFactoryUpgradeable.assignFees() and hence all the fees are updated.  

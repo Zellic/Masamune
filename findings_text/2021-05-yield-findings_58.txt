@@ -1,0 +1,1 @@
+# Handle  pauliax   # Vulnerability details  ## Impact function redeem in contract FYToken should return 'redeemed' amount. There return value is not used anywhere, but it's a mistake that it assigns 'redeemed' but returns 'amount'.  ## Recommended Mitigation Steps Remove return sentence or explicitly return 'redeemed'.  

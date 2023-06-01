@@ -1,0 +1,1 @@
+# Handle  hickuphh3   # Vulnerability details  ### Impact  `_vaultDetails[_vault].balance` in L367 can be changed to the already fetched value `_balance`.  ### Recommended Mitigation Steps  `_vaultDetails[_vault].balance = _vaultDetails[_vault].balance.sub(_amount);`  

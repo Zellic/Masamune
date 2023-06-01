@@ -1,0 +1,1 @@
+# Handle  TomFrenchBlockchain   # Vulnerability details  Typo in "cancelled"  https://github.com/code-423n4/2021-12-sublime/blob/9df1b7c4247f8631647c7627a8da9bdc16db8b11/contracts/Pool/Pool.sol#L545  

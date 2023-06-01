@@ -1,0 +1,1 @@
+# Handle  pants   # Vulnerability details  Since no contract inherent from SwapUtils all internal functions could be set private. For example  getD could be set private to save gas.  

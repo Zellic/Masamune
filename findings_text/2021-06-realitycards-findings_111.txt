@@ -1,0 +1,1 @@
+# Handle  pauliax   # Vulnerability details  ## Impact questionFinalised is redundant, it is only set to true or false but never queried or used in any meaningful way.  ## Recommended Mitigation Steps Remove questionFinalised from the codebase.  

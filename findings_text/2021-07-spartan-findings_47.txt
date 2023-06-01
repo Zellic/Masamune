@@ -1,0 +1,1 @@
+# Handle  hickuphh3   # Vulnerability details  ### Impact  `_handleTransferIn()`, `DEPLOYER` and `onlyDAO()` are defined but unused. Hence, they can be removed from the contract.  

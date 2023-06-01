@@ -1,0 +1,1 @@
+# Handle  pauliax   # Vulnerability details  ## Impact Function _burnInternal always returns 0 as a third parameter. It should return tokensBurnt, tokenOut, fyTokenOut.  ## Recommended Mitigation Steps return (tokensBurned, tokenOut, fyTokenOut);  

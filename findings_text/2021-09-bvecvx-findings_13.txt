@@ -1,0 +1,1 @@
+# Handle  pmerkleplant   # Vulnerability details  ## Impact Variable `MAX_BPS` in the veCVXStrategy is never reset after initialization. Declaring it as a constant saves gas.  ## Tools Used slither  

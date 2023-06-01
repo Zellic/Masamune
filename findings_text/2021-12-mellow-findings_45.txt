@@ -1,0 +1,1 @@
+# Handle  cmichel   # Vulnerability details  The `CollectProtocolFees` and `CollectStrategyFees` events in `GatewayVault` are not used.  ## Impact Unused code can hint at programming or architectural errors.  ## Recommended Mitigation Steps Use it or remove it.  

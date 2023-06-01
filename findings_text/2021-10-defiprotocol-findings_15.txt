@@ -1,0 +1,1 @@
+# Handle  pants   # Vulnerability details  The `internal` function `Auction.withdrawBounty()` is never called by a contract that inherits `Auction`. Therefore, its visibility can be reduced to `private`.  ## Impact `private` functions are cheaper than `internal` functions.  ## Tool Used Manual code review.  ## Recommended Mitigation Steps Define this function as `private`.  

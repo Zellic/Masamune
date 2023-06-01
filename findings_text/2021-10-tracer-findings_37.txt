@@ -1,0 +1,1 @@
+# Handle  pauliax   # Vulnerability details  ## Impact Because 'token' is of type uint here, this comparison can be simplified to reduce gas costs:   require(token == 0 || token == 1, "Pool: token out of range"); //before  ## Recommended Mitigation Steps   require(token < 2, "Pool: token out of range"); //after  

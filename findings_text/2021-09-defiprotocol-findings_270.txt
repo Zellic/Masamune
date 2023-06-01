@@ -1,0 +1,1 @@
+# Handle  tensors   # Vulnerability details  I recommend adding reentrancy checks throughout Basket.sol and Auction.sol using a mutex lock. Many external calls are made to potentially unsafe token contracts. In the case that not all token contracts are properly vetted, this preventative step could be worthwhile.  

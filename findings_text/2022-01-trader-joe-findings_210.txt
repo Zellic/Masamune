@@ -1,0 +1,1 @@
+# Handle  cmichel   # Vulnerability details  `RocketJoeStaking.withdraw`: The `_safeRJoeTransfer(msg.sender, pending)` only needs to be performed if `pending > 0`.  

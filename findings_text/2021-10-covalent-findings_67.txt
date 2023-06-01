@@ -1,0 +1,1 @@
+# Handle  pmerkleplant   # Vulnerability details  ## Impact The variable `CQT` is used as constant but not declared as such.  Declaring it as constant saves gas.  

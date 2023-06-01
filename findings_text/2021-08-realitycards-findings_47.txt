@@ -1,0 +1,1 @@
+# Handle  hickuphh3   # Vulnerability details  ### Recommended Mitigation Steps  - `seperate` → `separate` - `incase` → `in case`  

@@ -1,0 +1,1 @@
+# Handle  pauliax   # Vulnerability details  ## Impact There are several checks that uint is not negative, e.g.:   cashGroup.maxMarketIndex >= 0 && These checks are pretty much useless as uint can never be negative. Remove them to save some gas.   

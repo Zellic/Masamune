@@ -1,0 +1,1 @@
+# Handle  xYrYuYx   # Vulnerability details  ## Impact `calldata` use less gas than `memory` in function arguments  https://github.com/code-423n4/2021-11-nested/blob/main/contracts/FeeSplitter.sol#L124  ## Tools Used Manual  ## Recommended Mitigation Steps Use `calldata` keyword in function argument instead of `memory`  

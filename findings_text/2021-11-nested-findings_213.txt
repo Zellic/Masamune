@@ -1,0 +1,1 @@
+# Handle  pauliax   # Vulnerability details  ## Impact function "mintWithMetadata" does not need onlyFactory modifier as it will be checked in function "mint" later.   

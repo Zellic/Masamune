@@ -1,0 +1,1 @@
+# Handle  robee   # Vulnerability details  The function dueOf in CollateralizedDebt.sol could be set external   

@@ -1,0 +1,1 @@
+# Handle  danb   # Vulnerability details  oracle.pcvStats returns newProtocolEquity as  int256, it is then casted to uint256 in recalculate. If it is possible that newProtocolEquity will be negative, consider using SafeCast instead.  

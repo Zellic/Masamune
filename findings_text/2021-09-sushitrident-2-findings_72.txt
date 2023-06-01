@@ -1,0 +1,1 @@
+# Handle  pauliax   # Vulnerability details  ## Impact There is an unused import: import "../../interfaces/ITridentRouter.sol"; in ConcentratedLiquidityPosition. It will increase the size of deployment with no real benefit.  ## Recommended Mitigation Steps Consider removing this unused import to save some gas.   

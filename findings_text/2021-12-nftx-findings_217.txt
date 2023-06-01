@@ -1,0 +1,1 @@
+# Handle  GreyArt   # Vulnerability details  ## Impact  `xTokensMinted` is assigned in `provideInventory721()` and `provideInventory1155()`, but is unused.  ## Recommended Mitigation Steps  Remove the local variable `xTokensMinted`.  

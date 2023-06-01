@@ -1,0 +1,1 @@
+# Handle  cmichel   # Vulnerability details  The `reserveInternal.subNoNeg(bufferInternal)` computation in `TreasuryAction.transferReserveToTreasury` can be a standard, unchecked subtraction as `if (reserveInternal <= bufferInternal) continue;` is checked before this computation.   

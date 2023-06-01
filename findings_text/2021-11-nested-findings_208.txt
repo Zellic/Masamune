@@ -1,0 +1,1 @@
+# Handle  pauliax   # Vulnerability details  ## Impact I think it is not necessary to have function _burnNST as a separate private function. It is called only once and has just one LOC so it just incurs in extra gas cost which can be avoided by moving this line to function trigger and getting rid of _burnNST.   

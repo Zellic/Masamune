@@ -1,0 +1,1 @@
+# Handle  pmerkleplant   # Vulnerability details  ## Impact Variable `DOMAIN_SEPARATOR` in the `QuickAccManager` is never reset after initialization in the constructor. Declaring it as immutable saves gas.  

@@ -1,0 +1,1 @@
+# Handle  pants   # Vulnerability details  The function __UToken_init can be frontrun. We recommend adding an initializer owner which only it allowed to call such functions, instead of the current _admin there.  Not sure whether frontrunning is Low / Medium risk.  

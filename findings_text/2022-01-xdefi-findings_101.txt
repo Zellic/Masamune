@@ -1,0 +1,1 @@
+# Handle  wuwe1   # Vulnerability details  ## Proof of Concept  In contract `XDEFIDistribution`, the only use of `bonusMultiplier` is to calculate `units` in `_lock`.  In contract `XDEFIDistributionHelper`, `bonusMultiplier` is used for return value. However, `bonusMultiplier` can be calculated by `units * 100 / depositedXDEFI`.  

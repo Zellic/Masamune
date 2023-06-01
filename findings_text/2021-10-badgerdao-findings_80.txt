@@ -1,0 +1,1 @@
+# Handle  pauliax   # Vulnerability details  ## Impact modifier onlyOracle in WrappedIbbtc is never used, so can be removed to reduce deployment gas costs.   

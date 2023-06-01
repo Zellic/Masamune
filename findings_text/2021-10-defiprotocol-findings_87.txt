@@ -1,0 +1,1 @@
+# Handle  pauliax   # Vulnerability details  ## Impact function settleAuction could skip withdrawBounty if there are no bounties.  ## Recommended Mitigation Steps if (bountyIDs.length > 0) {   withdrawBounty(bountyIDs); }   

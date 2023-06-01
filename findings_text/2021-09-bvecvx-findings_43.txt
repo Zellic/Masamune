@@ -1,0 +1,1 @@
+# Handle  cmichel   # Vulnerability details  ## Vulnerability Details The `Debug` event in `veCVXStrategy` is not used.  ## Impact Unused code can hint at programming or architectural errors.  ## Recommended Mitigation Steps Use it or remove it.  

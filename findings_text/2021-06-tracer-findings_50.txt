@@ -1,0 +1,1 @@
+# Handle  pauliax   # Vulnerability details  ## Impact Insurance function drainPool calculates 10**18 many times. To reduce the number of calculations and save gas, this number can be extracted as a constant variable and used everywhere where necessary.  ## Recommended Mitigation Steps Extract 10**18 as a constant.  

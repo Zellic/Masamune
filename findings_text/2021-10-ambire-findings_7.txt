@@ -1,0 +1,1 @@
+# Handle  pmerkleplant   # Vulnerability details  ## Impact Variable `CANCEL_PREFIX` in the `QuickAccManager` is never reset after initialization. Declaring it as a constant saves gas.  

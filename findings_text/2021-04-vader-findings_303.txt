@@ -1,0 +1,1 @@
+# Handle  paulius.eth   # Vulnerability details  ## Impact In function updateAnchorPrice here 'arrayAnchors[i]' can be replaced with 'token' to eliminate one expensive storage access:    arrayPrices[i] = iUTILS(UTILS()).calcValueInBase(arrayAnchors[i], one);  
