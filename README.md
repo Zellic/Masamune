@@ -10,13 +10,13 @@ To access Masamune, visit [masamune.app](https://masamune.app).
 
 ## How does it work?
 
-Masamune is a static site, built with [Jekyll](https://jekyllrb.com/), and hosted on [Github Pages](https://pages.github.com/).
-
 The search utility is powered by [Lunr.js](https://lunrjs.com/), a full-text search library for the browser.
 
 We have developed custom scrapers for each data source, which are run periodically to retrieve the latest data. You can find the scrapers in the `scrapers` directory.
 
 The data is stored within the `results` directory; for each of the queries, a pattern match is tried against the data, and the results are displayed.
+
+To build locally, just open index.html using a live server, eg. [this extension for VSCode](https://marketplace.visualstudio.com/items?itemName=yandeu.five-server).
 
 ### Retrieving the data
 
