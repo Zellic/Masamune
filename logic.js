@@ -174,6 +174,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const codearena = await fetch('./results/codearena_findings.json');
         const codearenaJson = await codearena.json();
 
+        const yaudit = await fetch('./results/yaudit_findings.json');
+        const yauditJson = await yaudit.json();
+
         // const gitbook_docs = await fetch('./results/gitbook_docs.json');
         // const gitbook_docsJson = await gitbook_docs.json();
 
