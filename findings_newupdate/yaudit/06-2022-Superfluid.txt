@@ -1,0 +1,41 @@
+1. decodeCtx() missing error checks Severity: Low Difficulty: n/a Type: n/a Target: n/a Description: 
+2. No function to unregister an agreement class Severity: Low Difficulty: n/a Type: n/a Target: n/a Description: 
+3. App registration front-running can set a different configword Severity: Low Difficulty: n/a Type: n/a Target: n/a Description: 
+4. appCallbackPop() missing modifier Severity: Low Difficulty: n/a Type: n/a Target: n/a Description: 
+5. Unnecessary zero initialization Severity: Gas Difficulty: n/a Type: n/a Target: n/a Description: 
+6. Avoid && logic in require statements Severity: Gas Difficulty: n/a Type: n/a Target: n/a Description: 
+7. Use != 0 for gas savings Severity: Gas Difficulty: n/a Type: n/a Target: n/a Description: 
+8. Use short require strings Severity: Gas Difficulty: n/a Type: n/a Target: n/a Description: 
+9. External functions are cheaper than public functions Severity: Gas Difficulty: n/a Type: n/a Target: n/a Description: 
+10. Use Solidity errors in 0.8.4+ Severity: Gas Difficulty: n/a Type: n/a Target: n/a Description: 
+11. Use prefix in loops Severity: Gas Difficulty: n/a Type: n/a Target: n/a Description: 
+12. Declare constant internal when possible Severity: Gas Difficulty: n/a Type: n/a Target: n/a Description: 
+13. Use of memory for function arguments Severity: Gas Difficulty: n/a Type: n/a Target: n/a Description: 
+14. Unnecessary variable computation Severity: Gas Difficulty: n/a Type: n/a Target: n/a Description: 
+15. Shorted revert strings Severity: Gas Difficulty: n/a Type: n/a Target: n/a Description: 
+16. Custom error Severity: Gas Difficulty: n/a Type: n/a Target: n/a Description: 
+17. Using >0 for unsigned integers Severity: Gas Difficulty: n/a Type: n/a Target: n/a Description: 
+18. Unchecked counter incrementation in "for" loop Severity: Gas Difficulty: n/a Type: n/a Target: n/a Description: 
+19. Potential underflow condition Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: 
+20. Potential hash collision Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: 
+21. Logic inconsistency between callAgreementWithContext() and callAppActionWithContext() Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: 
+22. Upgradable Superfluid.sol has hardcoded version Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: 
+23. _callAppAction() logic varies from _callAgreement() Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: 
+24. Use named cached variable Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: 
+25. _replacePlaceholderCtx() logic could be simplified Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: 
+26. _callCallback() logic can be simplified Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: 
+27. Broken link Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: 
+28. FIXME or TODO comments remain in code Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: 
+29. Typos Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: 
+30. Incorrect external code reference Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: 
+31. Match callInfo masks and shifts to data size Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: 
+32. isConfigWordClean doesn't check some unused bits Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: 
+33. Remove unnecessary casting to ISuperApp type Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: 
+34. Incorrect comments Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: 
+35. Variation in isTrustedForwarder() implementations Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: 
+36. Implementation contracts not initialized Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: Superfluid, SuperfluidAgreement, SuperTokenFactory are deployed as UUPS proxy contracts. Anyone call their initialize() function as implementation contracts are not initialized. 
+37. Possible to register multiple apps with same registrationKey Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: Governance's owner can call setConfig() to allow an address a (hashed into key) to register a SuperApp with Superfluid.sol (host). The value parameter is the timestamp until which the address can register the app. a can initiate a transaction to register multiple apps through registerAppWithKey() as long as block.timestamp 
+38. Valid context is not checked before modifying it Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: For reference, appCallbackPush() has asserts a valid context through assertValidCtx(ctx). There is no such verification for appCallbackPop(). 
+39. Typo Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: agreeement (Superfluid.sol#L1053 and Superfluid.sol#L1063) might be better spelled as agreement. 
+40. Ambiguous endian of bitmap Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: 
+41. Add more comments and documentation Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: There is NatSpec on the interface ISuperfluid.sol but still lacking on documentation and inline comments. 

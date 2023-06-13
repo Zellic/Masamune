@@ -180,7 +180,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const tob = await fetch('./results/tob_findings.json');
         const tobJson = await tob.json();
 
-        const dataset = immunefiJson.concat(hacklabsJson, codearenaJson, /*gitbook_docsJson,*/ tobJson);
+        const yaudit = await fetch('./results/yaudit_findings.json');
+        const yauditJson = await yaudit.json();
+
+        const dataset = immunefiJson.concat(hacklabsJson, codearenaJson, /*gitbook_docsJson,*/ tobJson, yauditJson);
         window.dataset = dataset;
         currentSet = window.dataset;
         window.controls.updateResults(resultsTable, window.dataset);
