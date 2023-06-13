@@ -28,7 +28,7 @@ def save_embeddings(vectorstore):
 
 def load_embeddings():
     embeddings = OpenAIEmbeddings()
-    return FAISS.load_local("faiss_codearena_metadataextra", embeddings)
+    return FAISS.load_local("faiss_merged_extrametadata", embeddings)
 
 @limiter.limit("10 per minute")
 @app.route('/search', methods=['GET'])
@@ -40,17 +40,18 @@ def search_endpoint():
     # We want to return a list of the texts
     for result in results:
         result.page_content = result.page_content.split("\n\n")
+        # print(result)
 
     # remove empty strings
     for result in results:
         result.page_content = "".join(filter(None, result.page_content))
 
     # final formatting
+
     to_jsonify = {'results': []}
 
     for result in results:
         to_jsonify['results'].append({
-            'source': result.metadata['source'],
             'content': result.page_content,
             'metadata': result.metadata
         })
@@ -58,6 +59,7 @@ def search_endpoint():
     return jsonify(
         to_jsonify
     )
+    # return render_template('index.html', results=results)
 
 def search(query, vectorstore):
     results = vectorstore.similarity_search(query)
