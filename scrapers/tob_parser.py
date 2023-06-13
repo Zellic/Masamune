@@ -106,12 +106,24 @@ def jsonify_findings(pdf_name):
         
         try:
         # Get the Severity
-            severity = finding.split("Severity:")[1].split("Diﬃculty:")[0].strip()
+        # Sometimes Difficulty is after Severity, sometimes Type is after Severity
+            severity_difficulty = finding.split("Severity:")[1].split("Diﬃculty:")[0].strip()
+            severity_type = finding.split("Severity:")[1].split("Type:")[0].strip()
+            if len(severity_difficulty) < len(severity_type):
+                severity = severity_difficulty
+            else:
+                severity = severity_type
         except IndexError:
             continue
 
         # Get the Difficulty
-        difficulty = finding.split("Diﬃculty:")[1].split("Type:")[0].strip()
+        # Sometimes Type is after Difficulty, sometimes Finding ID is after Difficulty
+        difficulty_type = finding.split("Diﬃculty:")[1].split("Type:")[0].strip()
+        difficulty_findingid = finding.split("Diﬃculty:")[1].split("Finding ID:")[0].strip()
+        if len(difficulty_type) < len(difficulty_findingid):
+            difficulty = difficulty_type
+        else:
+            difficulty = difficulty_findingid
 
         # Get the description, which is all the text after the first encounter of "Description"
 
