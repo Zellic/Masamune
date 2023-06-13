@@ -51,7 +51,7 @@ def get_filter_bugfixreviews():
         resulting_array.append({
             "title": hack_name,
             "html_url": hack_link, 
-            "description": hack_description, 
+            "body": hack_description, 
             "labels": hack_type
         })
 
