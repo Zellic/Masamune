@@ -34,6 +34,9 @@ def get_filter_bugfixreviews():
         hack_link = key.split("(")[1][:-1]
 
         hack_description = value[0].strip(" #")
+
+        # strip all unicode characters
+        hack_description = hack_description.encode("ascii", "ignore").decode() 
         if hack_description == "":
             hack_description = "Unknown, check manually"
 
