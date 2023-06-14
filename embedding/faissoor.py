@@ -8,8 +8,8 @@ from langchain.document_loaders import JSONLoader
     
 def faiss_embed_with_metadata():
 
-    # List all the files in the `json_results` folder
-    json_results = os.listdir("../json_results")
+    # List all the files in the `results` folder
+    results = os.listdir("../results")
 
     resulting_docs = []
     resulting_metadata = []
@@ -18,25 +18,25 @@ def faiss_embed_with_metadata():
     embeddings = OpenAIEmbeddings() 
 
     # for each file, load the json and add to the FAISS index
-    for file in json_results:
+    for file in results:
 
         # load the json file, so that it's parsed and can be checked for the fields
         parsed_file = json.load(
-            open("../json_results/" + file, "r")
+            open("../results/" + file, "r")
             )
-        
+                
         to_be_schema = ""
 
-        # TODO maybe replace the "body" with "title" where there's no body in the jsons
+        # NOTE: for codearena, we've temporarily patched "body" / "title" by putting the title in the body
 
-        if file == "hacklabs_findings.json" or file == "codearena_findings.json":
+        if file == "hacklabs_findings.json":
             to_be_schema = ".[].title"
         else:
             to_be_schema = ".[].body"
 
-        # load the json to embed. ATM we're embedding the body of the json only
+        # load the json to embed. we're essentially embedding either the title or the body, depending on the relevance of the field
         loader = JSONLoader(
-            file_path = "../json_results/" + file,
+            file_path = "../results/" + file,
             jq_schema = to_be_schema
             )
         
@@ -49,7 +49,6 @@ def faiss_embed_with_metadata():
                 "title": parsed_file[i]["title"] if "title" in parsed_file[i] else None,
                 "labels": parsed_file[i]["labels"] if "labels" in parsed_file[i] else None,
                 "html_url": parsed_file[i]["html_url"] if "html_url" in parsed_file[i] else None,
-                # "description": parsed_file[i]["description"] if "description" in parsed_file[i] else None, TODO: remove from index.   
                 "target": parsed_file[i]["target"] if "target" in parsed_file[i] else None,
                 "body": parsed_file[i]["body"] if "body" in parsed_file[i] else None
                 }
@@ -85,9 +84,14 @@ def query_stuff():
     # query the index
     query = "impair a loan"
 
-    results = vectorstore.similarity_search(query)
+    results = vectorstore.similarity_search(
+        query = query,
+        k = 10,
+        )
 
-    print(results)
+    for i, res in enumerate(results):
+        print(str(i) + ".  " + res.page_content + "\n\n")
+    # print()
 
 if __name__ == "__main__":
     # faiss_embed_with_metadata()

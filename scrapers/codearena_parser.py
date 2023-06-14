@@ -163,7 +163,6 @@ def get_issues_text(_issues, cache):
         if "sponsor confirmed" in issue['labels'] or "addressed" in issue['labels']:
             # get the api path
             api_path = issue['html_url'].replace('https://github.com/', 'https://api.github.com/repos/')
-            # 
             
             # set authorization token for github api
             # needed for more than 1 request / sec
@@ -212,23 +211,26 @@ def extract_text_and_save(_issues):
 
         # we want to update the Json file of the parsed codearena findings:
         # load the existing json file and append the new findings
-        # essentially, we want to add a "description" field to each issue, querying it by the "title" field in the existing codearena findings json file
-
-        # they're loaded in existing_findings
+        # essentially, we want to add a "body" field to each issue, querying it by the "title" field in the existing codearena findings json file
 
         # find the issue in the existing findings
         for existing_issue in existing_findings:
             if existing_issue['title'] == issue['title']:
-                # update the description
+
+                # remove utf-8 characters from the body
+                issue['body'] = issue['body'].encode('ascii', 'ignore').decode('ascii')
+
+                # update the description; if body doesn't exist, use title for now; TODO: improve codearena parser to get the body properly
                 existing_issue['body'] = issue['body']
                 break
+
+            # check if 'body' exists in existing_issue
+            if 'body' not in existing_issue:
+                existing_issue['body'] = existing_issue['title']
 
     with open("../results/codearena_findings.json", "w") as f:
         json.dump(existing_findings, f, indent=4)
 
-        # save as "target_issuenr.txt"
-        # with open(f'../findings_text/{issue["target"]}_{issue_number}.txt', 'w') as f:
-        #     f.write(issue['body'] + "\n")
 
 
 def main():
