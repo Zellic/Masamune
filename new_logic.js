@@ -21,6 +21,7 @@ var controls = {
 
         if (results.length == 0) {
             noResults.style.display = '';
+            noResults.textContent = 'No results found';
 
             resultsTableHideable.classList.add('hide');
         } else if (results.length > totalLimit) {
