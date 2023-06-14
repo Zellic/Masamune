@@ -52,6 +52,14 @@ body {
   overflow-x: hidden;
 }
 
+.version {
+  cursor: pointer;
+}
+
+.selected {
+  color: #FF8C42;
+}
+
 body .container {
   display: -webkit-box;
   display: -ms-flexbox;

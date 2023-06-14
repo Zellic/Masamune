@@ -53,7 +53,8 @@ var controls = {
             });
                 
             // TODO how can this be more efficient?
-            if ((e.title + e.target + labels + e.description).toLowerCase().match(regex)) {
+            if ((e.title + e.target + labels /*+ e.body*/).toLowerCase().match(regex)) {
+                // e.body is too slow to search through, so it's not included in this version anymore
                 results.push(e);
             }
 
@@ -82,7 +83,6 @@ var controls = {
 
             results.forEach(r => {
 
-                console.log(results);
 
                 let labels = r.labels;
                 
@@ -97,7 +97,7 @@ var controls = {
 
                 el = searchResultFormat
                     .replace('$target', r.target ? r.target : r.title) // if r.target is not available, use r.title
-                    .replace('$title', r.target ? r.title : r.description.substring(0, 400) + '...')
+                    .replace('$title', r.target ? r.title : r.body.substring(0, 400) + '...')
                     .replace('$link', r.html_url)
                     .replace('$tag', labelString);
 
@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function() {
         doSearch({ type: 'none' });
     }
 
-    fetchAll();
+    fetchAll(); // TODO [LOL]: it works to not display the table due to this erroring out.
 
     form.submit(doSearch);
 

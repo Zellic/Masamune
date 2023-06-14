@@ -1,83 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="description" content="Search utility for smart contract security findings and audits.">
-	<meta name="keywords" content="smartcontract, solidity, codearena, code4rena">
-	<meta name="author" content="VladToie">
-	<link rel="stylesheet" href="style.css">
-	<!-- use the favicon -->
-	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Search utility for smart contract security findings and audits.">
+    <meta name="keywords" content="smartcontract, solidity, codearena, code4rena">
+    <meta name="author" content="VladToie">
+    <link rel="stylesheet" href="style.css">
+    <!-- use the favicon -->
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
 
-	<title>Masamune</title>
+    <title>Masamune</title>
 </head>
 <body class="color-no-search">		
-	<div class="container">
-		
-		<div class="search">
-			<div class="header">
-				<h1>Masamune</h1>
-				<!-- Include the small katana -->
-				<img src="katana.png" alt="katana" class="katana">
-				<div class="social">
-					<a href="https://twitter.com/VladToie">Twitter</a>
-					&bullet;
-					<a href="https://github.com/joswha">GitHub</a>
-				</div>
-			</div>
-		
-			<div class="query">
-				<form class="searchForm" action="#">
-					<input type="text" class="search" placeholder="ENTER SEARCH TERM (eg. flashloans or Hacked)" autocomplete="false">
-				</form>
-				
-			</div>
+    <div class="container">
+        
+        <div class="search">
+            <div class="header">
+                <h1>
+                    <span id="version1" class="selected">Masamune V1</span>
+                    /
+					<a href="new_index.html">Masamune V2</a>
+                </h1>
+                <!-- Include the small katana -->
+                <img src="katana.png" alt="katana" class="katana">
+                <div class="social">
+                    <a href="https://twitter.com/VladToie">Twitter</a>
+                    &bullet;
+                    <a href="https://github.com/joswha">GitHub</a>
+                </div>
+            </div>
+        
+            <div class="query">
+                <form class="searchForm" action="#">
+                    <input type="text" class="search" placeholder="ENTER SEARCH TERM (eg. flashloans or Hacked)" autocomplete="false">
+                </form>
+                
+            </div>
 
-			<div class="results">
-				<br>
-				<div class="noResults">
-					<h2>No Results Found</h2>
-				</div>
-				<div class="results-table">
-					
-					<table class="results">
-						<thead>
-							<tr>
-								<td width="33%">
-									Found in	
-								</td>
-								<td width="45%">
-									Description
-								</td>
-								<td width="22%">
-									Tags
-								</td>
-							</tr>
-						</thead>
-						<tbody class="results">
-				
-						</tbody>
-					</table>
-				</div>
-			</div>
-			
+            <div class="results">
+                <br>
 
-			<div class="subfooter">
-				<h3> Have some datasets to add? <a href="https://github.com/joswha/joswha.github.io"> Please do. </a> </h3>
-			</div>
-		</div>
-		
-		<div class="footer">
-			Updated with 🍶 by Vlad <script>document.write(/\d{4}/.exec(Date())[0])</script>
-			<br>
-			Katana by: <a href="https://noobart.work/">Noobart</a> 
-			<br>
-			Credits to repo: <a href="https://github.com/IppSec/ippsec.github.io/">ippsec.rocks</a>
-		</div>
-	</div>
+                <div class="noResults">
+                    <h2>No Results Found</h2>
+                </div>
 
-	<script src="logic.js"></script>
+                <div class="results-table">
+                    
+                    <table class="results">
+                        <thead>
+                            <tr>
+                                <td width="33%">
+                                    Found in	
+                                </td>
+                                <td width="45%">
+                                    Description
+                                </td>
+                                <td width="22%">
+                                    Tags
+                                </td>
+                            </tr>
+                        </thead>
+                        <tbody class="results">
+                            
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src = "logic.js"></script>
 </body>
 
 </html>

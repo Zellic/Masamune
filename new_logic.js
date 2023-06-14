@@ -18,11 +18,9 @@ var controls = {
     updateResults: function(loc, results) {
         
         // Print the number of results
-        console.log(results.length + ' results found');
 
         if (results.length == 0) {
             noResults.style.display = '';
-            noResults.textContent = 'No Results Found';
 
             resultsTableHideable.classList.add('hide');
         } else if (results.length > totalLimit) {
@@ -55,11 +53,6 @@ var controls = {
                     }
                 }
 
-                // if the "r" is larger than 100 characters, cut it off and add ...
-                if (r.length > 100) {
-                    r = r.substring(0, 100) + '...';
-                }
-
                 el = searchResultFormat
                     .replace('$target', target ? target : title) // if r.target is not available, use r.title
                     .replace('$title', target ? title : body.substring(0, 400) + '...') 
@@ -73,7 +66,6 @@ var controls = {
                 loc.appendChild(div);
             });
         }
-
     },
     setColor: function(loc, indicator) {
         if (this.oldColor == indicator) return;
@@ -102,27 +94,26 @@ document.addEventListener('DOMContentLoaded', function() {
     // Preventing initial fade
     document.body.classList.add('fade');
 
-    async function doSearch() {
+    
+    async function doSearch(event) {
         var val = searchValue.value;
     
         if (val != '') {
-            try {
-                const response = await fetch(`http://127.0.0.1:5000/search?query=${val}`);
-                const data = await response.json();
-                controls.displayResults();
-                window.controls.updateResults(resultsTable, data.results);
-                window.controls.setColor(colorUpdate, data.results.length == 0 ? 'no-results' : 'results-found');
-            } catch (error) {
-                console.error('Error:', error);
-            }
+            const response = await fetch(`http://127.0.0.1:5000/search?query=${val}`);
+            const data = await response.json();
+            controls.displayResults();
+            window.controls.setColor(colorUpdate, data.results.length == 0 ? 'no-results' : 'results-found');
+            window.controls.updateResults(resultsTable, data.results);
         } else {
             controls.hideResults();
             window.controls.setColor(colorUpdate, 'no-search');
             noResults.style.display = 'none';
-            resultsTableHideable.classList.add('no-results-table');
         }
     
     }
+
+    // default to no results
+    window.controls.updateResults(resultsTable, []);
 
     form.submit(doSearch);
 
