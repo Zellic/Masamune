@@ -95,7 +95,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Preventing initial fade
     document.body.classList.add('fade');
 
-    
+    // By default, don't display "No results found"
+    noResults.style.display = 'none';
+    controls.hideResults();
+
     async function doSearch(event) {
         var val = searchValue.value;
     
@@ -109,12 +112,13 @@ document.addEventListener('DOMContentLoaded', function() {
             controls.hideResults();
             window.controls.setColor(colorUpdate, 'no-search');
             noResults.style.display = 'none';
+            console.log("here");
         }
     
     }
 
     // default to no results
-    window.controls.updateResults(resultsTable, []);
+    // window.controls.updateResults(resultsTable, []);
 
     form.submit(doSearch);
 
