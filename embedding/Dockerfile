@@ -13,8 +13,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application code to the working directory
 COPY . .
 
-# Expose the port on which the application will run
+# Expose the port on which the Flask app will run
 EXPOSE 5000
 
-# Define the command to run your application
-CMD ["python", "faissor_server.py"]
+# Run the Flask app with Gunicorn
+CMD ["gunicorn", "--log-level", "debug", "-b", "0.0.0.0:5000", "faisoor_server:app"]
