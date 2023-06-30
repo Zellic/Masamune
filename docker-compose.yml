@@ -10,3 +10,4 @@ services:
     volumes:
       - ./embedding/faiss_merged_extrametadata:/app/faiss_merged_extrametadata
     restart: unless-stopped
+    env_file: .env
