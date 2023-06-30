@@ -1,0 +1,4 @@
+flask
+langchain
+flask_cors
+flask_limiter
