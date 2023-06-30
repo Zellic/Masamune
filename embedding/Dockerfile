@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 5000
 
 # Run the Flask app with Gunicorn
-CMD ["gunicorn", "--log-level", "debug", "-b", "0.0.0.0:5000", "faisoor_server:app"]
+CMD ["gunicorn", "--log-level", "debug", "-b", "0.0.0.0:5000", "app:app"]

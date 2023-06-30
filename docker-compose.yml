@@ -9,3 +9,4 @@ services:
       - 80:5000
     volumes:
       - ./embedding/faiss_merged_extrametadata:/app/faiss_merged_extrametadata
+    restart: unless-stopped
