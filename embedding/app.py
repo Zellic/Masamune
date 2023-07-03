@@ -1,6 +1,4 @@
 from flask import Flask, request, jsonify, redirect
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import FAISS
 from flask_cors import CORS
@@ -10,13 +8,6 @@ app = Flask(__name__)
 
 # Enable CORS
 CORS(app)
-
-# Create the limiter
-limiter = Limiter(
-    get_remote_address, 
-    app=app, 
-    default_limits=["1000 per day"]
-    )
 
 # `/` should redirect to https://masamune.app
 @app.route('/')
@@ -52,7 +43,6 @@ def search(query, vectorstore):
         )
     return results
 
-@limiter.limit("30 per minute")
 @app.route('/search', methods=['GET'])
 def search_endpoint():
     """
