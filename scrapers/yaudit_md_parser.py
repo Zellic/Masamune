@@ -118,7 +118,7 @@ def jsonify_findings(md_name):
                 "title": title.encode("ascii", "ignore").decode(),
                 "html_url": "https://github.com/yAudit/reports/blob/main/md/" + md_name,
                 # clean utf-8 characters
-                "description": description.encode("ascii", "ignore").decode(),
+                "body": description.encode("ascii", "ignore").decode(),
                 "labels": [
                     "yAudit",
                     "Severity: " + severity.encode("ascii", "ignore").decode(),

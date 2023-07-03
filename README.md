@@ -10,6 +10,8 @@ To access Masamune, visit [masamune.app](https://masamune.app).
 
 ## How does it work?
 
+### Masamune V1.
+
 The search utility is powered by [Lunr.js](https://lunrjs.com/), a full-text search library for the browser.
 
 We have developed custom scrapers for each data source, which are run periodically to retrieve the latest data. You can find the scrapers in the `scrapers` directory.
@@ -18,16 +20,23 @@ The data is stored within the `results` directory; for each of the queries, a pa
 
 To build locally, just open index.html using a live server, eg. [this extension for VSCode](https://marketplace.visualstudio.com/items?itemName=yandeu.five-server).
 
-### Retrieving the data
+### Masamune V2.
+
+The second iteration of Masamune is currently under development, however a beta version will be available at [masamune.app](https://masamune.app) soon. The new version will be powered by [OpenAI's Embeddings](https://platform.openai.com/docs/guides/embeddings) API, which will allow for more advanced search queries, as well as more context aware search results.
+
+## Retrieving the data
 
 Currently, Masamune works on the following data sources:
 
 1. [Code4rena findings](https://code4rena.com/reports).
 2. [Immunefi bugfixes](https://github.com/immunefi-team/Web3-Security-Library).
 3. [DeFi Hacks Analysis](https://wooded-meter-1d8.notion.site/0e85e02c5ed34df3855ea9f3ca40f53b).
+4. [Zellic audits](https://github.com/Zellic/publications).
+5. [yAudit findings](https://reports.yaudit.dev/).
+6. [Trail of Bits audits](https://github.com/trailofbits/publications)
 4. Various Gitbooks, such as the [Layer Zero Docs](https://layerzero.gitbook.io), [Curve Finance Docs](https://resources.curve.fi/), [MEV Wiki](https://www.mev.wiki/), etc.
 
-### Creating a custom scraper
+## Creating a custom scraper
 
 To add a new data source, a custom scraper for the report format must be created. Existing examples are found in the `scrapers` directory.
 
@@ -41,16 +50,7 @@ Scrapers have 2 main functions. The `extract_finding()` function parses the repo
             "Difficulty: High",
             "Type: Data Exposure",
         ]
-        "description": ...
+        "body": ...
 ```
 
-After the new scraper is created and the JSON output is stored in the `results` directory, the JSON file must be added to the `dataset` variable in logic.js to be included in the search results.
-
-### Credits:
-
-> Original repository: [ippsec.rocks](https://github.com/IppSec/ippsec.github.io/)
-
-> Katana designer: [noob.art](https://noobart.work/)
-
-
-> <img src="zellic-logo-blue-transparent.png" width="7%" height="7%"> Zellic team: [zellic.io](https://zellic.io/) 
+For Masamune V1, after the new scraper is created and the JSON output is stored in the `results` directory, the JSON file must be added to the `dataset` variable in logic.js to be included in the search results.

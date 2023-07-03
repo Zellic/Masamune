@@ -27,7 +27,7 @@ def query_data_sources(data_sources):
                 {
                     "title": document.metadata['title'],
                     "html_url": document.metadata['source'],
-                    "description": document.page_content,
+                    "body": document.page_content,
                     "labels": [
                         "Documentation",
                     ]

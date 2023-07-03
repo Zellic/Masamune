@@ -95,7 +95,7 @@ def jsonify_findings(pdf_name):
             "Diﬃculty: High",
             "Type: Data Exposure",
         ]
-        "description": ...
+        "body": ...
 
         """
 
@@ -136,7 +136,7 @@ def jsonify_findings(pdf_name):
                 "title": title.encode("ascii", "ignore").decode(),
                 "html_url": "https://github.com/trailofbits/publications/tree/master/reviews/" + pdf_name,
                 # clean utf-8 characters
-                "description": description.encode("ascii", "ignore").decode(),
+                "body": description.encode("ascii", "ignore").decode(),
                 "labels": [
                     "Trail of Bits",
                     "Severity: " + severity.encode("ascii", "ignore").decode(),

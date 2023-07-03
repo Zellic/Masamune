@@ -163,7 +163,6 @@ def get_issues_text(_issues, cache):
         if "sponsor confirmed" in issue['labels'] or "addressed" in issue['labels']:
             # get the api path
             api_path = issue['html_url'].replace('https://github.com/', 'https://api.github.com/repos/')
-            # 
             
             # set authorization token for github api
             # needed for more than 1 request / sec
@@ -199,22 +198,45 @@ def extract_text_and_save(_issues):
 
     print(f"Extracting text from {len(_issues)} relevant issues...")
 
+    # try:
+    with open("../results/codearena_findings.json", "r") as f:
+        existing_findings = json.load(f)
+
     for index, issue in enumerate(_issues):
 
         print(f"Extracting text from issue {index + 1} of {len(_issues)}...")
 
         # from the html_url get the issue number, which is the last text after the last '/'
-        issue_number = issue['html_url'].split('/')[-1]
+        # issue_number = issue['html_url'].split('/')[-1]
 
-        # save as "target_issuenr.txt"
-        with open(f'../findings_text/{issue["target"]}_{issue_number}.txt', 'w') as f:
-            f.write(issue['body'] + "\n")
+        # we want to update the Json file of the parsed codearena findings:
+        # load the existing json file and append the new findings
+        # essentially, we want to add a "body" field to each issue, querying it by the "title" field in the existing codearena findings json file
+
+        # find the issue in the existing findings
+        for existing_issue in existing_findings:
+            if existing_issue['title'] == issue['title']:
+
+                # remove utf-8 characters from the body
+                issue['body'] = issue['body'].encode('ascii', 'ignore').decode('ascii')
+
+                # update the description; if body doesn't exist, use title for now; TODO: improve codearena parser to get the body properly
+                existing_issue['body'] = issue['body']
+                break
+
+            # check if 'body' exists in existing_issue
+            if 'body' not in existing_issue:
+                existing_issue['body'] = existing_issue['title']
+
+    with open("../results/codearena_findings.json", "w") as f:
+        json.dump(existing_findings, f, indent=4)
+
 
 
 def main():
 
     # by default
-    cache = False
+    cache = True
 
     print("Step 1: Getting all the repositories...")
     all_repos = get_repos(cache)

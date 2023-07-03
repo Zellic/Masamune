@@ -1,40 +1,16 @@
 [
     {
-        "title": "Hack Analysis: Nomad Bridge, August 2022",
-        "html_url": "https://medium.com/immunefi/hack-analysis-nomad-bridge-august-2022-5aa63d53814a",
-        "description": "A routine upgrade on the implementation of one of Nomad\u2019s proxy contracts marked a zero hash value as a trusted root, which allowed messages to get automatically proved. The hacker leveraged this vulnerability to spoof the bridge contract and trick it to unlock funds.",
-        "labels": [
-            "CommittedRoot set to ZERO."
-        ]
-    },
-    {
-        "title": "Hack Analysis: Beanstalk Governance Attack, April 2022",
-        "html_url": "https://medium.com/immunefi/hack-analysis-beanstalk-governance-attack-april-2022-f42788fc821e",
-        "description": "Beanstalk was the victim of a whopping $181M hack, which leveraged the lack of execution delay to push through a malicious governance proposal.",
-        "labels": [
-            "Lack of execution delay."
-        ]
-    },
-    {
         "title": "Moonbeam, Astar, And Acala Library Truncation Bugfix Review \u2014 $1m Payout",
         "html_url": "https://medium.com/immunefi/moonbeam-astar-and-acala-library-truncation-bugfix-review-1m-payout-41a862877a5b",
-        "description": "The bug, which was found within Frontier \u2014 the Substrate pallet that provides core Ethereum compatibility features within the Polkadot ecosystem\u2013impacted Moonbeam, Astar Network, and Acala. The estimated potential damage from the vulnerability amounted to approximately $200m across the three projects, which was swiftly prevented",
+        "body": "The bug, which was found within Frontier  the Substrate pallet that provides core Ethereum compatibility features within the Polkadot ecosystemimpacted Moonbeam, Astar Network, and Acala. The estimated potential damage from the vulnerability amounted to approximately $200m across the three projects, which was swiftly prevented",
         "labels": [
             "Minting new valid but depegged wrapped tokens."
         ]
     },
     {
-        "title": "Hack Analysis: Omni Protocol, July 2022",
-        "html_url": "https://medium.com/immunefi/hack-analysis-omni-protocol-july-2022-2d35091a0109",
-        "description": "The underlying vulnerability, reentrancy, was exploited across two different functions of the same smart contract. Notably, these functions were lacking reentrancy locks and did not follow the checks-effects-interactions pattern. By leveraging the re-entrancy vulnerability on two different functions and using two attacker contracts, the hacker was able to borrow against the collateral and make the market forget about it.",
-        "labels": [
-            "Re-entrancy."
-        ]
-    },
-    {
         "title": "88MPH Theft Of Unclaimed MPH Rewards Bugfix Review",
         "html_url": "https://medium.com/immunefi/88mph-theft-of-unclaimed-mph-rewards-bugfix-review-1dec98b9956b",
-        "description": "Allowed users to steal most of the 88MPH tokens generated from yield contract by depositing an asset and withdrawing the vested 88mph tokens immediately.",
+        "body": "Allowed users to steal most of the 88MPH tokens generated from yield contract by depositing an asset and withdrawing the vested 88mph tokens immediately.",
         "labels": [
             "Theft of funds."
         ]
@@ -42,33 +18,15 @@
     {
         "title": "Mt Pelerin Double Transaction Bugfix Review",
         "html_url": "https://medium.com/immunefi/mt-pelerin-double-transaction-bugfix-review-503838db3d70",
-        "description": "The bug could have allowed users to drain contract funds.",
+        "body": "The bug could have allowed users to drain contract funds.",
         "labels": [
             "Theft of funds."
         ]
     },
     {
-        "title": "Hack Analysis: Saddle Finance, April 2022",
-        "html_url": "https://medium.com/immunefi/hack-analysis-saddle-finance-april-2022-f2bcb119f38",
-        "description": "Price miscalculation when swapping a token for an LP token.",
-        "labels": [
-            "Logic",
-            " price calculation."
-        ]
-    },
-    {
-        "title": "Hack Analysis: Cream Finance Oct 2021",
-        "html_url": "https://medium.com/immunefi/hack-analysis-cream-finance-oct-2021-fc222d913fc5",
-        "description": "Analysis of Cream Finance exploit on Oct 2021, resulting in loss of $130m in available liquidity.",
-        "labels": [
-            "Oracle manipulation",
-            " Uncapped supply of token."
-        ]
-    },
-    {
         "title": "Aurora Improper Input Sanitization Bugfix Review",
         "html_url": "https://medium.com/immunefi/aurora-improper-input-sanitization-bugfix-review-a9376dac046f",
-        "description": "Improper impot sanitazion that allowed a bad actor to steal funds using a worthless NEP-141.",
+        "body": "Improper impot sanitazion that allowed a bad actor to steal funds using a worthless NEP-141.",
         "labels": [
             "Improper Input Sanitization"
         ]
@@ -76,7 +34,7 @@
     {
         "title": "Aurora Withdrawal Logic Error Bugfix Review",
         "html_url": "https://medium.com/immunefi/aurora-withdrawal-logic-error-bugfix-review-c5b4e30a9160",
-        "description": "Unknown, check manually",
+        "body": "Unknown, check manually",
         "labels": [
             "Logic",
             " Bridge"
@@ -85,7 +43,7 @@
     {
         "title": "Moonbeam Missing Call Check",
         "html_url": "https://medium.com/immunefi/moonbeam-missing-call-check-bugfix-review-6279d609bdc5 ",
-        "description": "Missing call check vulnerability that allows direct theft of native assets.",
+        "body": "Missing call check vulnerability that allows direct theft of native assets.",
         "labels": [
             "Missing call check",
             " theft of funds."
@@ -94,7 +52,7 @@
     {
         "title": "Balancer DoS",
         "html_url": "https://medium.com/immunefi/balancer-dos-bugfix-review-8a8ba5d971bf ",
-        "description": "Unknown, check manually",
+        "body": "Unknown, check manually",
         "labels": [
             "DoS"
         ]
@@ -102,7 +60,7 @@
     {
         "title": "Two Novel Crypto Wallet Exploits, Explained",
         "html_url": "https://medium.com/immunefi/two-novel-crypto-wallet-exploits-explained-98e74e50d13f ",
-        "description": "Unknown, check manually",
+        "body": "Unknown, check manually",
         "labels": [
             "hardware"
         ]
@@ -110,7 +68,7 @@
     {
         "title": "Synthetix Logic Error Bugfix Review",
         "html_url": "https://medium.com/immunefi/synthetix-logic-error-bugfix-review-40da0ead5f4f ",
-        "description": "Logic vulnerability in the fee reclamation and rebate features in Synthetix.",
+        "body": "Logic vulnerability in the fee reclamation and rebate features in Synthetix.",
         "labels": [
             "logic"
         ]
@@ -118,7 +76,7 @@
     {
         "title": "Port Finance Logic Error Bugfix Review",
         "html_url": "https://medium.com/immunefi/port-finance-logic-error-bugfix-review-29767aced446 ",
-        "description": "A malicious user could have withdrawn all their obligation collaterals without paying off their full debt.",
+        "body": "A malicious user could have withdrawn all their obligation collaterals without paying off their full debt.",
         "labels": [
             "logic"
         ]
@@ -126,7 +84,7 @@
     {
         "title": "Sense Finance Access Control Issue Bugfix Review",
         "html_url": "https://medium.com/immunefi/sense-finance-access-control-issue-bugfix-review-32e0c806b1a0 ",
-        "description": "Missing access control issue in the onSwap() function of the Sense Balancer pool that could have allowed a malicious actor to update the oracle data of the Space AMM contract",
+        "body": "Missing access control issue in the onSwap() function of the Sense Balancer pool that could have allowed a malicious actor to update the oracle data of the Space AMM contract",
         "labels": [
             "access control"
         ]
@@ -134,7 +92,7 @@
     {
         "title": "Aurora Inflation Spend Bugfix Review: $6m Payout",
         "html_url": "https://medium.com/immunefi/aurora-infinite-spend-bugfix-review-6m-payout-e635d24273d ",
-        "description": "The vulnerability consisted of an infinite spend bug that, if exploited by a malicious user, could have led to a direct loss of 70k ETH and $200m in other assets.",
+        "body": "The vulnerability consisted of an infinite spend bug that, if exploited by a malicious user, could have led to a direct loss of 70k ETH and $200m in other assets.",
         "labels": [
             "infinite spend"
         ]
@@ -142,7 +100,7 @@
     {
         "title": "Wormhole Uninitialized Proxy Bugfix Review",
         "html_url": "https://medium.com/immunefi/wormhole-uninitialized-proxy-bugfix-review-90250c41a43a ",
-        "description": "Upgradeable proxy implementation self-destruct bug that helped prevent a potential lockup of user funds",
+        "body": "Upgradeable proxy implementation self-destruct bug that helped prevent a potential lockup of user funds",
         "labels": [
             "upgradeable proxy"
         ]
@@ -150,7 +108,7 @@
     {
         "title": "Redacted Cartel Custom Approval Logic Bugfix Review",
         "html_url": "https://medium.com/immunefi/redacted-cartel-custom-approval-logic-bugfix-review-9b2d039ca2c5",
-        "description": "The vulnerability would have allowed a malicious attacker to assign a user\u2019s allowance to themselves, enabling the attacker to steal that user\u2019s funds.",
+        "body": "The vulnerability would have allowed a malicious attacker to assign a users allowance to themselves, enabling the attacker to steal that users funds.",
         "labels": [
             "Logic and allowance."
         ]
@@ -158,7 +116,7 @@
     {
         "title": "Optimism Infinite Money Duplication",
         "html_url": "https://medium.com/immunefi/optimism-infinite-money-duplication-bugfix-review-daa6597146a0",
-        "description": "The bug would have allowed an attacker to replicate money continuously on any chain using a vulnerability found in OVM 2.0 (Optimism Virtual Machine)",
+        "body": "The bug would have allowed an attacker to replicate money continuously on any chain using a vulnerability found in OVM 2.0 (Optimism Virtual Machine)",
         "labels": [
             "Logic",
             " OVM(EVM equivalent)"
@@ -167,7 +125,7 @@
     {
         "title": "Polygon Consensus Bypass",
         "html_url": "https://medium.com/immunefi/polygon-consensus-bypass-bugfix-review-7076ce5047fe",
-        "description": "Consensus bypass vulnerability that would have allowed an attacker to decrease the total staking power, allowing a consensus (\u2154 threshold) bypass that could potentially have allowed an attacker to drain all the funds from the deposit manager, engage in unlimited withdrawals, DoS, and more.",
+        "body": "Consensus bypass vulnerability that would have allowed an attacker to decrease the total staking power, allowing a consensus ( threshold) bypass that could potentially have allowed an attacker to drain all the funds from the deposit manager, engage in unlimited withdrawals, DoS, and more.",
         "labels": [
             "PoS Consensus bypass"
         ]
@@ -175,7 +133,7 @@
     {
         "title": "APWine Incorrect Check of Delegations",
         "html_url": "https://medium.com/immunefi/apwine-incorrect-check-of-delegations-bugfix-review-7e401a49c04f",
-        "description": "In the PT tokens, one condition wasn\u2019t checked during the burn of those tokens which could lead to the theft of the yield from the protocol after the two periods.",
+        "body": "In the PT tokens, one condition wasnt checked during the burn of those tokens which could lead to the theft of the yield from the protocol after the two periods.",
         "labels": [
             "Logic error"
         ]
@@ -183,7 +141,7 @@
     {
         "title": "Notional Double Counting Free Collateral",
         "html_url": "https://medium.com/immunefi/notional-double-counting-free-collateral-bugfix-review-28b634903934",
-        "description": "Free collateral miscalculation and overpricing by a factor of two could allow a bad actor to drain almost all liquidity.",
+        "body": "Free collateral miscalculation and overpricing by a factor of two could allow a bad actor to drain almost all liquidity.",
         "labels": [
             "Logic error - Miscalculation"
         ]
@@ -191,7 +149,7 @@
     {
         "title": "Cronos Theft of Transactions Fees",
         "html_url": "https://medium.com/immunefi/cronos-theft-of-transactions-fees-bugfix-postmortem-b33f941b9570",
-        "description": "The vulnerability that could allow stealing the fees of the current block in Cronos Blockchain",
+        "body": "The vulnerability that could allow stealing the fees of the current block in Cronos Blockchain",
         "labels": [
             "theft of yield"
         ]
@@ -199,7 +157,7 @@
     {
         "title": "Bitswift Unlimited Mint",
         "html_url": "https://medium.com/immunefi/bitswift-unlimited-mint-bugfix-postmortem-147a1e57dca9",
-        "description": "A front-end critical vulnerability that could allow minting an infinite amount of tokens.",
+        "body": "A front-end critical vulnerability that could allow minting an infinite amount of tokens.",
         "labels": [
             "Insecure front-end",
             " mint."
@@ -208,7 +166,7 @@
     {
         "title": "Polygon Lack of Balance Check",
         "html_url": "https://medium.com/immunefi/polygon-lack-of-balance-check-bugfix-postmortem-2-2m-bounty-64ec66c24c7d",
-        "description": "The vulnerability consisted of a lack of balance/allowance check in the `transfer()` function of Polygon\u2019s MRC20 contract and would have allowed an attacker to steal all MATIC from the contract.",
+        "body": "The vulnerability consisted of a lack of balance/allowance check in the `transfer()` function of Polygons MRC20 contract and would have allowed an attacker to steal all MATIC from the contract.",
         "labels": [
             "Lack of balance check."
         ]
@@ -216,7 +174,7 @@
     {
         "title": "Enzyme Finance Price Oracle Manipulation",
         "html_url": "https://medium.com/immunefi/enzyme-finance-price-oracle-manipulation-bug-fix-postmortem-4e1f3d4201b5",
-        "description": "Vulnerability Type: flash loan/oracle price manipulation.",
+        "body": "Vulnerability Type: flash loan/oracle price manipulation.",
         "labels": [
             "Unknown",
             " check manually"
@@ -225,7 +183,7 @@
     {
         "title": "Harvest Finance Uninitialized Proxies",
         "html_url": "https://medium.com/immunefi/harvest-finance-uninitialized-proxies-bug-fix-postmortem-ea5c0f7af96b",
-        "description": "The Dedaub team filed a submission via Immunefi for uninitialized implementation contracts for Uniswap V3 vault proxies. The contracts in scope held a total of $6.4M in Uniswap V3 positions at the time of the submission.",
+        "body": "The Dedaub team filed a submission via Immunefi for uninitialized implementation contracts for Uniswap V3 vault proxies. The contracts in scope held a total of $6.4M in Uniswap V3 positions at the time of the submission.",
         "labels": [
             "Uninitialized Proxies",
             " Access control."
@@ -234,7 +192,7 @@
     {
         "title": "Polygon Double-Spend",
         "html_url": "https://medium.com/immunefi/polygon-double-spend-bug-fix-postmortem-2m-bounty-5a1db09db7f1",
-        "description": "The vulnerability allowed an attacker to exit their burn transaction from the bridge multiple times, up to 223 times. There were around ~$850M at risk. Having just $100k to launch the attack with would result in $22.3M in loss!",
+        "body": "The vulnerability allowed an attacker to exit their burn transaction from the bridge multiple times, up to 223 times. There were around ~$850M at risk. Having just $100k to launch the attack with would result in $22.3M in loss!",
         "labels": [
             "Bridge manipulation."
         ]
@@ -242,7 +200,7 @@
     {
         "title": "RocketPool and Lido Front-running",
         "html_url": "https://medium.com/immunefi/rocketpool-lido-frontrunning-bug-fix-postmortem-e701f26d7971",
-        "description": "The vulnerability allowed a malicious node operator included in Lido or RocketPool to steal user deposits frontrunning the deposit.",
+        "body": "The vulnerability allowed a malicious node operator included in Lido or RocketPool to steal user deposits frontrunning the deposit.",
         "labels": [
             "Frontrunning"
         ]
@@ -250,7 +208,7 @@
     {
         "title": "Belt finance logic error",
         "html_url": "https://medium.com/immunefi/belt-finance-logic-error-bug-fix-postmortem-39308a158291",
-        "description": "A logic error caused one of the contracts to think it had less money than it did, resulting in excess shares being issued for new deposits.",
+        "body": "A logic error caused one of the contracts to think it had less money than it did, resulting in excess shares being issued for new deposits.",
         "labels": [
             "Logic Error"
         ]
@@ -258,7 +216,7 @@
     {
         "title": "OpenZeppelin Bugfix Review",
         "html_url": "https://medium.com/immunefi/openzeppelin-bug-fix-postmortem-66d8c89ed166",
-        "description": "Critical reentrancy vulnerability in OpenZeppelin\u2019s TimelockController, where the \u201cexecutor\u201d was able to hijack the controller and set the delay to 0, remove the existing \u201cproposers\u201d, set themselves as the \u201cproposer\u201d and take over the Timelock and the contracts associated with it.",
+        "body": "Critical reentrancy vulnerability in OpenZeppelins TimelockController, where the executor was able to hijack the controller and set the delay to 0, remove the existing proposers, set themselves as the proposer and take over the Timelock and the contracts associated with it.",
         "labels": [
             "Re-entrancy",
             " Access control"
@@ -267,7 +225,7 @@
     {
         "title": "Tidal Finance Logic Error",
         "html_url": "https://medium.com/immunefi/tidal-finance-logic-error-bug-fix-postmortem-3607d8b7ed1f",
-        "description": "The logic error permitted a malicious user to claim more rewards from staking than they were entitled to.",
+        "body": "The logic error permitted a malicious user to claim more rewards from staking than they were entitled to.",
         "labels": [
             "Logic Error - Excess rewards"
         ]
@@ -275,7 +233,7 @@
     {
         "title": "xDai Stake Arbitrary Call Method",
         "html_url": "https://medium.com/immunefi/xdai-stake-arbitrary-call-method-bug-postmortem-f80a90ac56e3",
-        "description": "The bug allowed a potentially malicious hacker to gain access to funds in a contract.",
+        "body": "The bug allowed a potentially malicious hacker to gain access to funds in a contract.",
         "labels": [
             "Arbitrary call method"
         ]
@@ -283,7 +241,7 @@
     {
         "title": "Teller uninitialized proxy",
         "html_url": "https://medium.com/immunefi/teller-bug-fix-postmorten-and-bug-bounty-launch-b3f67a65c5ac",
-        "description": "The beacon proxy was not initialized and could have been initialized by anyone, including a hypothetical malicious attacker.",
+        "body": "The beacon proxy was not initialized and could have been initialized by anyone, including a hypothetical malicious attacker.",
         "labels": [
             "Uninitialized proxy"
         ]
@@ -291,7 +249,7 @@
     {
         "title": "Alchemix access control",
         "html_url": "https://medium.com/immunefi/alchemix-access-control-bug-fix-debrief-a13d39b9f2e0",
-        "description": "Any user could have called setWhitelist() to give an attacker the ability to call the harvest function.",
+        "body": "Any user could have called setWhitelist() to give an attacker the ability to call the harvest function.",
         "labels": [
             "Access control"
         ]
@@ -299,7 +257,7 @@
     {
         "title": "MCDex Insufficient Validation",
         "html_url": "https://medium.com/immunefi/mcdex-insufficient-validation-bug-fix-postmortem-182fc6cab899",
-        "description": "A critical vulnerability in MCDEX\u2019s broker contract that would have allowed a malicious user to drain that contract of ETH",
+        "body": "A critical vulnerability in MCDEXs broker contract that would have allowed a malicious user to drain that contract of ETH",
         "labels": [
             "Unknown",
             " check manually"
@@ -308,7 +266,7 @@
     {
         "title": "PancakeSwap Logic Error",
         "html_url": "https://medium.com/immunefi/pancakeswap-logic-error-bug-fix-postmortem-f2d02adb6983",
-        "description": "Due to insufficient validation, a malicious user could have claimed the same winning lottery ticket at least 255 times in a single transaction.",
+        "body": "Due to insufficient validation, a malicious user could have claimed the same winning lottery ticket at least 255 times in a single transaction.",
         "labels": [
             "Logic Error - insufficient validation"
         ]
@@ -316,7 +274,7 @@
     {
         "title": "Cream Finance",
         "html_url": "https://medium.com/immunefi/cream-finance-insufficient-validation-bug-fix-postmortem-1ec7248e8865",
-        "description": "A malicious user drains Cream\u2019s liquidity mining rewards contract using the front-end and different wallets.",
+        "body": "A malicious user drains Creams liquidity mining rewards contract using the front-end and different wallets.",
         "labels": [
             "Front-end - Insufficient Validation"
         ]
@@ -324,7 +282,7 @@
     {
         "title": "Pods Finance",
         "html_url": "https://medium.com/immunefi/pods-finance-bug-fix-postmortem-61a576897ebd",
-        "description": "This logic error allows for theft of yield or abuse of the rewards system. A bad actor was able to claim rewards owed to other users and drain the entire contract.",
+        "body": "This logic error allows for theft of yield or abuse of the rewards system. A bad actor was able to claim rewards owed to other users and drain the entire contract.",
         "labels": [
             "Logic Error - Improper Validation"
         ]
@@ -332,7 +290,7 @@
     {
         "title": "Mushrooms Finance Logic Error",
         "html_url": "https://medium.com/immunefi/mushrooms-finance-logic-error-bug-fix-postmortem-780122821621",
-        "description": "A logic error leading to a flash loan attack vector.",
+        "body": "A logic error leading to a flash loan attack vector.",
         "labels": [
             "Logic Error",
             " Flash loan"
@@ -341,7 +299,7 @@
     {
         "title": "SharedStake Insider Exploit",
         "html_url": "https://medium.com/immunefi/sharedstake-insider-exploit-postmortem-17fa93d5c90e",
-        "description": "This vulnerability allowed the beneficiary of the time-locked funds to transfer out those funds before those funds were scheduled to be released.",
+        "body": "This vulnerability allowed the beneficiary of the time-locked funds to transfer out those funds before those funds were scheduled to be released.",
         "labels": [
             "Arbitrary call"
         ]
@@ -349,7 +307,7 @@
     {
         "title": "Zapper Arbitrary Call Data",
         "html_url": "https://medium.com/immunefi/zapper-arbitrary-call-data-bug-fix-postmortem-d75a4a076ae9",
-        "description": "Using the arbitrary call an attacker could call \u201ctransferFrom\u201d and since there was no validation of the data provided, the contract will be forced to transfer all the LP tokens from any victim to the attacker.",
+        "body": "Using the arbitrary call an attacker could call transferFrom and since there was no validation of the data provided, the contract will be forced to transfer all the LP tokens from any victim to the attacker.",
         "labels": [
             "Arbitrary call"
         ]
@@ -357,7 +315,7 @@
     {
         "title": "88mph Function Initialization",
         "html_url": "https://medium.com/immunefi/88mph-function-initialization-bug-fix-postmortem-c3a2282894d3",
-        "description": "The `init()` function was missing an onlyOwner modifier and also there was no initializer to prevent a re-initialization. So `init()` function was unprotected and was callable multiple times.",
+        "body": "The `init()` function was missing an onlyOwner modifier and also there was no initializer to prevent a re-initialization. So `init()` function was unprotected and was callable multiple times.",
         "labels": [
             "Logic Error",
             " Access Control"
@@ -366,7 +324,7 @@
     {
         "title": "PancakeSwap Content Injection",
         "html_url": "https://medium.com/immunefi/pancakeswap-content-injection-bug-fix-postmortem-e9058cfc7451",
-        "description": "Web content injection vulnerability that would have allowed a malicious user to inject any arbitrary text on PancakeSwap\u2019s website.",
+        "body": "Web content injection vulnerability that would have allowed a malicious user to inject any arbitrary text on PancakeSwaps website.",
         "labels": [
             "Content injection"
         ]
@@ -374,7 +332,7 @@
     {
         "title": "Bitswift Race Condition",
         "html_url": "https://medium.com/immunefi/bitswift-race-condition-bug-fix-postmortem-588184b8b43e",
-        "description": "The race condition vulnerability would have allowed a malicious user to repeatedly claim the same voucher, which entitles a user to some amount of crypto tokens.",
+        "body": "The race condition vulnerability would have allowed a malicious user to repeatedly claim the same voucher, which entitles a user to some amount of crypto tokens.",
         "labels": [
             "Unknown",
             " check manually"
@@ -383,7 +341,7 @@
     {
         "title": "Charger Particles Griefing",
         "html_url": "https://medium.com/immunefi/charged-particles-griefing-bug-fix-postmortem-d2791e49a66b",
-        "description": "The vulnerability was a griefing/denial of service attack against the protocol that would have allowed a malicious user to create a system where bribes had to be paid for a user to buy or sell an NFT.",
+        "body": "The vulnerability was a griefing/denial of service attack against the protocol that would have allowed a malicious user to create a system where bribes had to be paid for a user to buy or sell an NFT.",
         "labels": [
             "Griefing",
             " Denial of Service (DoS)"
@@ -392,7 +350,7 @@
     {
         "title": "Mushrooms finance Theft of Yield",
         "html_url": "https://medium.com/immunefi/mushrooms-finance-theft-of-yield-bug-fix-postmortem-16bd6961388f",
-        "description": "Theft of Yield using an MEV attack with flash bots.",
+        "body": "Theft of Yield using an MEV attack with flash bots.",
         "labels": [
             "MEV",
             " Theft of yield"
@@ -401,7 +359,7 @@
     {
         "title": "Fei Protocol Flashloan Vulnerability",
         "html_url": "https://medium.com/immunefi/fei-protocol-flashloan-vulnerability-postmortem-7c5dc001affb",
-        "description": "Flash loan-driven market manipulation vulnerability permits a threat actor to drain 60.000 ETH from the contract.",
+        "body": "Flash loan-driven market manipulation vulnerability permits a threat actor to drain 60.000 ETH from the contract.",
         "labels": [
             "Flashloan/oracle price manipulation."
         ]
@@ -409,7 +367,7 @@
     {
         "title": "Sovryn loan vulnerability",
         "html_url": "https://medium.com/immunefi/sovryn-loan-vulnerability-postmortem-ffaf4d1d688f",
-        "description": "The critical vulnerability consisted of a failure to validate that the receiver of the proceeds of a collateralized loan was the same entity as the borrower, meaning a malicious user could request a loan based on unused collateral from another user.",
+        "body": "The critical vulnerability consisted of a failure to validate that the receiver of the proceeds of a collateralized loan was the same entity as the borrower, meaning a malicious user could request a loan based on unused collateral from another user.",
         "labels": [
             "Logic - No validation."
         ]
@@ -417,7 +375,7 @@
     {
         "title": "Fei Protocol Vulnerability",
         "html_url": "https://medium.com/immunefi/fei-protocol-vulnerability-postmortem-483f9a7e6ad1",
-        "description": "Assuming a situation where the FEI price is below the peg, a malicious user could purchase FEI, pushing the price not just back to the 1:1 peg, but above the peg, receiving some amount of FEI as a buy reward in the process. The user could then drip the FEI back into the Uniswap pool via a transfer (not a swap), which bypasses the burn penalty, and finally, convert the FEI to wETH with a swap. As a result, the attacker receives a wETH from the pool without having (net) sold any FEI.",
+        "body": "Assuming a situation where the FEI price is below the peg, a malicious user could purchase FEI, pushing the price not just back to the 1:1 peg, but above the peg, receiving some amount of FEI as a buy reward in the process. The user could then drip the FEI back into the Uniswap pool via a transfer (not a swap), which bypasses the burn penalty, and finally, convert the FEI to wETH with a swap. As a result, the attacker receives a wETH from the pool without having (net) sold any FEI.",
         "labels": [
             "Logic Error"
         ]
@@ -425,7 +383,7 @@
     {
         "title": "PancakeSwap lottery vulnerability",
         "html_url": "https://medium.com/immunefi/pancakeswap-lottery-vulnerability-postmortem-and-bug-4febdb1d2400",
-        "description": "A user could see the lottery draw transaction, compute the winning lottery number, buy the right ticket during the draw, and front-run with a high gas fee to win the lottery. PancakeSwap fixed the vulnerability by updating its contract to include protections against buying using the multibuy method during the drawing phase.",
+        "body": "A user could see the lottery draw transaction, compute the winning lottery number, buy the right ticket during the draw, and front-run with a high gas fee to win the lottery. PancakeSwap fixed the vulnerability by updating its contract to include protections against buying using the multibuy method during the drawing phase.",
         "labels": [
             "Front-running."
         ]
@@ -433,7 +391,7 @@
     {
         "title": "ArmorFi postmortem",
         "html_url": "https://medium.com/immunefi/armorfi-bug-bounty-postmortem-cf46eb650b38",
-        "description": "A single Dollar worth of coverage could have enabled a malicious attacker to withdraw far more assets than available. Because the exploit allows them to get 10^18 as much as they purchased.",
+        "body": "A single Dollar worth of coverage could have enabled a malicious attacker to withdraw far more assets than available. Because the exploit allows them to get 10^18 as much as they purchased.",
         "labels": [
             "Logic Error"
         ]

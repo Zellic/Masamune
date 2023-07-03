@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  embedding:
+    build:
+      context: ./embedding
+      dockerfile: Dockerfile
+    # todo does docker networking break rate limiting
+    ports:
+      - 80:5000
+    volumes:
+      - ./embedding/faiss_merged_extrametadata:/app/faiss_merged_extrametadata
+    restart: unless-stopped
+    env_file: .env
