@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var val = searchValue.value;
     
         if (val != '') {
-            const response = await fetch(`http://masamune.zellic.io/search?query=${val}`);
+            const response = await fetch(`https://masamune.zellic.io/search?query=${val}`);
             const data = await response.json();
             controls.displayResults();
             window.controls.setColor(colorUpdate, data.results.length == 0 ? 'no-results' : 'results-found');
