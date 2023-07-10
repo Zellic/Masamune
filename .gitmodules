@@ -1,3 +1,6 @@
 [submodule "pdfs/spearbit-reports"]
 	path = pdfs/spearbit-reports
 	url = https://github.com/spearbit/portfolio
+[submodule "pdfs/dedaub-audits"]
+	path = pdfs/dedaub-audits
+	url = https://github.com/Dedaub/audits
