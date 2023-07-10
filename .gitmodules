@@ -1,0 +1,3 @@
+[submodule "pdfs/spearbit-reports"]
+	path = pdfs/spearbit-reports
+	url = https://github.com/spearbit/portfolio
