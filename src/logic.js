@@ -183,7 +183,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const yaudit = await fetch('./results/yaudit_findings.json');
         const yauditJson = await yaudit.json();
 
-        const dataset = immunefiJson.concat(hacklabsJson, codearenaJson, /*gitbook_docsJson,*/ tobJson, yauditJson);
+        const spearbit = await fetch('./results/spearbit_findings.json');
+        const spearbitJson = await spearbit.json();
+
+        const dataset = immunefiJson.concat(hacklabsJson, codearenaJson, /*gitbook_docsJson,*/ tobJson, yauditJson, spearbitJson);
         window.dataset = dataset;
         currentSet = window.dataset;
         window.controls.updateResults(resultsTable, window.dataset);
