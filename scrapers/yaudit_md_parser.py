@@ -6,7 +6,7 @@ import marko
 from bs4 import BeautifulSoup
 
 def extract_finding(md_name):
-    file_location = "../pdfs/yaudit-reports/" + md_name
+    file_location = "../pdfs/yaudit/md/" + md_name
     with open(file_location, 'r') as markdown_text:
         # Retrieve text from markdown file
         markdown_data = markdown_text.read()
@@ -79,24 +79,25 @@ def jsonify_findings(md_name):
 
         """
         The format of a finding looks like this:
-        2. MobileCoin Foundation could infer token IDs in certain scenarios Severity: Informational Difficulty: High Type: Data Exposure Finding ID: TOB-MCCT-2 Target: Various
+        2. Junior vault getPriceX128() has wrong decimals Severity: Medium Difficulty: n/a Type: n/a Target: n/a Description: The term X128 as used in Uniswap documentation indicates a Q128 value. This means that the value should be divided by 1
 
         We want to extract the following:
-        "title": "MobileCoin Foundation could infer token IDs in certain scenarios",
+        "title": "Junior vault getPriceX128() has wrong decimals",
+        "html_url": "https://github.com/yAudit/reports/blob/main/md/12-2022-RageTrade.md",
+        "body": "The term X128 as used in Uniswap documentation indicates...",
         "labels": [
             "yAudit",
-            "Severity: Informational",
-            "Difficulty: High",
-            "Type: Data Exposure",
+            "Severity: Medium",
+            "Difficulty: n/a"
         ]
-        "description": ...
 
         """
 
         # finding = finding.encode("ascii", "ignore").decode()
 
         # Get the title
-        title = finding.split("Severity:")[0].strip()
+        title_with_number = finding.split("Severity:")[0].strip()
+        title = title_with_number[title_with_number.find(" "):].strip()
 
         try:
         # Get the Severity
@@ -116,7 +117,7 @@ def jsonify_findings(md_name):
         result.append(
             {
                 "title": title.encode("ascii", "ignore").decode(),
-                "html_url": "https://github.com/yAudit/reports/blob/main/md/" + md_name,
+                "html_url": "https://reports.yaudit.dev/reports/" + md_name[:-3],
                 # clean utf-8 characters
                 "body": description.encode("ascii", "ignore").decode(),
                 "labels": [
@@ -139,8 +140,8 @@ def jsonify_findings(md_name):
 
 if __name__ == "__main__":
 
-    for md_file in os.listdir("../pdfs/yaudit-reports/"):
+    for md_file in os.listdir("../pdfs/yaudit/md/"):
          extract_finding(md_file)
 
-    for md_file in os.listdir("../pdfs/yaudit-reports/"):
+    for md_file in os.listdir("../pdfs/yaudit/md/"):
          jsonify_findings(md_file)
