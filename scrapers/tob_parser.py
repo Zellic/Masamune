@@ -85,17 +85,17 @@ def jsonify_findings(pdf_name):
 
         """
         The format of a finding looks like this:
-        2. MobileCoin Foundation could infer token IDs in certain scenarios Severity: Informational Diﬃculty: High Type: Data Exposure Finding ID: TOB-MCCT-2 Target: Various
+        2. MobileCoin Foundation could infer token IDs in certain scenarios Severity: Informational Difficulty: High Type: Data Exposure Finding ID: TOB-MCCT-2 Target: Various
 
         We want to extract the following:
         "title": "MobileCoin Foundation could infer token IDs in certain scenarios",
+        "html_url": "https://github.com/trailofbits/publications/tree/master/reviews/2022-07-mobilecoin-securityreview.pdf",
+        "body": "The MobileCoin Foundation is the recipient of all...",
         "labels": [
             "Trail of Bits",
             "Severity: Informational",
-            "Diﬃculty: High",
-            "Type: Data Exposure",
+            "Difficulty: High",
         ]
-        "body": ...
 
         """
 

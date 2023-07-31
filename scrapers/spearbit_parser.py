@@ -88,17 +88,17 @@ def jsonify_findings(pdf_name):
 
         """
         The format of a finding looks like this:
-        5.1.1 LienToken.transferFrom does not update a public vault's bookkeeping parameters when a lien is transferred to it. Severity: Critical Risk Context: LienToken.sol#L303 Description: When transferFrom is called, there is not check whether the from or to parameters could be a public vault. Currently, there is no mechanism for public vaults to transfer their liens. But private vault owners who are also owners of the vault's lien tokens, they can call transferFrom and transfer their liens to a public vault. In this case, we would need to make sure to update the bookkeeping for the public vault that the lien was transferred to. On the LienToken side, s.LienMeta[id].payee needs to be set to the address of the public vault. And on the PublicVault side, yIntercept, slope, last, epochData of VaultData need to be updated (this requires knowing the lien's end). However, private vaults do not keep a record of these values, and the corresponding values are only saved in stacks off-chain and validated on-chain using their hash. Recommendation: • Either to block transferring liens to public vaults or • Private vaults or the LienToken would need to have more storage parameters that would keep a record of some values for each lien so that when the time comes to transfer a lien to a public vault, the parameters mentioned in the Description can be updated for the public vault.
+        5.2.5 settleAuction() doesn't check if the auction was successful Severity: High Risk Context: CollateralToken.sol#L600 Description: settleAuction() is a privileged functionality called by LienToken.payDebtViaClearingHouse(). settleAuction() is intended to be called on a successful auction, but it doesn't verify that that's indeed the case. Anyone can create a fake Seaport order with one of its considerations set as the CollateralToken as described in Issue 93. Another potential issue is if the Seaport orders can be "Restricted" in future, then there is a possibility for an authorized entity to force settleAuction on CollateralToken, and when SeaPort tries to call back on the zone to validate it would fail. Recommendation: The following validations can be performed: • CollateralToken doesn't own the underlying NFT. • collateralIdToAuction[collateralId] is active. Now, settleAuction() can only be called on the success of the Seaport auction created by Astaria protocol. 18
 
         We want to extract the following:
-        "title": "MobileCoin Foundation could infer token IDs in certain scenarios",
+        "title": "settleAuction() doesn't check if the auction was successful",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Astaria-Spearbit-Security-Review.pdf",
+        "body": "settleAuction() is a privileged functionality called by LienToken.payDebtViaClearingHouse(). settleAuction() is intended to be called on a successful auction, but it doesn't verify that that's indeed the case. Anyone can create a fake Seaport order with one of its considerations set as the CollateralToken as described in Issue 93. Another potential issue is if the Seaport orders can be \"Restricted\" in future, then there is a possibility for an authorized entity to force settleAuction on CollateralToken, and when SeaPort tries to call back on the zone to validate it would fail.",
         "labels": [
-            "Trail of Bits",
-            "Severity: Informational",
-            "Difficulty: High",
-            "Type: Data Exposure",
+            "Spearbit",
+            "Astaria",
+            "Severity: High Risk"
         ]
-        "body": ...
 
         """
 
@@ -181,8 +181,8 @@ def jsonify_findings(pdf_name):
 if __name__ == "__main__":
 
     # Step 1: Extract findings text from PDFs
-    # for pdf_file in os.listdir("../pdfs/spearbit-reports/pdfs"):
-    #     extract_finding(pdf_file)
+    for pdf_file in os.listdir("../pdfs/spearbit-reports/pdfs"):
+        extract_finding(pdf_file)
 
     # Step 2: Parse findings text into JSON
     for json_file in os.listdir("../pdfs/spearbit-reports/pdfs"):
