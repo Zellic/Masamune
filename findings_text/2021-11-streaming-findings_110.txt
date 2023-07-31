@@ -1,1 +1,0 @@
-# Handle  wuwe1   # Vulnerability details  ```solidity // locke + depositTokenName + streamId = lockeUSD Coin-1 name = string(abi.encodePacked("locke", ERC20(depositToken).name(), ": ", toString(streamId))); ```  As the comment imply, the `": "` should be `"-"`  ## Recommended Mitigation Steps  Consider change the comment or the code.  

@@ -1,1 +1,0 @@
-# Handle  pants   # Vulnerability details  In InvestorDistribution you generally use uint256 for every quantity, although 256 bits are much more than necessary. For example for Investor structure you can change all to uint128, and for every normal use it will not affect and save gas.  

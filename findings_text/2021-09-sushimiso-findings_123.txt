@@ -1,1 +1,0 @@
-# Handle  pauliax   # Vulnerability details  ## Impact WETH state variable in MISOLauncher is practically useless as it is not used in any meaningful way. Similarly, SECONDS_PER_DAY is not used in PostAuctionLauncher.  ## Recommended Mitigation Steps Consider removing unused variables.  

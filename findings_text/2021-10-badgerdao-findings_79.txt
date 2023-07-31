@@ -1,1 +1,0 @@
-# Handle  pauliax   # Vulnerability details  ## Impact You import ICore interface but actually need only one function from it: pricePerShare(). Consider importing a minimal ICore interface with only the functions that you actually use to reduce deployment gas costs. Or you can just simply re-use ICoreOracle.   

@@ -1,1 +1,0 @@
-# Handle  pmerkleplant   # Vulnerability details  Contract `Vesting` in `vesting/contracts/Vesting.sol` should inherit from the interface `IVesting` in `vesting/contracts/interfaces/IVesting.sol` as the contract implements the interface.  

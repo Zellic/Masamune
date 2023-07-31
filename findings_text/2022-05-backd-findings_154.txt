@@ -1,1 +1,0 @@
-## [G-01] Unnecessary less than check `amount` is a UINT and therefore can not be less than 0. Change `<=` to `==`  https://github.com/code-423n4/2022-05-backd/blob/2a5664d35cde5b036074edef3c1369b984d10010/protocol/contracts/tokenomics/LpGauge.sol#L59

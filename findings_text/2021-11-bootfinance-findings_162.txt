@@ -1,1 +1,0 @@
-# Handle  pmerkleplant   # Vulnerability details  Events should be written in CapWords, see [Solidity naming conventions](https://docs.soliditylang.org/en/v0.4.25/style-guide.html#event-names).  Events breaking this convention:  - `updateMiningParameters` in `vesting/contracts/AidropDistribution.sol` - `updateMiningParameters` in `vesting/contracts/InvestorDistribution.sol`  

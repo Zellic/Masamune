@@ -1,1 +1,0 @@
-# Handle  pants   # Vulnerability details  You forgot emit event at the end of initialize function.  

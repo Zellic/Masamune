@@ -1,1 +1,0 @@
-# Handle  pauliax   # Vulnerability details  ## Impact   _amount -= (_amount - marketBalance); is basically the same as:    _amount = marketBalance;   

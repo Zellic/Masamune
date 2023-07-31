@@ -1,1 +1,0 @@
-# Handle  loop   # Vulnerability details  In basket.sol there is one use of `uint` rather than `uint256`, which is used in the rest of the codebase.  ## Impact No real impact considering `uint` functions as a `uint256`.  ## Proof of Concept Basket.sol - line 60: `for (uint i = 0; i < length; i++) {`  

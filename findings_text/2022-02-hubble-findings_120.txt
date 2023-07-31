@@ -1,1 +1,0 @@
-already checked twice: https://github.com/code-423n4/2022-02-hubble/blob/main/contracts/curve-v2/Swap.vy#L669 https://github.com/code-423n4/2022-02-hubble/blob/main/contracts/curve-v2/Swap.vy#L671   the check can be removed, as it's an external view function: https://github.com/code-423n4/2022-02-hubble/blob/main/contracts/curve-v2/Swap.vy#L929

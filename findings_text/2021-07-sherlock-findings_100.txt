@@ -1,1 +1,0 @@
-# Handle  cmichel   # Vulnerability details  The `SherXERC20.transferFrom` function reads the allowance from memory twice. It should be read once, cached, and then use that value for the `if(cachedAllowance ...)` and for the `newApproval = ...` expressions.  

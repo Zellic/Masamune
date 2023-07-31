@@ -1,1 +1,0 @@
-# Handle  pauliax   # Vulnerability details  ## Impact event WithdrawnBatch in contract RCNftHubL2 is not used anywhere.  ## Recommended Mitigation Steps Remove or use it where intended.  

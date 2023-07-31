@@ -1,1 +1,0 @@
-# Handle  hickuphh3   # Vulnerability details  ### Impact  The check `require(amount < divider, "Rate must be less than 100%");` exists in `setValidatorComissionRate()` but not in `addValidator()`.  ### Recommended Mitigation Steps  Add the check in `addValidator()` as well.  

@@ -1,1 +1,0 @@
-# Handle  paulius.eth   # Vulnerability details  ## Impact Condition could be '>', not '>=' as there is no point in recalculating amount to the same value (waste of gas):  if((totalSupply + amount) >= maxSupply){   amount = maxSupply - totalSupply;       // Safety, can't mint above maxSupply  }  

@@ -1,1 +1,0 @@
-See the markdown file with the details of this report [here](https://github.com/code-423n4/2023-01-rabbithole-findings/blob/main/data/prestoncodes-Q.md).

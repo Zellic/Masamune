@@ -1,1 +1,0 @@
-# Handle  tensors   # Vulnerability details  ## Impact The sponsored event is declared but never used.  ## Proof of Concept https://github.com/pooltogether/pooltogether-mstable/blob/0bcbd363936fadf5830e9c48392415695896ddb5/contracts/yield-source/MStableYieldSource.sol#L27  ## Recommended Mitigation Steps Remove the unused event.  

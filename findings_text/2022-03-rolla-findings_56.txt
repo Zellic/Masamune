@@ -1,1 +1,0 @@
-### L-01: Missing Zero check QuantCalculator.constructor(contracts/QuantCalculator.sol#55) lacks a zero-check on : optionsFactory = _optionsFactory (contracts/QuantCalculator.sol#57)  ### L-02:  Ether lock Payable function with no method of withdrawal available, eventually ends up locking ether  ``` executeMetaTransaction() (contracts/utils/EIP712MetaTransaction.sol#55-93) ```

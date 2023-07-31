@@ -1,1 +1,0 @@
-# Handle  cmichel   # Vulnerability details  ## Vulnerability Details The `CvxLocker.setStakeLimits` function does not check `_minimum <= _maximum`.  ## Recommended Mitigation Steps Implement these two checks instead:  ```solidity require(_minimum <= _maximum, "min range"); require(_maximum <= denominator, "max range"); ```  

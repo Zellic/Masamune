@@ -1,1 +1,0 @@
-# Basket.sol - Wrong comment in line 58, it should be ERC1155 instead of ERC721 #NibblVault.sol - Consider adding an event for the `initialize()`, `updateCurator()`. # MISC - Most of the comments in all the contracts assume that the ERC1155 token can be only NFT. This is not true because a tokenID of ERC1155 can be a fungible token. 

@@ -1,1 +1,0 @@
-# Handle  @cmichelio   # Vulnerability details  `Router.updateAnchorPrice` iterates over all anchor tokens on each update which is very inefficient and does a lot of expensive storage loads. add a mapping `address => index` to easily retrieve the index of the token in the `arrayAnchors` mapping.  

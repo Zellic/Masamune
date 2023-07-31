@@ -1,1 +1,0 @@
--check `_metadataURI` !="" https://github.com/code-423n4/2022-02-nested/blob/main/contracts/NestedAsset.sol#L106 `backfillTokenURI()` & `mintWithMetadata`was expected to change `tokenURI`. By not validating `metadataURI`!= "", it will just spend user gas more and nothing was changed

@@ -1,1 +1,0 @@
-# Handle  pauliax   # Vulnerability details  ## Impact I don't think it's necessary for the library to use itself here:   library LibBytes {     using LibBytes for bytes;  ## Recommended Mitigation Steps Remove this 'using' statement as it does not give anything in this case.  

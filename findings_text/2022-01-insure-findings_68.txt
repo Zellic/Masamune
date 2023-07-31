@@ -1,1 +1,0 @@
-# Handle  Dravee   # Vulnerability details  ## Impact Increased gas cost (1 slot)  ## Proof of Concept IndexTemplate.pendingEnd (contracts/IndexTemplate.sol#62) should be deleted as it's never used by the contract  ## Tools Used Slither  ## Recommended Mitigation Steps Delete the variable `IndexTemplate.pendingEnd`  

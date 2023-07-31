@@ -1,1 +1,0 @@
-# Handle  paulius.eth   # Vulnerability details  ## Impact Both structs CollateralDetails and DebtDetails have unused ID field which is never set nor queried:    uint ID;  

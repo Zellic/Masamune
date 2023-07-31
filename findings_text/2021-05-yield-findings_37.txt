@@ -1,1 +1,0 @@
-# Handle  pauliax   # Vulnerability details  ## Impact In contract UniswapV3Oracle function _peek has visibility of public while the name and similar functions in other oracles are declared as private.  ## Recommended Mitigation Steps give _peek private visibility.  

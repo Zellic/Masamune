@@ -1,1 +1,0 @@
-# Handle  pants   # Vulnerability details  An admin can (by mistake maybe) addInvestor with address that already exists. This way its funds are locked in the system and cannot be withdrawn, even by the admin.    

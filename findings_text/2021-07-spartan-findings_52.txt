@@ -1,1 +1,0 @@
-# Handle  hickuphh3   # Vulnerability details  ### Impact  The `hasMajority()`, `hasQuorum()` and `hasMinority()` functions contains the following implementation:  ```jsx if(votes > consensus){  return true; } else {  return false; } ```  This can be reduced to `return (votes > consensus);`  

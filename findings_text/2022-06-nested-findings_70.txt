@@ -1,1 +1,0 @@
-## [N-01] Libraries, interfaces, and external imports can be ordered nicely E.g. group all libraries first, then interfaces, then OZ imports  https://github.com/code-423n4/2022-06-nested/blob/b4a153c943d54755711a2f7b80cbbf3a5bb49d76/contracts/libraries/StakingLPVaultHelpers.sol#L4-L12

@@ -1,1 +1,0 @@
-# Handle  CertoraInc   # Vulnerability details  ## Limbo.sol (`_unstake()` and `stake()` functions)  not emitting the `ClaimedReward` event when the user claims his rewards (also when staking and getting the current reward, I don't know if it is done in purpose but just making sure)  

@@ -1,1 +1,0 @@
-# Handle  cmichel   # Vulnerability details  ## Vulnerability Details  The error message states:  ```solidity require(     proposal.offchain,     "FairSideDAO::__castOffchainVotes: proposal is meant to be voted offchain" ); ```  But it should be "... meant to be voted onchain".   

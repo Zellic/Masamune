@@ -1,1 +1,0 @@
-# Handle  cmichel   # Vulnerability details  The `BasicSale` contract includes ERC20 code like `_balances`, `_allowances` storage variables and `Transfer`, `Approval` events. This code is never used.  ## Impact Unused code can hint at programming or architectural errors.  ## Recommended Mitigation Steps Use it or remove it.  

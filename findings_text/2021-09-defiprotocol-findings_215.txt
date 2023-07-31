@@ -1,1 +1,0 @@
-# Handle  pauliax   # Vulnerability details  ## Impact It is unclear why you need this new local variable called newIbRatio if you instantly update and use the storage variable afterwards:   uint256 newIbRatio = ibRatio * startSupply / totalSupply();   ibRatio = newIbRatio;  ## Recommended Mitigation Steps   ibRatio = ibRatio * startSupply / totalSupply();  

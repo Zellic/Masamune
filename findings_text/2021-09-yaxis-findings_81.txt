@@ -1,1 +1,0 @@
-# Handle  pauliax   # Vulnerability details  ## Impact function setMinter should validate that _minter is not an empty (0x0) address.  ## Recommended Mitigation Steps require(_minter != address(0), "!_minter");  

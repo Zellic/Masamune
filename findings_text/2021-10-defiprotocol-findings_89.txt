@@ -1,1 +1,0 @@
-# Handle  pauliax   # Vulnerability details  ## Impact function handleFees calls factory.ownerSplit() twice. To save some gas and reduce the number of external calls, you should save the value after the first call and re-use it later.  ## Recommended Mitigation Steps Cache factory.ownerSplit() in a local variable and re-use it.  

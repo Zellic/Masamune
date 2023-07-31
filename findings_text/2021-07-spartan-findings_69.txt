@@ -1,1 +1,0 @@
-# Handle  hickuphh3   # Vulnerability details  ### Impact  `hasMinority()` is defined as a public function, but is unused in the contract. It can either be entirely removed or have its visibility changed to `external`.  

@@ -1,1 +1,0 @@
-# Handle  cmichel   # Vulnerability details  `PoolFactory.uint2str` computes `i % 10` as `uint8(_i - (_i / 10) * 10)`. This intuitively seems more gas-expensive than doing `i % 10`. Consider using `i % 10` instead which also makes the code simpler to read.   

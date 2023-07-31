@@ -1,1 +1,0 @@
-# Handle  pants   # Vulnerability details  ibbtc is ERC20Upgradeable. Not all ERC20 contracts supports "blind" transfer method - i.e transfer that you can ignore the return value. You should either check the return value or use openzeppilin safeTransfer   

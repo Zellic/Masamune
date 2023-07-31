@@ -1,1 +1,0 @@
-# Handle  pants   # Vulnerability details  Change lines 178 to 173. We know it's minor but it's still optimizing gas and more elegant :)  

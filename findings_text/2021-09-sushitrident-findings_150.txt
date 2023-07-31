@@ -1,1 +1,0 @@
-# Handle  tensors   # Vulnerability details  Throughout the code function selectors are often used instead of interfaces.  It is considered best practice to use interfaces instead of selectors for code readability.  

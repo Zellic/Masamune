@@ -1,1 +1,0 @@
-# Handle  pants   # Vulnerability details  The function `Factory.proposeBasketLicense()` casts `msg.sender` to type `address`, although it is already a variable of type `address`.  ## Impact A redundent operation is executing.  ## Tool Used Manual code review.  ## Recommended Mitigation Steps Remove the cast to `address`.  

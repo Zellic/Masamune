@@ -1,1 +1,0 @@
-# Handle  pauliax   # Vulnerability details  ## Impact functions depositVault, depositMultipleVault and withdrawVault in VaultHelper could require _amount > 0 to prevent useless transfers.  ## Recommended Mitigation Steps Add require _amount > 0 statements to mentioned functions.  

@@ -1,1 +1,0 @@
-# Handle  pauliax   # Vulnerability details  ## Impact contract RCTreasury has an unused storage variable nfthub and setNftHubAddress function. This variable was moved to the Factory contract so it is useless here.  ## Recommended Mitigation Steps Remove nfthub variable and function setNftHubAddress.  

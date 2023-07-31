@@ -1,1 +1,0 @@
-# Handle  pmerkleplant   # Vulnerability details  The documentation for the function `appendUint` in `ConcatStrings.sol` is incorrect. It states: "Concat two strings". However, the function concats a string and a uint256.  See: [line 19 in ConcatStrings.sol](https://github.com/code-423n4/2021-10-slingshot/blob/main/contracts/lib/ConcatStrings.sol#L19)  

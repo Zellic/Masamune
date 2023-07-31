@@ -1,1 +1,0 @@
-# Handle  cmichel   # Vulnerability details  The `index += 32` addition in `readBytes32` can be put in an `unsafe` block as the array length is already checked to be greater than the addition.  

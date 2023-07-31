@@ -1,1 +1,0 @@
-# Handle  jvaqa   # Vulnerability details  ## Impact  Gas Optimization: Vader.sol Unnecessary Conditional  You can remove this conditional entirely.  ## Recommended Mitigation Steps  In Vader.sol, change this:  if(emitting){         emitting = false;     } else {         emitting = true;     }  To this:  emitting = !emitting;  

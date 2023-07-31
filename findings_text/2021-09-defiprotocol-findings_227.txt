@@ -1,1 +1,0 @@
-# Handle  cmichel   # Vulnerability details  The `if`-branch of `Basket.changePublisher` function ensures that `pendingPublisher.publisher == newPublisher` which means setting `publisher = newPublisher` is equivalent to `publisher = pendingPublisher.publisher` but the former saves an expensive storage load operation.  

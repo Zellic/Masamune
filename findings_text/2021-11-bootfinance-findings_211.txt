@@ -1,1 +1,0 @@
-# Handle  cmichel   # Vulnerability details  The `BasicSale` contract uses a `secondsPerDay` value of `84200` but one day has `86400` seconds.  ## Impact The `secondsPerDay` does not reflect seconds per day.  ## Recommended Mitigation Steps Change the value.  

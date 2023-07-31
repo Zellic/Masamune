@@ -1,1 +1,0 @@
-# Handle  pauliax   # Vulnerability details  ## Impact function activateNotional calls Address.isContract(...) but does not check the returned value, thus making this call pretty much useless:   Address.isContract(address(notionalProxy_));  ## Recommended Mitigation Steps Wrap this in a require statement.  

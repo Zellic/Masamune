@@ -1,1 +1,0 @@
-# Handle  pauliax   # Vulnerability details  ## Impact BLOCK_DECREMENT state variable in Auction is not used anywhere.  ## Recommended Mitigation Steps Consider removing unused variables.  

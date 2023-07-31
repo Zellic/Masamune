@@ -1,1 +1,0 @@
-# Handle  cmichel   # Vulnerability details  In `CompoundTempusPool`, the `cToken` and the base class' `yieldBearingToken` storage fields are the same. Remove the `cToken` field and the assignment in the constructor to save gas.   

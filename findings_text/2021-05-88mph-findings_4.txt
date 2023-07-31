@@ -1,1 +1,0 @@
-# Handle  paulius.eth   # Vulnerability details  ## Impact contract AaveMarket function setRewards has a misleading revert message:    require(newValue.isContract(), "HarvestMarket: not contract");  ## Recommended Mitigation Steps Should be 'AaveMarket', not 'HarvestMarket'.  

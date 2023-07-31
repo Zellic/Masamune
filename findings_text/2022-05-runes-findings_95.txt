@@ -1,1 +1,0 @@
-# Typo in state variable documentation.  Change `claimlistMinted`'s documentation to something like:  `Tracks whether an address claimed its free warrior`.  https://github.com/code-423n4/2022-05-runes/blob/060b4f82b79c8308fe65674a39a07c44fa586cd3/contracts/ForgottenRunesWarriorsMinter.sol#L88

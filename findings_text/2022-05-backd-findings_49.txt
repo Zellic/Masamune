@@ -1,1 +1,0 @@
-## [Non-critical - 01] - In `Minter`, `currentInflationAmountLp`, `currentInflationAmountKeeper`, `currentInflationAmountAmm` could be made internal.  There are getters like `getLpInflationRate` for these variables, so there is no need to make them public as it just creates duplicates view functions.  

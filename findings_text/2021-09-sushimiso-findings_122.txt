@@ -1,1 +1,0 @@
-# Handle  pauliax   # Vulnerability details  ## Impact No need for this line in function initMISOMarket as it gets this value by default:   auctionTemplateId = 0;  ## Recommended Mitigation Steps Consider removing useless initialization.  

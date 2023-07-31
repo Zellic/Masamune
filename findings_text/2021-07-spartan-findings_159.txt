@@ -1,1 +1,0 @@
-# Handle  cmichel   # Vulnerability details  ## Vulnerability Details The `Synth._transfer` function does not check if `recipient != 0`. Unlike standard ERC20, tokens can be accidentally burned this way.  ## Recommended Mitigation Steps Prevent user errors by denying transfers to the zero address and forcing them to call `burn` instead.  

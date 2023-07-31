@@ -1,1 +1,0 @@
-# Handle  @cmichelio   # Vulnerability details  `DAO.mapPID_finalised` is never read in the contract, only written. Remove it and show the `finalized` state in the frontend based on whether the `FinalisedProposal` event was emitted  

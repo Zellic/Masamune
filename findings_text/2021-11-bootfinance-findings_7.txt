@@ -1,1 +1,0 @@
-# Handle  pants   # Vulnerability details  In InvestorDistribution at line 19 you have      using SafeMath for uint256;  although you use solidity >0.8.0 therefore you don't need to use safeMath for uint256  

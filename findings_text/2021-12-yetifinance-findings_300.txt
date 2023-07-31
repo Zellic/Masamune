@@ -1,1 +1,0 @@
-# Handle  pauliax   # Vulnerability details  ## Impact condition should be inclusive >= : ```solidity   if (available > totalClaimed.add(_amount)) ```  

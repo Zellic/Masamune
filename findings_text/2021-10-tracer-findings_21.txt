@@ -1,1 +1,0 @@
-# Handle  cmichel   # Vulnerability details  `PoolFactory.setFee` does not check if the `_fee` parameter is at most 100%.  ## Impact Setting a very high fee, even above 100%, will lead to the pool's funds being drained.  ## Recommended Mitigation Steps Validate `_fee` against a reasonable max-fee value, ideally < 100%.   

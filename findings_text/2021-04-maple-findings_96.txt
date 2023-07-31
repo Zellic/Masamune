@@ -1,1 +1,0 @@
-# Handle  paulius.eth   # Vulnerability details  ## Vulnerability details  A comment says: "It emits a `FundsWithdrawn` event if the amount of withdrawn ether is greater than 0." However, actually, this event is always emitted (no check against 0).   ## Recommended Mitigation Steps Either emit this event if _withdrawableDividend > 0 or remove the comment.    

@@ -1,1 +1,0 @@
-# Handle  pauliax   # Vulnerability details  ## Impact because function tend() always reverts, you can remove authorization checks and modifiers to save some gas.   

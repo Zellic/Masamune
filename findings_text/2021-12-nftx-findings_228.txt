@@ -1,1 +1,0 @@
-# Handle  GreyArt   # Vulnerability details  ## Impact  In the function `_sellVaultTokenETH`, the parameter `minWethOut` should be `minEthOut`  ## Recommended Mitigation Steps  Replace `minWethOut` with `minEthOut`  

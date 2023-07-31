@@ -1,1 +1,0 @@
-# Handle  pauliax   # Vulnerability details  ## Impact function purchase is payable, thus it should validate that msg.value is 0 when tokenAddress != address(0) to prevent accidental sent Ether.  ## Recommended Mitigation Steps Check no ether was sent when the token is not a native currency.  

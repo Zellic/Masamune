@@ -1,1 +1,0 @@
-# Handle  cmichel   # Vulnerability details  Some fee parameters of functions are not checked for invalid values: - `Collateral.updateLiquidationFee`: The `newLiquidationFee` should be less than 100% - `Factory.updateFee`: The `newFee` should be less than 100%  ## Recommended Mitigation Steps Validate the parameters.  

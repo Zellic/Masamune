@@ -1,1 +1,0 @@
-# Handle  pauliax   # Vulnerability details  ## Impact There is no reason for the function vest to be 'payable' as it does not handle ether in any way and there is no way to rescue it later in case someone accidentally sends it.  ## Recommended Mitigation Steps Remove 'payable' from the vest function.  

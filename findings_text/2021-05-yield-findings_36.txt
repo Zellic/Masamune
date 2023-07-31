@@ -1,1 +1,0 @@
-# Handle  pauliax   # Vulnerability details  ## Impact function transferToPool is marked as 'payable'. It only transfers ERC20 tokens, no Ether, so there is no need in having 'payable' here.  ## Recommended Mitigation Steps Remove 'payable' modifier from function transferToPool.  

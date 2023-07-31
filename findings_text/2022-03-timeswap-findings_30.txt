@@ -1,1 +1,0 @@
-Title: The `setOwner()` function name https://github.com/code-423n4/2022-03-timeswap/blob/main/Timeswap/Core/contracts/TimeswapFactory.sol#L60 The `owner` is not set in the function. I recommend to change the name to `setPendingOwner()` (and also the event L 65)   

@@ -1,1 +1,0 @@
-# Handle  pauliax   # Vulnerability details  ## Impact I think function initialize should also emit NewIBRatio event as it sets the initial value:  ibRatio = BASE;  ## Recommended Mitigation Steps emit NewIBRatio(ibRatio) in function initialize.  

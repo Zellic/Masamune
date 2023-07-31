@@ -1,1 +1,0 @@
-# Handle  hickuphh3   # Vulnerability details  ### Impact  In `setWeights()`, the variables `weightAdd` and `weightSub` are used to ensure that there is no difference in the total weight.  ### Recommended Mitigation Steps  Consider `totalWeightOld` and `totalWeightNew` as the variable names instead as they are more indicative of the intended usage and behaviour.  

@@ -1,1 +1,0 @@
-# Handle  cmichel   # Vulnerability details  Usually, the functions to increase the allowance are called `increaseAllowance` and `decreaseAllowance` but in `SherXERC20` they are called `increaseApproval` and `decreaseApproval`  ## Recommendation Rename these functions to the more common names.  

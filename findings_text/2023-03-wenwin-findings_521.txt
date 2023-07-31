@@ -1,1 +1,0 @@
-Judge has assessed an item in Issue #345 as 2 risk. The relevant finding follows:   Issue #1 - An attacker can leave the protocol in a "drawing" state for extended period of time

@@ -1,1 +1,0 @@
-# Handle  cmichel   # Vulnerability details  The `acceptPendingGovernance` function does not reset `pendingGovernance` to zero.  ## Impact The pending governor can repeatedly accept the governance, emitting an `AcceptPendingGovernance` event each time, bloating listeners for this event with unnecessary data.  ## Recommended Mitigation Steps Validate the parameters.   

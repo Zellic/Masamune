@@ -1,1 +1,0 @@
-# Handle  0xngndev   # Vulnerability details  ## Impact Found the same small typo at NestedBuybacker.sol#constructor::line 54 and at NestedBuybacker.sol#constructor::line 87.  The error messages says: "NestedBuybacker::constructor: Burn part to high" It should be "too high".  

@@ -1,1 +1,0 @@
-# Handle  paulius.eth   # Vulnerability details  ## Impact function payInterestToFunders does not have a re-entrancy modifier. I expect to see this modifier because similar functions (including sponsored version) have it.  ## Recommended Mitigation Steps Add 'nonReentrant' to function payInterestToFunders.  

@@ -1,1 +1,0 @@
-# Handle  hickuphh3   # Vulnerability details  ### Impact  In `tokenRemove()`, the comment `// NOTE: removed because firstMoneyOut will always be less or equal to stakeBalance` is not intuitive because it is not clear what is removed.  Perhaps `// NOTE: check that firstMoneyOut == 0 not needed since firstMoneyOut <= stakeBalance` will be better.  

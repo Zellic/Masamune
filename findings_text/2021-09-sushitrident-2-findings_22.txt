@@ -1,1 +1,0 @@
-# Handle  hickuphh3   # Vulnerability details  ### Recommended Mitigation Steps  `derrived` → `derived`  `owerflow` → `overflow`  

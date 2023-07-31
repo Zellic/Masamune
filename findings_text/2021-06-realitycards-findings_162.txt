@@ -1,1 +1,0 @@
-# Handle  a_delamo   # Vulnerability details  On `RCFactory` is using uint to represent the enum Mode while on RCMarket is using the enum directly.  It would make the code much readable if RCFactory would use Mode directly.   

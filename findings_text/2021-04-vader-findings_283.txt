@@ -1,1 +1,0 @@
-# Handle  paulius.eth   # Vulnerability details  ## Impact iERC20 decimals field is declared as uint, but to be exact, ERC20 specification declares decimals as uint8. Anyway, this has no security impact as 18 decimals is set which fits in uint8.  ## Recommended Mitigation Steps You can refactor to uint8 or just be informed about such compatibility guidelines.  

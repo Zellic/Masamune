@@ -1,1 +1,0 @@
-# Handle  pauliax   # Vulnerability details  ## Impact There is no difference between functions aBalance and balanceOf in contract AaveV2, they both return aWant, so there is no point in having them separately.  ## Recommended Mitigation Steps Remove internal function aBalance and make balanceOf public.  

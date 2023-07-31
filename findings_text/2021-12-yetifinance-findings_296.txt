@@ -1,1 +1,0 @@
-# Handle  pauliax   # Vulnerability details  ## Impact _isBeforeFeeBootstrapPeriod() is re-evaluated again and again inside the loop, although its value could be cached outside the loop and re-used to reduce gas costs.   

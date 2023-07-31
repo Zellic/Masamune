@@ -1,1 +1,0 @@
-https://github.com/pooltogether/aave-v3-yield-source/blob/e63d1b0e396a5bce89f093630c282ca1c6627e44/contracts/AaveV3YieldSource.sol#L337 Use _requireNotAToken(address(_token)) for consistency across functions

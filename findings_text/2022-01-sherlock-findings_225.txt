@@ -1,1 +1,0 @@
-# Handle  GreyArt   # Vulnerability details  ## Impact  Other relevant view functions like `lockupEnd()`, `sherRewards()` and `tokenBalanceOf()` revert for non-existent IDs, but `viewRewardForArbRestake()` doesn’t.  ## Recommended Mitigation Steps  Include the existence check in `viewRewardForArbRestake()`.  `if (!_exists(_tokenID)) revert NonExistent();`  
