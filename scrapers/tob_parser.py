@@ -21,7 +21,7 @@ def extract_finding(pdf_name):
     try:
         text = text.split("Detailed Findings")[2]
     except IndexError:
-        with open("tob_parser_errors.txt", "a") as f:
+        with open("errors.txt", "a") as f:
             f.write(pdf_name + "\n")
             return
 
