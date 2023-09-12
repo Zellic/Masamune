@@ -1,12 +1,12 @@
 ---
 layout: default
 title: 02-2023-TempleDao-Origami-Recheck
-description: Temple DAO Origami Recheck yAudit Report
+description: TempleDAO Origami Recheck yAudit Report
 nav_order: 18
 image: assets/images/logo.png
 ---
 
-yAudit Temple DAO Origami Recheck Review
+yAudit TempleDAO Origami Recheck Review
 ===
 {: .no_toc }
 
@@ -27,15 +27,15 @@ yAudit Temple DAO Origami Recheck Review
 
 ## Review Summary
 
-**Temple DAO Origami**
+**TempleDAO Origami**
 
-The goal of Temple DAO's Origami product is to offer auto-compounded yield offerings on underlying strategies, maximising returns without sacrificing liquidity. The first strategy being offered is on [GLP and GMX](https://gmx.io/). Origami will be deployed on Arbitrum and Avalanche, the two chains where GMX is deployed, even though the current [Temple core contracts](https://docs.templedao.link/technical-reference/contracts) are deployed on Ethereum.
+The goal of TempleDAO's Origami product is to offer auto-compounded yield offerings on underlying strategies, maximising returns without sacrificing liquidity. The first strategy being offered is on [GLP and GMX](https://gmx.io/). Origami will be deployed on Arbitrum and Avalanche, the two chains where GMX is deployed, even though the current [Temple core contracts](https://docs.templedao.link/technical-reference/contracts) are deployed on Ethereum.
 
-The contracts of the Temple DAO Origami [Repo](https://github.com/TempleDAO/origami) were reviewed over 5 days. The code review was performed by 2 auditors between February 21 and February 26, 2023. The repository was under active development during the review, but the review was limited to the latest commit at the start of the review. This was commit [5ddb424ca1cba8698a51fc21510c1891598a7f09](https://github.com/TempleDAO/origami/tree/5ddb424ca1cba8698a51fc21510c1891598a7f09/apps/protocol) for the Temple DAO repo.
+The contracts of the TempleDAO Origami [Repo](https://github.com/TempleDAO/origami) were reviewed over 5 days. The code review was performed by 2 auditors between February 21 and February 26, 2023. The repository was under active development during the review, but the review was limited to the latest commit at the start of the review. This was commit [5ddb424ca1cba8698a51fc21510c1891598a7f09](https://github.com/TempleDAO/origami/tree/5ddb424ca1cba8698a51fc21510c1891598a7f09/apps/protocol) for the TempleDAO repo.
 
-This was the second review of the Temple DAO Origami [Repo](https://github.com/TempleDAO/origami).
+This was the second review of the TempleDAO Origami [Repo](https://github.com/TempleDAO/origami).
 
-Temple DAO fixed the issues from the first report so yAudit did a review of these mitigations by comparing changes made from commit [a31d192ab54ca7d21f2dee30c630a6ec1843b646](https://github.com/TempleDAO/origami/tree/a31d192ab54ca7d21f2dee30c630a6ec1843b646/apps/protocol), which was the commit of the first review, to commit [5ddb424ca1cba8698a51fc21510c1891598a7f09](https://github.com/TempleDAO/origami/tree/5ddb424ca1cba8698a51fc21510c1891598a7f09/apps/protocol), which was the commit that included the mitigations.
+TempleDAO fixed the issues from the first report so yAudit did a review of these mitigations by comparing changes made from commit [a31d192ab54ca7d21f2dee30c630a6ec1843b646](https://github.com/TempleDAO/origami/tree/a31d192ab54ca7d21f2dee30c630a6ec1843b646/apps/protocol), which was the commit of the first review, to commit [5ddb424ca1cba8698a51fc21510c1891598a7f09](https://github.com/TempleDAO/origami/tree/5ddb424ca1cba8698a51fc21510c1891598a7f09/apps/protocol), which was the commit that included the mitigations.
 
 ## Scope
 
@@ -44,11 +44,11 @@ The scope of the review consisted of the files in the following directories at t
 - contracts/investments/*
 - contracts/common/*
 
-After the findings were presented to the Temple DAO team, fixes were made and included in several PRs.
+After the findings were presented to the TempleDAO team, fixes were made and included in several PRs.
 
 This review is a code review to identify potential vulnerabilities in the code. The reviewers did not investigate security practices or operational security and assumed that privileged accounts could be trusted. The reviewers did not evaluate the security of the code relative to a standard or specification. The review may not have identified all potential attack vectors or areas of vulnerability.
 
-yAudit and the auditors make no warranties regarding the security of the code and do not warrant that the code is free from defects. yAudit and the auditors do not represent nor imply to third parties that the code has been audited nor that the code is free from defects. By deploying or using the code, Temple DAO and users of the contracts agree to use the code at their own risk.
+yAudit and the auditors make no warranties regarding the security of the code and do not warrant that the code is free from defects. yAudit and the auditors do not represent nor imply to third parties that the code has been audited nor that the code is free from defects. By deploying or using the code, TempleDAO and users of the contracts agree to use the code at their own risk.
 
 
 Code Evaluation Matrix
