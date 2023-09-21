@@ -5,6 +5,12 @@ import re
 import marko
 from bs4 import BeautifulSoup
 
+### Update Process
+# 1. Copy all markdown files from the "reports" directory in this repo https://github.com/yAudit/reports-website/tree/main/reports
+# into the pdf/yaudit-reports/ directory
+# 2. (Optional) for extra assurance, delete the results/yaudit_findings.json file and the findings_newupdate/yaudit directory
+# 3. Make sure no calls in the `main` function are commented out, then run this script
+
 def extract_finding(md_name):
     file_location = "../pdfs/yaudit-reports/" + md_name
     with open(file_location, 'r') as markdown_text:
