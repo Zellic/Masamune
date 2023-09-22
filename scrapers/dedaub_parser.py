@@ -6,9 +6,9 @@ import json
 
 
 def extract_finding(pdf_path):
-    text = extract_text(pdf_path)
-    pdf_name = pdf_path.split("/")[-1]
-    print(pdf_name)
+    text = extract_text("../pdfs/dedaub-audits/" + pdf_path)
+    text_file_name = pdf_path[:-4]
+    text_file_name = text_file_name.replace("/", " _ ") + ".txt"
 
     # Replace multiple whitespace characters with a single space
     text = re.sub(r'\s+', ' ', text)
@@ -31,7 +31,7 @@ def extract_finding(pdf_path):
     elif text.lower().find("vulnerabilities & functional issues") > 0:
         text_findings = text[text.lower().find("vulnerabilities & functional issues"):text.lower().find("disclaimer")]
     else:
-        print("Error parsing " + pdf_name)
+        print("Error parsing " + pdf_path)
         return
 
     # overwrite text with cached report after ToC
@@ -52,7 +52,6 @@ def extract_finding(pdf_path):
                 finding_titles.append(section[section.find(finding_identifiers[counter]):section.find(finding_identifiers[counter+1])])
             else:
                 finding_titles.append(section[section.find(finding_identifiers[counter]):])
-    print("Length: " + str(len(finding_titles)))
 
     # text_findings = "\n".join([x for x in text_findings.splitlines() if re.match(r' ID Descrip\S+', x) or re.match(r' Id Descrip\S+', x) or re.match(r' Nr. Descrip\S+', x)])
 
@@ -60,7 +59,7 @@ def extract_finding(pdf_path):
     #     text = text.split("Description:")[1]
     # except IndexError:
     #     with open("dedaub_parser_errors.txt", "a") as f:
-    #         f.write(pdf_name + "\n")
+    #         f.write(pdf_path + "\n")
     #         return
 
     finding_titles = [x for x in finding_titles if x != '']
@@ -78,11 +77,11 @@ def extract_finding(pdf_path):
 
     if len(ordered_findings) == 0:
         with open("errors.txt", "a") as f:
-            f.write(pdf_name + "\n")
+            f.write(pdf_path + "\n")
             return
 
     # Save the findings to a file
-    with open(f"../findings_newupdate/dedaub/{pdf_name[:-4]}.txt", "w") as f:
+    with open(f"../findings_newupdate/dedaub/{text_file_name}", "w") as f:
         for elem in ordered_findings:
             if elem == "":
                 continue
@@ -144,7 +143,6 @@ def jsonify_findings(json_name):
             index_description = title_phrase.split("STATUS")[1].lower().find("id description")
             if index_description >= 0:
                 description = title_phrase.split("STATUS")[1][:index_description]
-                print(description)
             else:
                 description = title_phrase.split("STATUS")[1]
         else:
@@ -153,24 +151,27 @@ def jsonify_findings(json_name):
             index_description = title_phrase.lower().find("id description")
             if index_description >= 0:
                 description = title_phrase[:index_description]
-                print(description)
             else:
                 description = title_phrase
 
         protocol = ""
         try:
             # Get the protocol name
-            if json_name.lower().find(" audit") > 0:
-                protocol = json_name[:json_name.lower().find(" audit")]
+            protocol = json_name.split(" _ ")[1]
+            if protocol.lower().find(" audit") > 0:
+                protocol = protocol[:protocol.lower().find(" audit")]
             else:
-                protocol = json_name[:-4] # remove the .txt file extension
+                protocol = protocol[:-4] # remove the .txt file extension
         except IndexError:
             continue
+
+        # Calculate proper URL
+        url = json_name.replace(" _ ", "/")[:-4] + ".pdf"
 
         result.append(
             {
                 "title": title.encode("ascii", "ignore").decode(),
-                "html_url": "https://github.com/dedaub/audits/tree/main/",
+                "html_url": "https://github.com/dedaub/audits/tree/main/" + url,
                 # clean utf-8 characters
                 "body": description.encode("ascii", "ignore").decode(),
                 "labels": [
@@ -195,7 +196,6 @@ def jsonify_findings(json_name):
 if __name__ == "__main__":
 
     # Step 1: Extract findings text from PDFs
-    # pdf_names = []
     # for contents in os.walk("../pdfs/dedaub-audits"):
     #     if contents[1]:
     #         for subdir in contents[1]:
@@ -204,8 +204,7 @@ if __name__ == "__main__":
     #                 # Skip Ethereum Foundation directory, those are impact studies not audits
     #                 # Skip DeFi Saver and Mushroom Finance directory, they have very different report structures
     #                 if pdf_path.find("Ethereum Foundation") < 0 and pdf_path.find("DeFi Saver") < 0 and pdf_path.find("Mushrooms Finance") < 0:
-    #                     extract_finding(pdf_path + "/" + pdf_file)
-    #                     pdf_names.append(pdf_file)
+    #                     extract_finding(subdir + "/" + pdf_file)
 
     # Step 2: Parse findings text into JSON
     for json_file in os.listdir("../findings_newupdate/dedaub"):
