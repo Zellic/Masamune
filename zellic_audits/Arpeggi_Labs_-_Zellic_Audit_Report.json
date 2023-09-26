@@ -1,0 +1,88 @@
+[
+    {
+        "title": "3.1 An attacker can break minting of ArpeggiSound and ArpeggiSong tokens 7"
+    },
+    {
+        "title": "3.1 An attacker can break minting of ArpeggiSound and Arpeggi",
+        "target": " ArpeggiSound, ArpeggiSong, AudioRegistryProtocol",
+        "category": " Business Logic",
+        "severity": " Critical",
+        "likelihood": " High ",
+        "impact": " Critical ",
+        "bodyDescription": "ArpeggiSound.mintSample, ArpeggiSound.mintStem and ArpeggiSong.mintSong are vul- nerable.  Wewill use ArpeggiSong.mintSong as an example to demonstrate the issue, but every- thing below applies to ArpeggiSound.mintSample and ArpeggiSound.mintStem as well.  When a new song NFT is minted, the following occurs.  First, mintSong mints a new NFT by calling _safeMint. Second, mintSong creates an origin token[1]:  AudioRegistryTypes.OriginToken memory originToken = AudioRegistryTypes. OriginToken({ tokenId: numSongs, chainId: block.chainid, contractAddress: address(this), originType: AudioRegistryTypes.OriginType.PRIMARY /) primary  });  Third, mintSong passes the origin token to the AudioRegistryProtocol.registerMedia function. Fourth, registerMedia creates a newmedia ID and attempts to tie the newly minted NFT to it.  If the newly minted NFT is already tied to a media ID, the attempt fails and the trans- action is reverted.[2]  Anyone can register a new media ID and tie an unminted NFT to it, simply by calling  1 The origin token is simply a wrapper around the newly minted NFT. 2 Unless the caller of registerMedia can pass the checks in the enforceOnlyOverwriteAuthorized func- tion. The contract that issued the already tied NFT fails to pass the checks.  Zellic 7 Arpeggi Labs    registerMediawith appropriate parameters. There are no checks that prevent that.  Therefore, anyone can break minting by registering a new media ID and tying a next- to-be-minted unminted NFT to it. ",
+        "bodyImpact": "An attacker can break minting of ArpeggiSound and ArpeggiSong tokens. ",
+        "bodyRecommendations": "Consider disallowing the registration of unminted NFTs. ",
+        "remediation": "We provided a proof-of-concept to Arpeggi Labs. This issue was fixed by Arpeggi Labs in commit cc29275.  Zellic 8 Arpeggi Labs  https://github.com/Arpeggi-Labs/arpeggi-contracts/commit/cc29275a17bc9f454cb7d660f675fdad98805a52  "
+    },
+    {
+        "title": "3.2 Potentially unsafe reentrancy in the minting functions",
+        "target": " ArpeggiSong, ArpeggiSound",
+        "category": " Business Logic",
+        "severity": " Medium",
+        "likelihood": " High ",
+        "impact": " Medium ",
+        "bodyDescription": "Arpeggi Studio allows users to mint samples, stems and songs and use them in the digital audio workstation. Samples are the smallest \"units\" of sound (think of a hand- clap sound effect in a song) in the Arpeggi ecosystem. A stem is a single track of a song. It is created by sequencing one or more samples into a pattern. A song is composed of multiple stems.  When a user creates music in Arpeggi Studio and is ready to mint a song, the Arpeggi Studio webapp processes the music and mints to the contract via various functions:  * ArpeggiSound.mintSample * ArpeggiSound.mintStem * ArpeggiSong.mintSong  There is a reentrancy issue in all of the 3 functions above. We will focus on ArpeggiSo und.mintSample for the rest of this example. Below is a code snippet from mintSample:  function mintSample( uint version, address artistAddress, address tokenOwner, string calldata dataUri, string calldata metadataUri  ) external payable whenNotPaused returns (uint256)  { _numSounds++; uint numSounds = _numSounds;  _safeMint(tokenOwner, numSounds);  /) registration logic is below  In mintSample, the state variable _numSounds is incremented each time before a new  Zellic 9 Arpeggi Labs    ERC721 token is minted. After _numSounds is incremented, the token is minted through _safeMint and a call is made to AudioRegistryProtocol.registerMedia to register the token's metadata in the AudioRegistryProtocol contract.  A reentrancy attack is potentially possible because the increment of _numSounds hap- pens without checking if _numSounds has already been minted. Furthermore, the call to _safeMint happens before any of the registration logic is executed. ",
+        "bodyImpact": "This reentrancy issue allows an arbitrary amount of tokens to be minted in a way that breaks the expected mediaId-to-tokenIdmetadata storage schema for sample, stem and song tokens.  For example, using reentrancy to mint 10 tokens results in this:  token.contractAddress = 0xcf7...)), mediaId = 1, token.tokenId = 10 token.contractAddress = 0xcf7...)), mediaId = 2, token.tokenId = 9 token.contractAddress = 0xcf7...)), mediaId = 3, token.tokenId = 8 token.contractAddress = 0xcf7...)), mediaId = 4, token.tokenId = 7 token.contractAddress = 0xcf7...)), mediaId = 5, token.tokenId = 6 token.contractAddress = 0xcf7...)), mediaId = 6, token.tokenId = 5 token.contractAddress = 0xcf7...)), mediaId = 7, token.tokenId = 4 token.contractAddress = 0xcf7...)), mediaId = 8, token.tokenId = 3 token.contractAddress = 0xcf7...)), mediaId = 9, token.tokenId = 2 token.contractAddress = 0xcf7...)), mediaId = 10, token.tokenId = 1  Here, the minted tokens have their mediaId and tokenId values out of sync. ",
+        "bodyRecommendations": "Werecommend that Arpeggi follows the checks-effects-interactions pattern bymov- ing the increment of _numSounds and the call to _safeMint after the registration logic at the end of the function. This will ensure that _numSounds is accurate and that the associated metadata is correct if mintSample is reentered.  In addition to this, Arpeggi can make use of OpenZeppelin's ReentrancyGuard contract to add a nonReentrantmodifier to all of the minting functions. ",
+        "remediation": "We provided a proof-of-concept to Arpeggi Labs. This issue was fixed by Arpeggi Labs in commit 52cef08.  Zellic 10 Arpeggi Labs  https://docs.soliditylang.org/en/v0.8.13/security-considerations.html#use-the-checks-effects-interactions-pattern https://github.com/Arpeggi-Labs/arpeggi-contracts/commit/52cef087b1b693dbcbb6a1d0062696e9a9194e35  "
+    },
+    {
+        "title": "3.3 Payable functions exist with no way to withdraw funds",
+        "target": " ArpeggiSong, ArpeggiSound",
+        "category": " Business Logic",
+        "severity": " Medium",
+        "likelihood": " High ",
+        "impact": " Medium ",
+        "bodyDescription": "Themint functions: mintSample, mintStem and mintSong are declared payable, but there is no function to withdraw funds. ",
+        "bodyRecommendations": "The Arpeggi team stated that users will not pay for minting, so we recommend re- moving the payablemodifier from these functions. ",
+        "remediation": "This issue was fixed by Arpeggi Labs in commit 996c882.  Zellic 11 Arpeggi Labs  https://github.com/Arpeggi-Labs/arpeggi-contracts/commit/996c882c75fd39f954d369832c3edeabf4f02308  "
+    },
+    {
+        "title": "3.4 Origin token registration may result in a collision",
+        "target": " AudioRegistryProtocol",
+        "category": " Business Logic",
+        "severity": " Medium",
+        "likelihood": " n/a ",
+        "impact": " Medium ",
+        "bodyDescription": "If an origin token t1 is registered and there is an attempt to register another origin token t2, such that t1.contractAddress =) t2.contractAddress and t1.tokenId =) t2.toke nId, a collision happens: t1 gets overwritten by t2 (in case the caller of registerMedia passes the checks in enforceOnlyOverwriteAuthorized) or the entire transaction gets reverted (otherwise). ",
+        "bodyImpact": "It is impossible to register 2 or more origin tokens with identical contractAddresses and tokenIds, but different chainIds or originTypes. ",
+        "bodyRecommendations": "Consider replacing the _contractTokensToArpIndex mapping with an \"origin token\"- to-\"media ID\" mapping and reorganizing the code accordingly. ",
+        "remediation": "This issue was fixed by Arpeggi Labs in commit bd3a6ec.  Zellic 12 Arpeggi Labs  https://github.com/Arpeggi-Labs/arpeggi-contracts/commit/bd3a6ecdad2a55930d03e71941dc0caab679a60e  "
+    },
+    {
+        "title": "3.5 The access control list for the Arpeggi admin role cannot be",
+        "target": " ArpeggiSound, ArpeggiSong",
+        "category": " Business Logic",
+        "severity": " Low",
+        "likelihood": " n/a ",
+        "impact": " Low ",
+        "bodyDescription": "The ArpeggiSound and ArpeggiSong contracts do not set an admin role for ARPEGGI_AD MIN_ROLE. ",
+        "bodyImpact": "It is impossible to change the access control list for ARPEGGI_ADMIN_ROLE. ",
+        "bodyRecommendations": "Consider adding the following code to the constructors of ArpeggiSound and Arpeggi Song:  _setRoleAdmin(Roles.ARPEGGI_ADMIN_ROLE, Roles.ARPEGGI_ADMIN_ROLE); ",
+        "remediation": "This issue was fixed by Arpeggi Labs in commit 67f8be0.  Zellic 13 Arpeggi Labs  https://github.com/Arpeggi-Labs/arpeggi-contracts/commit/67f8be0090cd41c18c6cf873f1f6133c7848b820  "
+    },
+    {
+        "title": "3.6 The UPGRADER_ROLE role is defined, but never used",
+        "target": " AudioRegistryProtocol",
+        "category": " Business Logic",
+        "severity": " Low",
+        "likelihood": " n/a ",
+        "impact": " Low ",
+        "bodyDescription": "UPGRADER_ROLE is defined in AudioRegistryProtocol.sol at L12, but this role is never used anywhere. We assume that UPGRADER_ROLE was intended to be used in the _aut horizeUpgrade function, but _authorizeUpgrade uses DEFAULT_ADMIN_ROLE instead:  function _authorizeUpgrade(address newImplementation) internal onlyRole(DEFAULT_ADMIN_ROLE) override  {} ",
+        "bodyImpact": "The members of UPGRADER_ROLE are not given permission to upgrade the AudioRegist ryProtocol contract. ",
+        "bodyRecommendations": "Consider modifying _authorizeUpgrade to replace DEFAULT_ADMIN_ROLEwith UPGRADER_ ROLE:  function _authorizeUpgrade(address newImplementation) internal onlyRole(UPGRADER_ROLE) override  {} ",
+        "remediation": "This issue was fixed by Arpeggi Labs in commit 00524c4.  Zellic 14 Arpeggi Labs  https://github.com/Arpeggi-Labs/arpeggi-contracts/commit/00524c47ce6d550695c8e1193f91e4fff06cdbcd  "
+    },
+    {
+        "title": "3.7 Unbounded for-loop can lead to out-of-gas",
+        "* Target": " AudioRegistryProtocol",
+        "* Category": " Code Maturity",
+        "* Likelihood": " Low ",
+        "* Severity": " Low",
+        "* Impact": " Informational ",
+        "Description": "There is an unbounded for-loop in AudioRegistryProtocol.registerMedia:  if(subComponents.length > 0){ for(uint i = 0; i < subComponents.length; i+)){  require(subComponents[i] <) _numMedia, \"ARP: Invalid subcomponent.\"); }  }  If subComponents.length is sufficiently large, this for-loop runs out of gas.  Our tests show that the current upper limit for the length of the subComponents array is around 1,315. The current 30,000,000 per-block gas limit of the Polygon network is reached after that. ",
+        "Impact": "The unbounded for-loop can raise an out-of-gas exception if the subComponents array contains more than one thousand elements.  The impact of this finding is mitigated by the fact that it is unlikely for a piece of media to be comprised of such a large number of subcomponents. ",
+        "Recommendations": "This issue can be remedied by forcing the frontend to impose a limit on the length of the subComponents array. ",
+        "Remediation": "This issue was fixed by Arpeggi Labs in commit a7fa6de.  Zellic 15 Arpeggi Labs  https://github.com/Arpeggi-Labs/arpeggi-contracts/commit/a7fa6de536dd1f3a8552ffbc8d5670ae95a6f4a1   4 Discussion  In this section, we discuss miscellaneous interesting observations discovered during the audit that are noteworthy and merit some consideration.  The core functionality of the Arpeggi contracts is centered around the 3 minting func- tions (mintSong(), mintStem(), mintSample()) and the metadata registration process (implemented in the registerMedia() function). Since minting is a major part of the core functionality, it makes sense to optimize the minting functions for maximum gas efficiency. Currently, each token is minted using a separate message call. This is fine for a song with only a few samples, but it may become a nuisance for users whowant tomint a large number of tokens. It maymake sense to considermodifying theminting functions so that it is possible to mint multiple tokens in a single message call.  ERC721A by the Azuki NFT development team is an implementation of IERC721 that enables minting multiple NFTs in a single transaction. Arpeggi expressed interest in integrating the ERC721A standard into their contracts in order to be able to capitalize on the increased gas efficiency of minting. Since the default ERC721A contract is not upgradeable, it is unsuitable as a drop-in replacement for OpenZeppelin's ERC721Upgr adeable contract. However, there is an open pull request in the chiru-labs GitHub repo that contains a proposal tomerge an upgradeable version of the ERC721A contract. This pull request may be of interest to the Arpeggi team.  Zellic 16 Arpeggi Labs  https://www.azuki.com/erc721a https://github.com/chiru-labs/ERC721A/pull/4  \tAbout Zellic \tIntroduction \tAbout Arpeggi V2 \tMethodology \tScope \tProject Overview \tProject Timeline \tDisclaimer  \tExecutive Summary \tDetailed Findings \tAn attacker can break minting of ArpeggiSound and ArpeggiSong tokens \tPotentially unsafe reentrancy in the minting functions \tPayable functions exist with no way to withdraw funds \tOrigin token registration may result in a collision \tThe access control list for the Arpeggi admin role cannot be changed \tThe UPGRADER_ROLE role is defined, but never used \tUnbounded for-loop can lead to out-of-gas  \tDiscussion "
+    }
+]
