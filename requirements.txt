@@ -1,0 +1,5 @@
+marko>=2.0.0
+pandas>=2.0.3
+selenium>=4.11.2
+beautifulsoup4>=4.12.2
+pdfminer.six==20221105

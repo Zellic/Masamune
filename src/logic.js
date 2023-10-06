@@ -186,7 +186,31 @@ document.addEventListener('DOMContentLoaded', function() {
         const spearbit = await fetch('./results/spearbit_findings.json');
         const spearbitJson = await spearbit.json();
 
-        const dataset = immunefiJson.concat(hacklabsJson, codearenaJson, /*gitbook_docsJson,*/ tobJson, yauditJson, spearbitJson);
+        const openzeppelin = await fetch('./results/openzeppelin_findings.json');
+        const openzeppelinJson = await openzeppelin.json();
+
+        const slowmist = await fetch('./results/slowmist_findings.json');
+        const slowmistJson = await slowmist.json();
+
+        const halborn = await fetch('./results/halborn_findings.json');
+        const halbornJson = await halborn.json();
+
+        const certora = await fetch('./results/certora_findings.json');
+        const certoraJson = await certora.json();
+
+        const chainsecurity = await fetch('./results/chainsecurity_findings.json');
+        const chainsecurityJson = await chainsecurity.json();
+
+        const consensys = await fetch('./results/consensys_findings.json');
+        const consensysJson = await consensys.json();
+
+        const leastauthority = await fetch('./results/leastauthority_findings.json');
+        const leastauthorityJson = await leastauthority.json();
+
+        const oak_security = await fetch('./results/oak_security_findings.json');
+        const oak_securityJson = await oak_security.json();
+
+        const dataset = immunefiJson.concat(hacklabsJson, codearenaJson, /*gitbook_docsJson,*/ tobJson, yauditJson, spearbitJson, openzeppelinJson, slowmistJson, halbornJson, certoraJson, chainsecurityJson, consensysJson, leastauthorityJson, oak_securityJson);
         window.dataset = dataset;
         currentSet = window.dataset;
         window.controls.updateResults(resultsTable, window.dataset);
