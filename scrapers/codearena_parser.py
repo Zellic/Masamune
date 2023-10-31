@@ -187,9 +187,12 @@ def get_issues_text(_issues, cache):
                 print("HAD TO SKIP AT ISSUE: " + issue['html_url'])
                 # break
 
-                # TODO Figure if the break before was due to 
-                # GITHUB API rate limit or something else.
-                continue 
+                # NOTE basically if this except is entered,
+                # it means that we got into a rate limit problem
+                # so what we do is we save everything up to this point
+                # and continue from the last issue in the list; 
+                # we can find that by "html_url" since that's probably the most unique
+                break
 
             issue['target'] = issue['target']
 
