@@ -4,3 +4,6 @@
 [submodule "pdfs/dedaub-audits"]
 	path = pdfs/dedaub-audits
 	url = https://github.com/Dedaub/audits
+[submodule "pdfs/publications"]
+	path = pdfs/publications
+	url = https://github.com/trailofbits/publications.git
