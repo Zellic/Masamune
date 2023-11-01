@@ -6,7 +6,7 @@ import json
 
 
 def extract_finding(pdf_name):
-    text = extract_text("../pdfs/tob-audits/reviews/" + pdf_name)
+    text = extract_text("../pdfs/publications/reviews/" + pdf_name)
 
     first_selection = text[text.find("Detailed Findings"):text.find("Summary of Recommendations")]
 
@@ -158,7 +158,7 @@ def jsonify_findings(pdf_name):
         
 if __name__ == "__main__":
 
-    for json_file in os.listdir("../pdfs/tob-audits/reviews"):
+    for json_file in os.listdir("../pdfs/publications/reviews"):
         jsonify_findings(json_file)
 
     # only keep unique findings, the file contains an array of findings
