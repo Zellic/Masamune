@@ -208,8 +208,17 @@ def save_to_codearena_findings(_issues):
     """
     Saves the issues to the codearena_findings.json file.
     """
+
+    curated_issues = []
+
+    # remove issues from the test-repo; i.e those whose target is "2022-01-dev-test-repo-findings"
+    for issue in _issues:
+        if issue['target'] != "2022-01-dev-test-repo-findings":
+            curated_issues.append(issue)
+
+
     with open('../results/codearena_findings.json', 'w') as f:
-        json.dump(_issues, f)
+        json.dump(curated_issues, f)
 
 def main():
 
