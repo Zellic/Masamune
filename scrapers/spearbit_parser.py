@@ -181,13 +181,18 @@ def jsonify_findings(pdf_name):
 if __name__ == "__main__":
 
     # Step 1: Extract findings text from PDFs
-    # for pdf_file in os.listdir("../pdfs/spearbit-reports/pdfs"):
-    #     extract_finding(pdf_file)
+    for pdf_file in os.listdir("../pdfs/spearbit-reports/pdfs"):
+        try:
+            extract_finding(pdf_file)
+        except:
+            print("ERROR extracting on " + pdf_file)
 
     # Step 2: Parse findings text into JSON
     for json_file in os.listdir("../pdfs/spearbit-reports/pdfs"):
-        jsonify_findings(json_file)
-
+        try:
+            jsonify_findings(json_file)
+        except:
+            print("ERROR parsing on " + json_file)
     # Step 3: deduplicate findings
     # only keep unique findings, the file contains an array of findings
     with open("../results/spearbit_findings.json", "r") as f:
