@@ -1,1 +1,1272 @@
-{"2021-02-slingshot-findings": {"url": "https://github.com/code-423n4/2021-02-slingshot-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-02-slingshot-findings/issues", "nr_issues": 0}, "2021-03-elasticdao-findings": {"url": "https://github.com/code-423n4/2021-03-elasticdao-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-03-elasticdao-findings/issues", "nr_issues": 1}, "2021-04-marginswap-findings": {"url": "https://github.com/code-423n4/2021-04-marginswap-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-04-marginswap-findings/issues", "nr_issues": 64}, "2021-04-maple-findings": {"url": "https://github.com/code-423n4/2021-04-maple-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-04-maple-findings/issues", "nr_issues": 86}, "2021-04-basedloans-findings": {"url": "https://github.com/code-423n4/2021-04-basedloans-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-04-basedloans-findings/issues", "nr_issues": 33}, "2021-04-vader-findings": {"url": "https://github.com/code-423n4/2021-04-vader-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-04-vader-findings/issues", "nr_issues": 125}, "2021-05-nftx-findings": {"url": "https://github.com/code-423n4/2021-05-nftx-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-05-nftx-findings/issues", "nr_issues": 42}, "2021-04-meebits-findings": {"url": "https://github.com/code-423n4/2021-04-meebits-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-04-meebits-findings/issues", "nr_issues": 84}, "2021-05-88mph-findings": {"url": "https://github.com/code-423n4/2021-05-88mph-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-05-88mph-findings/issues", "nr_issues": 14}, "2021-05-visorfinance-findings": {"url": "https://github.com/code-423n4/2021-05-visorfinance-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-05-visorfinance-findings/issues", "nr_issues": 30}, "2021-05-fairside-findings": {"url": "https://github.com/code-423n4/2021-05-fairside-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-05-fairside-findings/issues", "nr_issues": 40}, "2021-05-yield-findings": {"url": "https://github.com/code-423n4/2021-05-yield-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-05-yield-findings/issues", "nr_issues": 46}, "2021-06-realitycards-findings": {"url": "https://github.com/code-423n4/2021-06-realitycards-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-06-realitycards-findings/issues", "nr_issues": 75}, "2021-06-pooltogether-findings": {"url": "https://github.com/code-423n4/2021-06-pooltogether-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-06-pooltogether-findings/issues", "nr_issues": 69}, "2021-06-tracer-findings": {"url": "https://github.com/code-423n4/2021-06-tracer-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-06-tracer-findings/issues", "nr_issues": 79}, "2021-06-gro-findings": {"url": "https://github.com/code-423n4/2021-06-gro-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-06-gro-findings/issues", "nr_issues": 86}, "2021-07-wildcredit-findings": {"url": "https://github.com/code-423n4/2021-07-wildcredit-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-07-wildcredit-findings/issues", "nr_issues": 61}, "2021-07-spartan-findings": {"url": "https://github.com/code-423n4/2021-07-spartan-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-07-spartan-findings/issues", "nr_issues": 141}, "2021-07-sherlock-findings": {"url": "https://github.com/code-423n4/2021-07-sherlock-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-07-sherlock-findings/issues", "nr_issues": 96}, "2021-07-connext-findings": {"url": "https://github.com/code-423n4/2021-07-connext-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-07-connext-findings/issues", "nr_issues": 36}, "2021-08-floatcapital-findings": {"url": "https://github.com/code-423n4/2021-08-floatcapital-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-08-floatcapital-findings/issues", "nr_issues": 78}, "2021-08-notional-findings": {"url": "https://github.com/code-423n4/2021-08-notional-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-08-notional-findings/issues", "nr_issues": 97}, "2021-07-pooltogether-findings": {"url": "https://github.com/code-423n4/2021-07-pooltogether-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-07-pooltogether-findings/issues", "nr_issues": 43}, "2021-08-yield-findings": {"url": "https://github.com/code-423n4/2021-08-yield-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-08-yield-findings/issues", "nr_issues": 60}, "2021-08-realitycards-findings": {"url": "https://github.com/code-423n4/2021-08-realitycards-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-08-realitycards-findings/issues", "nr_issues": 50}, "2021-08-gravitybridge-findings": {"url": "https://github.com/code-423n4/2021-08-gravitybridge-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-08-gravitybridge-findings/issues", "nr_issues": 44}, "2021-09-sushimiso-findings": {"url": "https://github.com/code-423n4/2021-09-sushimiso-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-09-sushimiso-findings/issues", "nr_issues": 101}, "2021-09-sushitrident-findings": {"url": "https://github.com/code-423n4/2021-09-sushitrident-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-09-sushitrident-findings/issues", "nr_issues": 108}, "2021-09-yaxis-findings": {"url": "https://github.com/code-423n4/2021-09-yaxis-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-09-yaxis-findings/issues", "nr_issues": 88}, "2021-09-bvecvx-findings": {"url": "https://github.com/code-423n4/2021-09-bvecvx-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-09-bvecvx-findings/issues", "nr_issues": 51}, "2021-09-wildcredit-findings": {"url": "https://github.com/code-423n4/2021-09-wildcredit-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-09-wildcredit-findings/issues", "nr_issues": 63}, "2021-10-pooltogether-findings": {"url": "https://github.com/code-423n4/2021-10-pooltogether-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-10-pooltogether-findings/issues", "nr_issues": 41}, "2021-09-defiprotocol-findings": {"url": "https://github.com/code-423n4/2021-09-defiprotocol-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-09-defiprotocol-findings/issues", "nr_issues": 156}, "2021-09-sushitrident-2-findings": {"url": "https://github.com/code-423n4/2021-09-sushitrident-2-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-09-sushitrident-2-findings/issues", "nr_issues": 63}, "2021-10-tempus-findings": {"url": "https://github.com/code-423n4/2021-10-tempus-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-10-tempus-findings/issues", "nr_issues": 36}, "2021-10-ambire-findings": {"url": "https://github.com/code-423n4/2021-10-ambire-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-10-ambire-findings/issues", "nr_issues": 41}, "2021-09-swivel-findings": {"url": "https://github.com/code-423n4/2021-09-swivel-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-09-swivel-findings/issues", "nr_issues": 74}, "2021-10-tracer-findings": {"url": "https://github.com/code-423n4/2021-10-tracer-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-10-tracer-findings/issues", "nr_issues": 23}, "2021-10-defiprotocol-findings": {"url": "https://github.com/code-423n4/2021-10-defiprotocol-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-10-defiprotocol-findings/issues", "nr_issues": 71}, "2021-10-tally-findings": {"url": "https://github.com/code-423n4/2021-10-tally-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-10-tally-findings/issues", "nr_issues": 41}, "2021-10-mochi-findings": {"url": "https://github.com/code-423n4/2021-10-mochi-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-10-mochi-findings/issues", "nr_issues": 66}, "2021-10-covalent-findings": {"url": "https://github.com/code-423n4/2021-10-covalent-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-10-covalent-findings/issues", "nr_issues": 38}, "2021-10-union-findings": {"url": "https://github.com/code-423n4/2021-10-union-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-10-union-findings/issues", "nr_issues": 81}, "2021-10-badgerdao-findings": {"url": "https://github.com/code-423n4/2021-10-badgerdao-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-10-badgerdao-findings/issues", "nr_issues": 51}, "2021-10-slingshot-findings": {"url": "https://github.com/code-423n4/2021-10-slingshot-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-10-slingshot-findings/issues", "nr_issues": 55}, "2021-11-overlay-findings": {"url": "https://github.com/code-423n4/2021-11-overlay-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-11-overlay-findings/issues", "nr_issues": 68}, "2021-11-fairside-findings": {"url": "https://github.com/code-423n4/2021-11-fairside-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-11-fairside-findings/issues", "nr_issues": 46}, "2021-11-vader-findings": {"url": "https://github.com/code-423n4/2021-11-vader-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-11-vader-findings/issues", "nr_issues": 111}, "2021-11-nested-findings": {"url": "https://github.com/code-423n4/2021-11-nested-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-11-nested-findings/issues", "nr_issues": 102}, "2021-11-unlock-findings": {"url": "https://github.com/code-423n4/2021-11-unlock-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-11-unlock-findings/issues", "nr_issues": 152}, "2021-12-maple-findings": {"url": "https://github.com/code-423n4/2021-12-maple-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-12-maple-findings/issues", "nr_issues": 25}, "2021-11-bootfinance-findings": {"url": "https://github.com/code-423n4/2021-11-bootfinance-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-11-bootfinance-findings/issues", "nr_issues": 155}, "2021-12-mellow-findings": {"url": "https://github.com/code-423n4/2021-12-mellow-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-12-mellow-findings/issues", "nr_issues": 74}, "2021-11-yaxis-findings": {"url": "https://github.com/code-423n4/2021-11-yaxis-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-11-yaxis-findings/issues", "nr_issues": 67}, "2021-11-badgerzaps-findings": {"url": "https://github.com/code-423n4/2021-11-badgerzaps-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-11-badgerzaps-findings/issues", "nr_issues": 40}, "2021-12-perennial-findings": {"url": "https://github.com/code-423n4/2021-12-perennial-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-12-perennial-findings/issues", "nr_issues": 38}, "2021-11-streaming-findings": {"url": "https://github.com/code-423n4/2021-11-streaming-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-11-streaming-findings/issues", "nr_issues": 118}, "2021-11-malt-findings": {"url": "https://github.com/code-423n4/2021-11-malt-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-11-malt-findings/issues", "nr_issues": 178}, "2021-12-sublime-findings": {"url": "https://github.com/code-423n4/2021-12-sublime-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-12-sublime-findings/issues", "nr_issues": 92}, "2021-11-fei-findings": {"url": "https://github.com/code-423n4/2021-11-fei-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-11-fei-findings/issues", "nr_issues": 48}, "2021-12-pooltogether-findings": {"url": "https://github.com/code-423n4/2021-12-pooltogether-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-12-pooltogether-findings/issues", "nr_issues": 38}, "2021-12-defiprotocol-findings": {"url": "https://github.com/code-423n4/2021-12-defiprotocol-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-12-defiprotocol-findings/issues", "nr_issues": 89}, "2021-12-yetifinance-findings": {"url": "https://github.com/code-423n4/2021-12-yetifinance-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-12-yetifinance-findings/issues", "nr_issues": 129}, "2022-01-sandclock-findings": {"url": "https://github.com/code-423n4/2022-01-sandclock-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-01-sandclock-findings/issues", "nr_issues": 1}, "2021-12-amun-findings": {"url": "https://github.com/code-423n4/2021-12-amun-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-12-amun-findings/issues", "nr_issues": 129}, "2021-12-nftx-findings": {"url": "https://github.com/code-423n4/2021-12-nftx-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-12-nftx-findings/issues", "nr_issues": 124}, "2021-12-vader-findings": {"url": "https://github.com/code-423n4/2021-12-vader-findings", "issues_url": "https://api.github.com/repos/code-423n4/2021-12-vader-findings/issues", "nr_issues": 80}, "2022-01-insure-findings": {"url": "https://github.com/code-423n4/2022-01-insure-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-01-insure-findings/issues", "nr_issues": 176}, "2022-01-openleverage-findings": {"url": "https://github.com/code-423n4/2022-01-openleverage-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-01-openleverage-findings/issues", "nr_issues": 83}, "2022-01-livepeer-findings": {"url": "https://github.com/code-423n4/2022-01-livepeer-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-01-livepeer-findings/issues", "nr_issues": 82}, "2022-01-timeswap-findings": {"url": "https://github.com/code-423n4/2022-01-timeswap-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-01-timeswap-findings/issues", "nr_issues": 87}, "2022-01-elasticswap-findings": {"url": "https://github.com/code-423n4/2022-01-elasticswap-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-01-elasticswap-findings/issues", "nr_issues": 49}, "2022-01-xdefi-findings": {"url": "https://github.com/code-423n4/2022-01-xdefi-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-01-xdefi-findings/issues", "nr_issues": 51}, "2022-01-sherlock-findings": {"url": "https://github.com/code-423n4/2022-01-sherlock-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-01-sherlock-findings/issues", "nr_issues": 71}, "2022-01-behodler-findings": {"url": "https://github.com/code-423n4/2022-01-behodler-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-01-behodler-findings/issues", "nr_issues": 70}, "2022-01-notional-findings": {"url": "https://github.com/code-423n4/2022-01-notional-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-01-notional-findings/issues", "nr_issues": 57}, "2022-01-trader-joe-findings": {"url": "https://github.com/code-423n4/2022-01-trader-joe-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-01-trader-joe-findings/issues", "nr_issues": 117}, "2022-04-xtribe-findings": {"url": "https://github.com/code-423n4/2022-04-xtribe-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-04-xtribe-findings/issues", "nr_issues": 67}, "2022-01-dev-test-repo-findings": {"url": "https://github.com/code-423n4/2022-01-dev-test-repo-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-01-dev-test-repo-findings/issues", "nr_issues": 27}, "2022-01-yield-findings": {"url": "https://github.com/code-423n4/2022-01-yield-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-01-yield-findings/issues", "nr_issues": 37}, "2022-02-aave-lens-findings": {"url": "https://github.com/code-423n4/2022-02-aave-lens-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-02-aave-lens-findings/issues", "nr_issues": 39}, "2022-02-anchor-findings": {"url": "https://github.com/code-423n4/2022-02-anchor-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-02-anchor-findings/issues", "nr_issues": 36}, "2022-02-concur-findings": {"url": "https://github.com/code-423n4/2022-02-concur-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-02-concur-findings/issues", "nr_issues": 112}, "2022-02-badger-citadel-findings": {"url": "https://github.com/code-423n4/2022-02-badger-citadel-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-02-badger-citadel-findings/issues", "nr_issues": 49}, "2022-02-nested-findings": {"url": "https://github.com/code-423n4/2022-02-nested-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-02-nested-findings/issues", "nr_issues": 39}, "2022-02-tribe-turbo-findings": {"url": "https://github.com/code-423n4/2022-02-tribe-turbo-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-02-tribe-turbo-findings/issues", "nr_issues": 38}, "2022-02-skale-findings": {"url": "https://github.com/code-423n4/2022-02-skale-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-02-skale-findings/issues", "nr_issues": 43}, "2022-02-redacted-cartel-findings": {"url": "https://github.com/code-423n4/2022-02-redacted-cartel-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-02-redacted-cartel-findings/issues", "nr_issues": 57}, "2022-02-hubble-findings": {"url": "https://github.com/code-423n4/2022-02-hubble-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-02-hubble-findings/issues", "nr_issues": 71}, "2022-04-phuture-findings": {"url": "https://github.com/code-423n4/2022-04-phuture-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-04-phuture-findings/issues", "nr_issues": 63}, "2022-02-pooltogether-findings": {"url": "https://github.com/code-423n4/2022-02-pooltogether-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-02-pooltogether-findings/issues", "nr_issues": 27}, "2022-02-foundation-findings": {"url": "https://github.com/code-423n4/2022-02-foundation-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-02-foundation-findings/issues", "nr_issues": 52}, "2022-02-jpyc-findings": {"url": "https://github.com/code-423n4/2022-02-jpyc-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-02-jpyc-findings/issues", "nr_issues": 41}, "2022-03-timeswap-findings": {"url": "https://github.com/code-423n4/2022-03-timeswap-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-03-timeswap-findings/issues", "nr_issues": 26}, "2022-03-biconomy-findings": {"url": "https://github.com/code-423n4/2022-03-biconomy-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-03-biconomy-findings/issues", "nr_issues": 104}, "2022-03-maple-findings": {"url": "https://github.com/code-423n4/2022-03-maple-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-03-maple-findings/issues", "nr_issues": 23}, "2022-03-rolla-findings": {"url": "https://github.com/code-423n4/2022-03-rolla-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-03-rolla-findings/issues", "nr_issues": 35}, "2022-05-vetoken-findings": {"url": "https://github.com/code-423n4/2022-05-vetoken-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-05-vetoken-findings/issues", "nr_issues": 130}, "2022-03-prepo-findings": {"url": "https://github.com/code-423n4/2022-03-prepo-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-03-prepo-findings/issues", "nr_issues": 72}, "2022-03-sublime-findings": {"url": "https://github.com/code-423n4/2022-03-sublime-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-03-sublime-findings/issues", "nr_issues": 43}, "2022-03-joyn-findings": {"url": "https://github.com/code-423n4/2022-03-joyn-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-03-joyn-findings/issues", "nr_issues": 68}, "2022-03-volt-findings": {"url": "https://github.com/code-423n4/2022-03-volt-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-03-volt-findings/issues", "nr_issues": 68}, "2022-03-lifinance-findings": {"url": "https://github.com/code-423n4/2022-03-lifinance-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-03-lifinance-findings/issues", "nr_issues": 94}, "2022-03-paladin-findings": {"url": "https://github.com/code-423n4/2022-03-paladin-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-03-paladin-findings/issues", "nr_issues": 66}, "2022-04-jpegd-findings": {"url": "https://github.com/code-423n4/2022-04-jpegd-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-04-jpegd-findings/issues", "nr_issues": 100}, "2022-04-backed-findings": {"url": "https://github.com/code-423n4/2022-04-backed-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-04-backed-findings/issues", "nr_issues": 67}, "2022-04-dualityfocus-findings": {"url": "https://github.com/code-423n4/2022-04-dualityfocus-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-04-dualityfocus-findings/issues", "nr_issues": 23}, "2022-04-axelar-findings": {"url": "https://github.com/code-423n4/2022-04-axelar-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-04-axelar-findings/issues", "nr_issues": 29}, "2022-04-badger-citadel-findings": {"url": "https://github.com/code-423n4/2022-04-badger-citadel-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-04-badger-citadel-findings/issues", "nr_issues": 115}, "2022-04-backd-findings": {"url": "https://github.com/code-423n4/2022-04-backd-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-04-backd-findings/issues", "nr_issues": 92}, "2022-04-pooltogether-findings": {"url": "https://github.com/code-423n4/2022-04-pooltogether-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-04-pooltogether-findings/issues", "nr_issues": 51}, "2022-04-abranft-findings": {"url": "https://github.com/code-423n4/2022-04-abranft-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-04-abranft-findings/issues", "nr_issues": 84}, "2022-04-mimo-findings": {"url": "https://github.com/code-423n4/2022-04-mimo-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-04-mimo-findings/issues", "nr_issues": 68}, "2022-05-cudos-findings": {"url": "https://github.com/code-423n4/2022-05-cudos-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-05-cudos-findings/issues", "nr_issues": 83}, "2022-05-factorydao-findings": {"url": "https://github.com/code-423n4/2022-05-factorydao-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-05-factorydao-findings/issues", "nr_issues": 108}, "2022-05-bunker-findings": {"url": "https://github.com/code-423n4/2022-05-bunker-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-05-bunker-findings/issues", "nr_issues": 63}, "2022-05-runes-findings": {"url": "https://github.com/code-423n4/2022-05-runes-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-05-runes-findings/issues", "nr_issues": 155}, "2022-05-alchemix-findings": {"url": "https://github.com/code-423n4/2022-05-alchemix-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-05-alchemix-findings/issues", "nr_issues": 110}, "2022-05-cally-findings": {"url": "https://github.com/code-423n4/2022-05-cally-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-05-cally-findings/issues", "nr_issues": 140}, "2022-05-aura-findings": {"url": "https://github.com/code-423n4/2022-05-aura-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-05-aura-findings/issues", "nr_issues": 166}, "2022-06-notional-coop-findings": {"url": "https://github.com/code-423n4/2022-06-notional-coop-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-06-notional-coop-findings/issues", "nr_issues": 128}, "2022-05-sturdy-findings": {"url": "https://github.com/code-423n4/2022-05-sturdy-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-05-sturdy-findings/issues", "nr_issues": 92}, "2022-05-rubicon-findings": {"url": "https://github.com/code-423n4/2022-05-rubicon-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-05-rubicon-findings/issues", "nr_issues": 174}, "2022-05-opensea-seaport-findings": {"url": "https://github.com/code-423n4/2022-05-opensea-seaport-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-05-opensea-seaport-findings/issues", "nr_issues": 79}, "2022-05-velodrome-findings": {"url": "https://github.com/code-423n4/2022-05-velodrome-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-05-velodrome-findings/issues", "nr_issues": 127}, "2022-05-backd-findings": {"url": "https://github.com/code-423n4/2022-05-backd-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-05-backd-findings/issues", "nr_issues": 103}, "2022-06-connext-findings": {"url": "https://github.com/code-423n4/2022-06-connext-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-06-connext-findings/issues", "nr_issues": 128}, "2022-06-canto-findings": {"url": "https://github.com/code-423n4/2022-06-canto-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-06-canto-findings/issues", "nr_issues": 111}, "2022-06-illuminate-findings": {"url": "https://github.com/code-423n4/2022-06-illuminate-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-06-illuminate-findings/issues", "nr_issues": 148}, "2022-07-swivel-findings": {"url": "https://github.com/code-423n4/2022-07-swivel-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-07-swivel-findings/issues", "nr_issues": 114}, "2022-06-infinity-findings": {"url": "https://github.com/code-423n4/2022-06-infinity-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-06-infinity-findings/issues", "nr_issues": 155}, "2022-06-nested-findings": {"url": "https://github.com/code-423n4/2022-06-nested-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-06-nested-findings/issues", "nr_issues": 51}, "2022-06-nibbl-findings": {"url": "https://github.com/code-423n4/2022-06-nibbl-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-06-nibbl-findings/issues", "nr_issues": 158}, "2022-06-badger-findings": {"url": "https://github.com/code-423n4/2022-06-badger-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-06-badger-findings/issues", "nr_issues": 69}, "2022-06-yieldy-findings": {"url": "https://github.com/code-423n4/2022-06-yieldy-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-06-yieldy-findings/issues", "nr_issues": 173}, "2022-06-canto-v2-findings": {"url": "https://github.com/code-423n4/2022-06-canto-v2-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-06-canto-v2-findings/issues", "nr_issues": 83}, "2022-06-putty-findings": {"url": "https://github.com/code-423n4/2022-06-putty-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-06-putty-findings/issues", "nr_issues": 197}, "2022-07-juicebox-findings": {"url": "https://github.com/code-423n4/2022-07-juicebox-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-07-juicebox-findings/issues", "nr_issues": 152}, "2022-07-fractional-findings": {"url": "https://github.com/code-423n4/2022-07-fractional-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-07-fractional-findings/issues", "nr_issues": 207}, "2022-07-ens-findings": {"url": "https://github.com/code-423n4/2022-07-ens-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-07-ens-findings/issues", "nr_issues": 153}, "2022-07-yield-findings": {"url": "https://github.com/code-423n4/2022-07-yield-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-07-yield-findings/issues", "nr_issues": 93}, "2022-07-golom-findings": {"url": "https://github.com/code-423n4/2022-07-golom-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-07-golom-findings/issues", "nr_issues": 252}, "2022-07-axelar-findings": {"url": "https://github.com/code-423n4/2022-07-axelar-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-07-axelar-findings/issues", "nr_issues": 128}, "2022-08-mimo-findings": {"url": "https://github.com/code-423n4/2022-08-mimo-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-08-mimo-findings/issues", "nr_issues": 103}, "2022-08-rigor-findings": {"url": "https://github.com/code-423n4/2022-08-rigor-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-08-rigor-findings/issues", "nr_issues": 217}, "2022-08-foundation-findings": {"url": "https://github.com/code-423n4/2022-08-foundation-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-08-foundation-findings/issues", "nr_issues": 155}, "2022-08-frax-findings": {"url": "https://github.com/code-423n4/2022-08-frax-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-08-frax-findings/issues", "nr_issues": 195}, "2022-08-fiatdao-findings": {"url": "https://github.com/code-423n4/2022-08-fiatdao-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-08-fiatdao-findings/issues", "nr_issues": 197}, "2022-08-nounsdao-findings": {"url": "https://github.com/code-423n4/2022-08-nounsdao-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-08-nounsdao-findings/issues", "nr_issues": 247}, "2022-08-olympus-findings": {"url": "https://github.com/code-423n4/2022-08-olympus-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-08-olympus-findings/issues", "nr_issues": 241}, "2022-09-nouns-builder-findings": {"url": "https://github.com/code-423n4/2022-09-nouns-builder-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-09-nouns-builder-findings/issues", "nr_issues": 233}, "2022-09-canto-findings": {"url": "https://github.com/code-423n4/2022-09-canto-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-09-canto-findings/issues", "nr_issues": 59}, "2022-09-party-findings": {"url": "https://github.com/code-423n4/2022-09-party-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-09-party-findings/issues", "nr_issues": 169}, "2022-09-tribe-findings": {"url": "https://github.com/code-423n4/2022-09-tribe-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-09-tribe-findings/issues", "nr_issues": 104}, "2022-09-y2k-finance-findings": {"url": "https://github.com/code-423n4/2022-09-y2k-finance-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-09-y2k-finance-findings/issues", "nr_issues": 157}, "2022-09-vtvl-findings": {"url": "https://github.com/code-423n4/2022-09-vtvl-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-09-vtvl-findings/issues", "nr_issues": 289}, "2022-09-artgobblers-findings": {"url": "https://github.com/code-423n4/2022-09-artgobblers-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-09-artgobblers-findings/issues", "nr_issues": 123}, "2022-09-frax-findings": {"url": "https://github.com/code-423n4/2022-09-frax-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-09-frax-findings/issues", "nr_issues": 189}, "2022-10-blur-findings": {"url": "https://github.com/code-423n4/2022-10-blur-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-10-blur-findings/issues", "nr_issues": 61}, "2022-10-thegraph-findings": {"url": "https://github.com/code-423n4/2022-10-thegraph-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-10-thegraph-findings/issues", "nr_issues": 79}, "2022-10-holograph-findings": {"url": "https://github.com/code-423n4/2022-10-holograph-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-10-holograph-findings/issues", "nr_issues": 138}, "2022-10-traderjoe-findings": {"url": "https://github.com/code-423n4/2022-10-traderjoe-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-10-traderjoe-findings/issues", "nr_issues": 38}, "2022-10-juicebox-findings": {"url": "https://github.com/code-423n4/2022-10-juicebox-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-10-juicebox-findings/issues", "nr_issues": 97}, "2022-11-debtdao-findings": {"url": "https://github.com/code-423n4/2022-11-debtdao-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-11-debtdao-findings/issues", "nr_issues": 138}, "2022-10-inverse-findings": {"url": "https://github.com/code-423n4/2022-10-inverse-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-10-inverse-findings/issues", "nr_issues": 128}, "2022-10-paladin-findings": {"url": "https://github.com/code-423n4/2022-10-paladin-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-10-paladin-findings/issues", "nr_issues": 126}, "2022-10-zksync-findings": {"url": "https://github.com/code-423n4/2022-10-zksync-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-10-zksync-findings/issues", "nr_issues": 26}, "2022-11-looksrare-findings": {"url": "https://github.com/code-423n4/2022-11-looksrare-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-11-looksrare-findings/issues", "nr_issues": 73}, "2022-11-size-findings": {"url": "https://github.com/code-423n4/2022-11-size-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-11-size-findings/issues", "nr_issues": 70}, "2022-11-non-fungible-findings": {"url": "https://github.com/code-423n4/2022-11-non-fungible-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-11-non-fungible-findings/issues", "nr_issues": 56}, "2022-11-stakehouse-findings": {"url": "https://github.com/code-423n4/2022-11-stakehouse-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-11-stakehouse-findings/issues", "nr_issues": 131}, "2022-11-redactedcartel-findings": {"url": "https://github.com/code-423n4/2022-11-redactedcartel-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-11-redactedcartel-findings/issues", "nr_issues": 112}, "2022-11-canto-findings": {"url": "https://github.com/code-423n4/2022-11-canto-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-11-canto-findings/issues", "nr_issues": 45}, "2022-11-paraspace-findings": {"url": "https://github.com/code-423n4/2022-11-paraspace-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-11-paraspace-findings/issues", "nr_issues": 119}, "2022-12-pooltogether-findings": {"url": "https://github.com/code-423n4/2022-12-pooltogether-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-12-pooltogether-findings/issues", "nr_issues": 16}, "2022-12-escher-findings": {"url": "https://github.com/code-423n4/2022-12-escher-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-12-escher-findings/issues", "nr_issues": 68}, "2022-12-prepo-findings": {"url": "https://github.com/code-423n4/2022-12-prepo-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-12-prepo-findings/issues", "nr_issues": 67}, "2022-12-forgeries-findings": {"url": "https://github.com/code-423n4/2022-12-forgeries-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-12-forgeries-findings/issues", "nr_issues": 59}, "2022-12-tigris-findings": {"url": "https://github.com/code-423n4/2022-12-tigris-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-12-tigris-findings/issues", "nr_issues": 55}, "2022-12-tessera-findings": {"url": "https://github.com/code-423n4/2022-12-tessera-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-12-tessera-findings/issues", "nr_issues": 25}, "2022-12-caviar-findings": {"url": "https://github.com/code-423n4/2022-12-caviar-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-12-caviar-findings/issues", "nr_issues": 65}, "2022-12-backed-findings": {"url": "https://github.com/code-423n4/2022-12-backed-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-12-backed-findings/issues", "nr_issues": 62}, "2022-12-gogopool-findings": {"url": "https://github.com/code-423n4/2022-12-gogopool-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-12-gogopool-findings/issues", "nr_issues": 56}, "2023-01-biconomy-findings": {"url": "https://github.com/code-423n4/2023-01-biconomy-findings", "issues_url": "https://api.github.com/repos/code-423n4/2023-01-biconomy-findings/issues", "nr_issues": 93}, "2023-01-reserve-findings": {"url": "https://github.com/code-423n4/2023-01-reserve-findings", "issues_url": "https://api.github.com/repos/code-423n4/2023-01-reserve-findings/issues", "nr_issues": 104}, "2023-01-opensea-findings": {"url": "https://github.com/code-423n4/2023-01-opensea-findings", "issues_url": "https://api.github.com/repos/code-423n4/2023-01-opensea-findings/issues", "nr_issues": 28}, "2023-01-ondo-findings": {"url": "https://github.com/code-423n4/2023-01-ondo-findings", "issues_url": "https://api.github.com/repos/code-423n4/2023-01-ondo-findings/issues", "nr_issues": 85}, "2023-01-timeswap-findings": {"url": "https://github.com/code-423n4/2023-01-timeswap-findings", "issues_url": "https://api.github.com/repos/code-423n4/2023-01-timeswap-findings/issues", "nr_issues": 77}, "2023-01-numoen-findings": {"url": "https://github.com/code-423n4/2023-01-numoen-findings", "issues_url": "https://api.github.com/repos/code-423n4/2023-01-numoen-findings/issues", "nr_issues": 35}, "2023-01-drips-findings": {"url": "https://github.com/code-423n4/2023-01-drips-findings", "issues_url": "https://api.github.com/repos/code-423n4/2023-01-drips-findings/issues", "nr_issues": 36}, "2023-01-rabbithole-findings": {"url": "https://github.com/code-423n4/2023-01-rabbithole-findings", "issues_url": "https://api.github.com/repos/code-423n4/2023-01-rabbithole-findings/issues", "nr_issues": 166}, "2023-01-tessera-mitigation-findings": {"url": "https://github.com/code-423n4/2023-01-tessera-mitigation-findings", "issues_url": "https://api.github.com/repos/code-423n4/2023-01-tessera-mitigation-findings/issues", "nr_issues": 41}, "2023-01-canto-identity-findings": {"url": "https://github.com/code-423n4/2023-01-canto-identity-findings", "issues_url": "https://api.github.com/repos/code-423n4/2023-01-canto-identity-findings/issues", "nr_issues": 47}, "2023-02-reserve-mitigation-contest-findings": {"url": "https://github.com/code-423n4/2023-02-reserve-mitigation-contest-findings", "issues_url": "https://api.github.com/repos/code-423n4/2023-02-reserve-mitigation-contest-findings/issues", "nr_issues": 61}, "2023-02-gogopool-mitigation-contest-findings": {"url": "https://github.com/code-423n4/2023-02-gogopool-mitigation-contest-findings", "issues_url": "https://api.github.com/repos/code-423n4/2023-02-gogopool-mitigation-contest-findings/issues", "nr_issues": 46}, "2023-02-malt-findings": {"url": "https://github.com/code-423n4/2023-02-malt-findings", "issues_url": "https://api.github.com/repos/code-423n4/2023-02-malt-findings/issues", "nr_issues": 35}, "2023-03-wenwin-findings": {"url": "https://github.com/code-423n4/2023-03-wenwin-findings", "issues_url": "https://api.github.com/repos/code-423n4/2023-03-wenwin-findings/issues", "nr_issues": 121}, "2023-03-neotokyo-findings": {"url": "https://github.com/code-423n4/2023-03-neotokyo-findings", "issues_url": "https://api.github.com/repos/code-423n4/2023-03-neotokyo-findings/issues", "nr_issues": 140}, "2022-07-canto-findings": {"url": "https://github.com/code-423n4/2022-07-canto-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-07-canto-findings/issues", "nr_issues": 0}, "2022-08-prepo-findings": {"url": "https://github.com/code-423n4/2022-08-prepo-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-08-prepo-findings/issues", "nr_issues": 0}, "2022-11-foundation-findings": {"url": "https://github.com/code-423n4/2022-11-foundation-findings", "issues_url": "https://api.github.com/repos/code-423n4/2022-11-foundation-findings/issues", "nr_issues": 0}, "2023-03-mute-findings": {"url": "https://github.com/code-423n4/2023-03-mute-findings", "issues_url": "https://api.github.com/repos/code-423n4/2023-03-mute-findings/issues", "nr_issues": 23}}
+{
+    "2021-02-slingshot-findings": {
+        "url": "https://github.com/code-423n4/2021-02-slingshot-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-02-slingshot-findings/issues",
+        "nr_issues": 0
+    },
+    "2021-03-elasticdao-findings": {
+        "url": "https://github.com/code-423n4/2021-03-elasticdao-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-03-elasticdao-findings/issues",
+        "nr_issues": 1
+    },
+    "2021-04-marginswap-findings": {
+        "url": "https://github.com/code-423n4/2021-04-marginswap-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-04-marginswap-findings/issues",
+        "nr_issues": 64
+    },
+    "2021-04-maple-findings": {
+        "url": "https://github.com/code-423n4/2021-04-maple-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-04-maple-findings/issues",
+        "nr_issues": 86
+    },
+    "2021-04-basedloans-findings": {
+        "url": "https://github.com/code-423n4/2021-04-basedloans-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-04-basedloans-findings/issues",
+        "nr_issues": 33
+    },
+    "2021-04-vader-findings": {
+        "url": "https://github.com/code-423n4/2021-04-vader-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-04-vader-findings/issues",
+        "nr_issues": 125
+    },
+    "2021-05-nftx-findings": {
+        "url": "https://github.com/code-423n4/2021-05-nftx-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-05-nftx-findings/issues",
+        "nr_issues": 42
+    },
+    "2021-04-meebits-findings": {
+        "url": "https://github.com/code-423n4/2021-04-meebits-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-04-meebits-findings/issues",
+        "nr_issues": 84
+    },
+    "2021-05-88mph-findings": {
+        "url": "https://github.com/code-423n4/2021-05-88mph-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-05-88mph-findings/issues",
+        "nr_issues": 14
+    },
+    "2021-05-visorfinance-findings": {
+        "url": "https://github.com/code-423n4/2021-05-visorfinance-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-05-visorfinance-findings/issues",
+        "nr_issues": 30
+    },
+    "2021-05-fairside-findings": {
+        "url": "https://github.com/code-423n4/2021-05-fairside-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-05-fairside-findings/issues",
+        "nr_issues": 40
+    },
+    "2021-05-yield-findings": {
+        "url": "https://github.com/code-423n4/2021-05-yield-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-05-yield-findings/issues",
+        "nr_issues": 46
+    },
+    "2021-06-realitycards-findings": {
+        "url": "https://github.com/code-423n4/2021-06-realitycards-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-06-realitycards-findings/issues",
+        "nr_issues": 75
+    },
+    "2021-06-pooltogether-findings": {
+        "url": "https://github.com/code-423n4/2021-06-pooltogether-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-06-pooltogether-findings/issues",
+        "nr_issues": 69
+    },
+    "2021-06-tracer-findings": {
+        "url": "https://github.com/code-423n4/2021-06-tracer-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-06-tracer-findings/issues",
+        "nr_issues": 79
+    },
+    "2021-06-gro-findings": {
+        "url": "https://github.com/code-423n4/2021-06-gro-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-06-gro-findings/issues",
+        "nr_issues": 86
+    },
+    "2021-07-wildcredit-findings": {
+        "url": "https://github.com/code-423n4/2021-07-wildcredit-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-07-wildcredit-findings/issues",
+        "nr_issues": 61
+    },
+    "2021-07-spartan-findings": {
+        "url": "https://github.com/code-423n4/2021-07-spartan-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-07-spartan-findings/issues",
+        "nr_issues": 141
+    },
+    "2021-07-sherlock-findings": {
+        "url": "https://github.com/code-423n4/2021-07-sherlock-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-07-sherlock-findings/issues",
+        "nr_issues": 96
+    },
+    "2021-07-connext-findings": {
+        "url": "https://github.com/code-423n4/2021-07-connext-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-07-connext-findings/issues",
+        "nr_issues": 36
+    },
+    "2021-08-floatcapital-findings": {
+        "url": "https://github.com/code-423n4/2021-08-floatcapital-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-08-floatcapital-findings/issues",
+        "nr_issues": 78
+    },
+    "2021-08-notional-findings": {
+        "url": "https://github.com/code-423n4/2021-08-notional-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-08-notional-findings/issues",
+        "nr_issues": 97
+    },
+    "2021-07-pooltogether-findings": {
+        "url": "https://github.com/code-423n4/2021-07-pooltogether-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-07-pooltogether-findings/issues",
+        "nr_issues": 43
+    },
+    "2021-08-yield-findings": {
+        "url": "https://github.com/code-423n4/2021-08-yield-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-08-yield-findings/issues",
+        "nr_issues": 60
+    },
+    "2021-08-realitycards-findings": {
+        "url": "https://github.com/code-423n4/2021-08-realitycards-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-08-realitycards-findings/issues",
+        "nr_issues": 50
+    },
+    "2021-08-gravitybridge-findings": {
+        "url": "https://github.com/code-423n4/2021-08-gravitybridge-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-08-gravitybridge-findings/issues",
+        "nr_issues": 44
+    },
+    "2021-09-sushimiso-findings": {
+        "url": "https://github.com/code-423n4/2021-09-sushimiso-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-09-sushimiso-findings/issues",
+        "nr_issues": 101
+    },
+    "2021-09-sushitrident-findings": {
+        "url": "https://github.com/code-423n4/2021-09-sushitrident-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-09-sushitrident-findings/issues",
+        "nr_issues": 108
+    },
+    "2021-09-yaxis-findings": {
+        "url": "https://github.com/code-423n4/2021-09-yaxis-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-09-yaxis-findings/issues",
+        "nr_issues": 88
+    },
+    "2021-09-bvecvx-findings": {
+        "url": "https://github.com/code-423n4/2021-09-bvecvx-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-09-bvecvx-findings/issues",
+        "nr_issues": 51
+    },
+    "2021-09-wildcredit-findings": {
+        "url": "https://github.com/code-423n4/2021-09-wildcredit-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-09-wildcredit-findings/issues",
+        "nr_issues": 63
+    },
+    "2021-10-pooltogether-findings": {
+        "url": "https://github.com/code-423n4/2021-10-pooltogether-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-10-pooltogether-findings/issues",
+        "nr_issues": 41
+    },
+    "2021-09-defiprotocol-findings": {
+        "url": "https://github.com/code-423n4/2021-09-defiprotocol-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-09-defiprotocol-findings/issues",
+        "nr_issues": 156
+    },
+    "2021-09-sushitrident-2-findings": {
+        "url": "https://github.com/code-423n4/2021-09-sushitrident-2-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-09-sushitrident-2-findings/issues",
+        "nr_issues": 63
+    },
+    "2021-10-tempus-findings": {
+        "url": "https://github.com/code-423n4/2021-10-tempus-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-10-tempus-findings/issues",
+        "nr_issues": 36
+    },
+    "2021-10-ambire-findings": {
+        "url": "https://github.com/code-423n4/2021-10-ambire-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-10-ambire-findings/issues",
+        "nr_issues": 41
+    },
+    "2021-09-swivel-findings": {
+        "url": "https://github.com/code-423n4/2021-09-swivel-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-09-swivel-findings/issues",
+        "nr_issues": 74
+    },
+    "2021-10-tracer-findings": {
+        "url": "https://github.com/code-423n4/2021-10-tracer-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-10-tracer-findings/issues",
+        "nr_issues": 23
+    },
+    "2021-10-defiprotocol-findings": {
+        "url": "https://github.com/code-423n4/2021-10-defiprotocol-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-10-defiprotocol-findings/issues",
+        "nr_issues": 71
+    },
+    "2021-10-tally-findings": {
+        "url": "https://github.com/code-423n4/2021-10-tally-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-10-tally-findings/issues",
+        "nr_issues": 41
+    },
+    "2021-10-mochi-findings": {
+        "url": "https://github.com/code-423n4/2021-10-mochi-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-10-mochi-findings/issues",
+        "nr_issues": 66
+    },
+    "2021-10-covalent-findings": {
+        "url": "https://github.com/code-423n4/2021-10-covalent-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-10-covalent-findings/issues",
+        "nr_issues": 38
+    },
+    "2021-10-union-findings": {
+        "url": "https://github.com/code-423n4/2021-10-union-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-10-union-findings/issues",
+        "nr_issues": 81
+    },
+    "2021-10-badgerdao-findings": {
+        "url": "https://github.com/code-423n4/2021-10-badgerdao-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-10-badgerdao-findings/issues",
+        "nr_issues": 51
+    },
+    "2021-10-slingshot-findings": {
+        "url": "https://github.com/code-423n4/2021-10-slingshot-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-10-slingshot-findings/issues",
+        "nr_issues": 55
+    },
+    "2021-11-overlay-findings": {
+        "url": "https://github.com/code-423n4/2021-11-overlay-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-11-overlay-findings/issues",
+        "nr_issues": 68
+    },
+    "2021-11-fairside-findings": {
+        "url": "https://github.com/code-423n4/2021-11-fairside-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-11-fairside-findings/issues",
+        "nr_issues": 46
+    },
+    "2021-11-vader-findings": {
+        "url": "https://github.com/code-423n4/2021-11-vader-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-11-vader-findings/issues",
+        "nr_issues": 111
+    },
+    "2021-11-nested-findings": {
+        "url": "https://github.com/code-423n4/2021-11-nested-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-11-nested-findings/issues",
+        "nr_issues": 102
+    },
+    "2021-11-unlock-findings": {
+        "url": "https://github.com/code-423n4/2021-11-unlock-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-11-unlock-findings/issues",
+        "nr_issues": 152
+    },
+    "2021-12-maple-findings": {
+        "url": "https://github.com/code-423n4/2021-12-maple-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-12-maple-findings/issues",
+        "nr_issues": 25
+    },
+    "2021-11-bootfinance-findings": {
+        "url": "https://github.com/code-423n4/2021-11-bootfinance-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-11-bootfinance-findings/issues",
+        "nr_issues": 155
+    },
+    "2021-12-mellow-findings": {
+        "url": "https://github.com/code-423n4/2021-12-mellow-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-12-mellow-findings/issues",
+        "nr_issues": 74
+    },
+    "2021-11-yaxis-findings": {
+        "url": "https://github.com/code-423n4/2021-11-yaxis-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-11-yaxis-findings/issues",
+        "nr_issues": 67
+    },
+    "2021-11-badgerzaps-findings": {
+        "url": "https://github.com/code-423n4/2021-11-badgerzaps-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-11-badgerzaps-findings/issues",
+        "nr_issues": 40
+    },
+    "2021-12-perennial-findings": {
+        "url": "https://github.com/code-423n4/2021-12-perennial-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-12-perennial-findings/issues",
+        "nr_issues": 38
+    },
+    "2021-11-streaming-findings": {
+        "url": "https://github.com/code-423n4/2021-11-streaming-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-11-streaming-findings/issues",
+        "nr_issues": 118
+    },
+    "2021-11-malt-findings": {
+        "url": "https://github.com/code-423n4/2021-11-malt-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-11-malt-findings/issues",
+        "nr_issues": 178
+    },
+    "2021-12-sublime-findings": {
+        "url": "https://github.com/code-423n4/2021-12-sublime-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-12-sublime-findings/issues",
+        "nr_issues": 92
+    },
+    "2021-11-fei-findings": {
+        "url": "https://github.com/code-423n4/2021-11-fei-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-11-fei-findings/issues",
+        "nr_issues": 48
+    },
+    "2021-12-pooltogether-findings": {
+        "url": "https://github.com/code-423n4/2021-12-pooltogether-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-12-pooltogether-findings/issues",
+        "nr_issues": 38
+    },
+    "2021-12-defiprotocol-findings": {
+        "url": "https://github.com/code-423n4/2021-12-defiprotocol-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-12-defiprotocol-findings/issues",
+        "nr_issues": 89
+    },
+    "2021-12-yetifinance-findings": {
+        "url": "https://github.com/code-423n4/2021-12-yetifinance-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-12-yetifinance-findings/issues",
+        "nr_issues": 129
+    },
+    "2022-01-sandclock-findings": {
+        "url": "https://github.com/code-423n4/2022-01-sandclock-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-01-sandclock-findings/issues",
+        "nr_issues": 1
+    },
+    "2021-12-amun-findings": {
+        "url": "https://github.com/code-423n4/2021-12-amun-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-12-amun-findings/issues",
+        "nr_issues": 129
+    },
+    "2021-12-nftx-findings": {
+        "url": "https://github.com/code-423n4/2021-12-nftx-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-12-nftx-findings/issues",
+        "nr_issues": 124
+    },
+    "2021-12-vader-findings": {
+        "url": "https://github.com/code-423n4/2021-12-vader-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2021-12-vader-findings/issues",
+        "nr_issues": 80
+    },
+    "2022-01-insure-findings": {
+        "url": "https://github.com/code-423n4/2022-01-insure-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-01-insure-findings/issues",
+        "nr_issues": 176
+    },
+    "2022-01-openleverage-findings": {
+        "url": "https://github.com/code-423n4/2022-01-openleverage-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-01-openleverage-findings/issues",
+        "nr_issues": 83
+    },
+    "2022-01-livepeer-findings": {
+        "url": "https://github.com/code-423n4/2022-01-livepeer-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-01-livepeer-findings/issues",
+        "nr_issues": 82
+    },
+    "2022-01-timeswap-findings": {
+        "url": "https://github.com/code-423n4/2022-01-timeswap-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-01-timeswap-findings/issues",
+        "nr_issues": 87
+    },
+    "2022-01-elasticswap-findings": {
+        "url": "https://github.com/code-423n4/2022-01-elasticswap-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-01-elasticswap-findings/issues",
+        "nr_issues": 49
+    },
+    "2022-01-xdefi-findings": {
+        "url": "https://github.com/code-423n4/2022-01-xdefi-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-01-xdefi-findings/issues",
+        "nr_issues": 51
+    },
+    "2022-01-sherlock-findings": {
+        "url": "https://github.com/code-423n4/2022-01-sherlock-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-01-sherlock-findings/issues",
+        "nr_issues": 71
+    },
+    "2022-01-behodler-findings": {
+        "url": "https://github.com/code-423n4/2022-01-behodler-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-01-behodler-findings/issues",
+        "nr_issues": 70
+    },
+    "2022-01-notional-findings": {
+        "url": "https://github.com/code-423n4/2022-01-notional-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-01-notional-findings/issues",
+        "nr_issues": 57
+    },
+    "2022-01-trader-joe-findings": {
+        "url": "https://github.com/code-423n4/2022-01-trader-joe-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-01-trader-joe-findings/issues",
+        "nr_issues": 118
+    },
+    "2022-04-xtribe-findings": {
+        "url": "https://github.com/code-423n4/2022-04-xtribe-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-04-xtribe-findings/issues",
+        "nr_issues": 67
+    },
+    "2022-01-dev-test-repo-findings": {
+        "url": "https://github.com/code-423n4/2022-01-dev-test-repo-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-01-dev-test-repo-findings/issues",
+        "nr_issues": 87
+    },
+    "2022-01-yield-findings": {
+        "url": "https://github.com/code-423n4/2022-01-yield-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-01-yield-findings/issues",
+        "nr_issues": 37
+    },
+    "2022-02-aave-lens-findings": {
+        "url": "https://github.com/code-423n4/2022-02-aave-lens-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-02-aave-lens-findings/issues",
+        "nr_issues": 39
+    },
+    "2022-02-anchor-findings": {
+        "url": "https://github.com/code-423n4/2022-02-anchor-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-02-anchor-findings/issues",
+        "nr_issues": 36
+    },
+    "2022-02-concur-findings": {
+        "url": "https://github.com/code-423n4/2022-02-concur-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-02-concur-findings/issues",
+        "nr_issues": 112
+    },
+    "2022-02-badger-citadel-findings": {
+        "url": "https://github.com/code-423n4/2022-02-badger-citadel-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-02-badger-citadel-findings/issues",
+        "nr_issues": 49
+    },
+    "2022-02-nested-findings": {
+        "url": "https://github.com/code-423n4/2022-02-nested-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-02-nested-findings/issues",
+        "nr_issues": 39
+    },
+    "2022-02-tribe-turbo-findings": {
+        "url": "https://github.com/code-423n4/2022-02-tribe-turbo-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-02-tribe-turbo-findings/issues",
+        "nr_issues": 38
+    },
+    "2022-02-skale-findings": {
+        "url": "https://github.com/code-423n4/2022-02-skale-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-02-skale-findings/issues",
+        "nr_issues": 43
+    },
+    "2022-02-redacted-cartel-findings": {
+        "url": "https://github.com/code-423n4/2022-02-redacted-cartel-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-02-redacted-cartel-findings/issues",
+        "nr_issues": 57
+    },
+    "2022-02-hubble-findings": {
+        "url": "https://github.com/code-423n4/2022-02-hubble-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-02-hubble-findings/issues",
+        "nr_issues": 71
+    },
+    "2022-04-phuture-findings": {
+        "url": "https://github.com/code-423n4/2022-04-phuture-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-04-phuture-findings/issues",
+        "nr_issues": 63
+    },
+    "2022-02-pooltogether-findings": {
+        "url": "https://github.com/code-423n4/2022-02-pooltogether-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-02-pooltogether-findings/issues",
+        "nr_issues": 27
+    },
+    "2022-02-foundation-findings": {
+        "url": "https://github.com/code-423n4/2022-02-foundation-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-02-foundation-findings/issues",
+        "nr_issues": 52
+    },
+    "2022-02-jpyc-findings": {
+        "url": "https://github.com/code-423n4/2022-02-jpyc-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-02-jpyc-findings/issues",
+        "nr_issues": 41
+    },
+    "2022-03-timeswap-findings": {
+        "url": "https://github.com/code-423n4/2022-03-timeswap-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-03-timeswap-findings/issues",
+        "nr_issues": 26
+    },
+    "2022-03-biconomy-findings": {
+        "url": "https://github.com/code-423n4/2022-03-biconomy-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-03-biconomy-findings/issues",
+        "nr_issues": 104
+    },
+    "2022-03-maple-findings": {
+        "url": "https://github.com/code-423n4/2022-03-maple-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-03-maple-findings/issues",
+        "nr_issues": 23
+    },
+    "2022-03-rolla-findings": {
+        "url": "https://github.com/code-423n4/2022-03-rolla-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-03-rolla-findings/issues",
+        "nr_issues": 35
+    },
+    "2022-05-vetoken-findings": {
+        "url": "https://github.com/code-423n4/2022-05-vetoken-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-05-vetoken-findings/issues",
+        "nr_issues": 130
+    },
+    "2022-03-prepo-findings": {
+        "url": "https://github.com/code-423n4/2022-03-prepo-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-03-prepo-findings/issues",
+        "nr_issues": 72
+    },
+    "2022-03-sublime-findings": {
+        "url": "https://github.com/code-423n4/2022-03-sublime-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-03-sublime-findings/issues",
+        "nr_issues": 43
+    },
+    "2022-03-joyn-findings": {
+        "url": "https://github.com/code-423n4/2022-03-joyn-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-03-joyn-findings/issues",
+        "nr_issues": 68
+    },
+    "2022-03-volt-findings": {
+        "url": "https://github.com/code-423n4/2022-03-volt-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-03-volt-findings/issues",
+        "nr_issues": 68
+    },
+    "2022-03-lifinance-findings": {
+        "url": "https://github.com/code-423n4/2022-03-lifinance-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-03-lifinance-findings/issues",
+        "nr_issues": 94
+    },
+    "2022-03-paladin-findings": {
+        "url": "https://github.com/code-423n4/2022-03-paladin-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-03-paladin-findings/issues",
+        "nr_issues": 66
+    },
+    "2022-04-jpegd-findings": {
+        "url": "https://github.com/code-423n4/2022-04-jpegd-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-04-jpegd-findings/issues",
+        "nr_issues": 100
+    },
+    "2022-04-backed-findings": {
+        "url": "https://github.com/code-423n4/2022-04-backed-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-04-backed-findings/issues",
+        "nr_issues": 67
+    },
+    "2022-04-dualityfocus-findings": {
+        "url": "https://github.com/code-423n4/2022-04-dualityfocus-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-04-dualityfocus-findings/issues",
+        "nr_issues": 23
+    },
+    "2022-04-axelar-findings": {
+        "url": "https://github.com/code-423n4/2022-04-axelar-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-04-axelar-findings/issues",
+        "nr_issues": 29
+    },
+    "2022-04-badger-citadel-findings": {
+        "url": "https://github.com/code-423n4/2022-04-badger-citadel-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-04-badger-citadel-findings/issues",
+        "nr_issues": 115
+    },
+    "2022-04-backd-findings": {
+        "url": "https://github.com/code-423n4/2022-04-backd-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-04-backd-findings/issues",
+        "nr_issues": 92
+    },
+    "2022-04-pooltogether-findings": {
+        "url": "https://github.com/code-423n4/2022-04-pooltogether-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-04-pooltogether-findings/issues",
+        "nr_issues": 51
+    },
+    "2022-04-abranft-findings": {
+        "url": "https://github.com/code-423n4/2022-04-abranft-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-04-abranft-findings/issues",
+        "nr_issues": 84
+    },
+    "2022-04-mimo-findings": {
+        "url": "https://github.com/code-423n4/2022-04-mimo-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-04-mimo-findings/issues",
+        "nr_issues": 68
+    },
+    "2022-05-cudos-findings": {
+        "url": "https://github.com/code-423n4/2022-05-cudos-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-05-cudos-findings/issues",
+        "nr_issues": 83
+    },
+    "2022-05-factorydao-findings": {
+        "url": "https://github.com/code-423n4/2022-05-factorydao-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-05-factorydao-findings/issues",
+        "nr_issues": 108
+    },
+    "2022-05-bunker-findings": {
+        "url": "https://github.com/code-423n4/2022-05-bunker-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-05-bunker-findings/issues",
+        "nr_issues": 63
+    },
+    "2022-05-runes-findings": {
+        "url": "https://github.com/code-423n4/2022-05-runes-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-05-runes-findings/issues",
+        "nr_issues": 155
+    },
+    "2022-05-alchemix-findings": {
+        "url": "https://github.com/code-423n4/2022-05-alchemix-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-05-alchemix-findings/issues",
+        "nr_issues": 110
+    },
+    "2022-05-cally-findings": {
+        "url": "https://github.com/code-423n4/2022-05-cally-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-05-cally-findings/issues",
+        "nr_issues": 140
+    },
+    "2022-05-aura-findings": {
+        "url": "https://github.com/code-423n4/2022-05-aura-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-05-aura-findings/issues",
+        "nr_issues": 166
+    },
+    "2022-06-notional-coop-findings": {
+        "url": "https://github.com/code-423n4/2022-06-notional-coop-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-06-notional-coop-findings/issues",
+        "nr_issues": 128
+    },
+    "2022-05-sturdy-findings": {
+        "url": "https://github.com/code-423n4/2022-05-sturdy-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-05-sturdy-findings/issues",
+        "nr_issues": 92
+    },
+    "2022-05-rubicon-findings": {
+        "url": "https://github.com/code-423n4/2022-05-rubicon-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-05-rubicon-findings/issues",
+        "nr_issues": 174
+    },
+    "2022-05-opensea-seaport-findings": {
+        "url": "https://github.com/code-423n4/2022-05-opensea-seaport-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-05-opensea-seaport-findings/issues",
+        "nr_issues": 79
+    },
+    "2022-05-velodrome-findings": {
+        "url": "https://github.com/code-423n4/2022-05-velodrome-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-05-velodrome-findings/issues",
+        "nr_issues": 127
+    },
+    "2022-05-backd-findings": {
+        "url": "https://github.com/code-423n4/2022-05-backd-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-05-backd-findings/issues",
+        "nr_issues": 103
+    },
+    "2022-06-connext-findings": {
+        "url": "https://github.com/code-423n4/2022-06-connext-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-06-connext-findings/issues",
+        "nr_issues": 128
+    },
+    "2022-06-canto-findings": {
+        "url": "https://github.com/code-423n4/2022-06-canto-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-06-canto-findings/issues",
+        "nr_issues": 111
+    },
+    "2022-06-illuminate-findings": {
+        "url": "https://github.com/code-423n4/2022-06-illuminate-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-06-illuminate-findings/issues",
+        "nr_issues": 148
+    },
+    "2022-07-swivel-findings": {
+        "url": "https://github.com/code-423n4/2022-07-swivel-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-07-swivel-findings/issues",
+        "nr_issues": 114
+    },
+    "2022-06-infinity-findings": {
+        "url": "https://github.com/code-423n4/2022-06-infinity-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-06-infinity-findings/issues",
+        "nr_issues": 155
+    },
+    "2022-06-nested-findings": {
+        "url": "https://github.com/code-423n4/2022-06-nested-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-06-nested-findings/issues",
+        "nr_issues": 51
+    },
+    "2022-06-nibbl-findings": {
+        "url": "https://github.com/code-423n4/2022-06-nibbl-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-06-nibbl-findings/issues",
+        "nr_issues": 158
+    },
+    "2022-06-badger-findings": {
+        "url": "https://github.com/code-423n4/2022-06-badger-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-06-badger-findings/issues",
+        "nr_issues": 69
+    },
+    "2022-06-yieldy-findings": {
+        "url": "https://github.com/code-423n4/2022-06-yieldy-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-06-yieldy-findings/issues",
+        "nr_issues": 173
+    },
+    "2022-06-canto-v2-findings": {
+        "url": "https://github.com/code-423n4/2022-06-canto-v2-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-06-canto-v2-findings/issues",
+        "nr_issues": 83
+    },
+    "2022-06-putty-findings": {
+        "url": "https://github.com/code-423n4/2022-06-putty-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-06-putty-findings/issues",
+        "nr_issues": 197
+    },
+    "2022-07-juicebox-findings": {
+        "url": "https://github.com/code-423n4/2022-07-juicebox-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-07-juicebox-findings/issues",
+        "nr_issues": 152
+    },
+    "2022-07-fractional-findings": {
+        "url": "https://github.com/code-423n4/2022-07-fractional-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-07-fractional-findings/issues",
+        "nr_issues": 207
+    },
+    "2022-07-ens-findings": {
+        "url": "https://github.com/code-423n4/2022-07-ens-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-07-ens-findings/issues",
+        "nr_issues": 153
+    },
+    "2022-07-yield-findings": {
+        "url": "https://github.com/code-423n4/2022-07-yield-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-07-yield-findings/issues",
+        "nr_issues": 93
+    },
+    "2022-07-golom-findings": {
+        "url": "https://github.com/code-423n4/2022-07-golom-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-07-golom-findings/issues",
+        "nr_issues": 252
+    },
+    "2022-07-axelar-findings": {
+        "url": "https://github.com/code-423n4/2022-07-axelar-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-07-axelar-findings/issues",
+        "nr_issues": 128
+    },
+    "2022-08-mimo-findings": {
+        "url": "https://github.com/code-423n4/2022-08-mimo-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-08-mimo-findings/issues",
+        "nr_issues": 103
+    },
+    "2022-08-rigor-findings": {
+        "url": "https://github.com/code-423n4/2022-08-rigor-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-08-rigor-findings/issues",
+        "nr_issues": 217
+    },
+    "2022-08-foundation-findings": {
+        "url": "https://github.com/code-423n4/2022-08-foundation-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-08-foundation-findings/issues",
+        "nr_issues": 155
+    },
+    "2022-08-frax-findings": {
+        "url": "https://github.com/code-423n4/2022-08-frax-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-08-frax-findings/issues",
+        "nr_issues": 195
+    },
+    "2022-08-fiatdao-findings": {
+        "url": "https://github.com/code-423n4/2022-08-fiatdao-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-08-fiatdao-findings/issues",
+        "nr_issues": 197
+    },
+    "2022-08-nounsdao-findings": {
+        "url": "https://github.com/code-423n4/2022-08-nounsdao-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-08-nounsdao-findings/issues",
+        "nr_issues": 247
+    },
+    "2022-08-olympus-findings": {
+        "url": "https://github.com/code-423n4/2022-08-olympus-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-08-olympus-findings/issues",
+        "nr_issues": 241
+    },
+    "2022-09-nouns-builder-findings": {
+        "url": "https://github.com/code-423n4/2022-09-nouns-builder-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-09-nouns-builder-findings/issues",
+        "nr_issues": 233
+    },
+    "2022-09-canto-findings": {
+        "url": "https://github.com/code-423n4/2022-09-canto-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-09-canto-findings/issues",
+        "nr_issues": 59
+    },
+    "2022-09-party-findings": {
+        "url": "https://github.com/code-423n4/2022-09-party-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-09-party-findings/issues",
+        "nr_issues": 169
+    },
+    "2022-09-tribe-findings": {
+        "url": "https://github.com/code-423n4/2022-09-tribe-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-09-tribe-findings/issues",
+        "nr_issues": 104
+    },
+    "2022-09-y2k-finance-findings": {
+        "url": "https://github.com/code-423n4/2022-09-y2k-finance-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-09-y2k-finance-findings/issues",
+        "nr_issues": 157
+    },
+    "2022-09-vtvl-findings": {
+        "url": "https://github.com/code-423n4/2022-09-vtvl-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-09-vtvl-findings/issues",
+        "nr_issues": 289
+    },
+    "2022-09-artgobblers-findings": {
+        "url": "https://github.com/code-423n4/2022-09-artgobblers-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-09-artgobblers-findings/issues",
+        "nr_issues": 123
+    },
+    "2022-09-frax-findings": {
+        "url": "https://github.com/code-423n4/2022-09-frax-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-09-frax-findings/issues",
+        "nr_issues": 189
+    },
+    "2022-10-blur-findings": {
+        "url": "https://github.com/code-423n4/2022-10-blur-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-10-blur-findings/issues",
+        "nr_issues": 61
+    },
+    "2022-10-thegraph-findings": {
+        "url": "https://github.com/code-423n4/2022-10-thegraph-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-10-thegraph-findings/issues",
+        "nr_issues": 79
+    },
+    "2022-10-holograph-findings": {
+        "url": "https://github.com/code-423n4/2022-10-holograph-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-10-holograph-findings/issues",
+        "nr_issues": 138
+    },
+    "2022-10-traderjoe-findings": {
+        "url": "https://github.com/code-423n4/2022-10-traderjoe-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-10-traderjoe-findings/issues",
+        "nr_issues": 38
+    },
+    "2022-10-juicebox-findings": {
+        "url": "https://github.com/code-423n4/2022-10-juicebox-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-10-juicebox-findings/issues",
+        "nr_issues": 97
+    },
+    "2022-11-debtdao-findings": {
+        "url": "https://github.com/code-423n4/2022-11-debtdao-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-11-debtdao-findings/issues",
+        "nr_issues": 138
+    },
+    "2022-10-inverse-findings": {
+        "url": "https://github.com/code-423n4/2022-10-inverse-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-10-inverse-findings/issues",
+        "nr_issues": 128
+    },
+    "2022-10-paladin-findings": {
+        "url": "https://github.com/code-423n4/2022-10-paladin-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-10-paladin-findings/issues",
+        "nr_issues": 126
+    },
+    "2022-10-zksync-findings": {
+        "url": "https://github.com/code-423n4/2022-10-zksync-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-10-zksync-findings/issues",
+        "nr_issues": 26
+    },
+    "2022-11-looksrare-findings": {
+        "url": "https://github.com/code-423n4/2022-11-looksrare-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-11-looksrare-findings/issues",
+        "nr_issues": 73
+    },
+    "2022-11-size-findings": {
+        "url": "https://github.com/code-423n4/2022-11-size-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-11-size-findings/issues",
+        "nr_issues": 70
+    },
+    "2022-11-non-fungible-findings": {
+        "url": "https://github.com/code-423n4/2022-11-non-fungible-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-11-non-fungible-findings/issues",
+        "nr_issues": 56
+    },
+    "2022-11-stakehouse-findings": {
+        "url": "https://github.com/code-423n4/2022-11-stakehouse-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-11-stakehouse-findings/issues",
+        "nr_issues": 131
+    },
+    "2022-11-redactedcartel-findings": {
+        "url": "https://github.com/code-423n4/2022-11-redactedcartel-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-11-redactedcartel-findings/issues",
+        "nr_issues": 112
+    },
+    "2022-11-ens-findings": {
+        "url": "https://github.com/code-423n4/2022-11-ens-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-11-ens-findings/issues",
+        "nr_issues": 9
+    },
+    "2022-11-canto-findings": {
+        "url": "https://github.com/code-423n4/2022-11-canto-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-11-canto-findings/issues",
+        "nr_issues": 45
+    },
+    "2022-11-paraspace-findings": {
+        "url": "https://github.com/code-423n4/2022-11-paraspace-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-11-paraspace-findings/issues",
+        "nr_issues": 119
+    },
+    "2022-12-pooltogether-findings": {
+        "url": "https://github.com/code-423n4/2022-12-pooltogether-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-12-pooltogether-findings/issues",
+        "nr_issues": 16
+    },
+    "2022-12-Stealth-Project-findings": {
+        "url": "https://github.com/code-423n4/2022-12-Stealth-Project-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-12-Stealth-Project-findings/issues",
+        "nr_issues": 44
+    },
+    "2022-12-escher-findings": {
+        "url": "https://github.com/code-423n4/2022-12-escher-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-12-escher-findings/issues",
+        "nr_issues": 68
+    },
+    "2022-12-prepo-findings": {
+        "url": "https://github.com/code-423n4/2022-12-prepo-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-12-prepo-findings/issues",
+        "nr_issues": 67
+    },
+    "2022-12-forgeries-findings": {
+        "url": "https://github.com/code-423n4/2022-12-forgeries-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-12-forgeries-findings/issues",
+        "nr_issues": 59
+    },
+    "2022-12-tigris-findings": {
+        "url": "https://github.com/code-423n4/2022-12-tigris-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-12-tigris-findings/issues",
+        "nr_issues": 55
+    },
+    "2022-12-tessera-findings": {
+        "url": "https://github.com/code-423n4/2022-12-tessera-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-12-tessera-findings/issues",
+        "nr_issues": 25
+    },
+    "2022-12-caviar-findings": {
+        "url": "https://github.com/code-423n4/2022-12-caviar-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-12-caviar-findings/issues",
+        "nr_issues": 65
+    },
+    "2022-12-backed-findings": {
+        "url": "https://github.com/code-423n4/2022-12-backed-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-12-backed-findings/issues",
+        "nr_issues": 62
+    },
+    "2022-12-gogopool-findings": {
+        "url": "https://github.com/code-423n4/2022-12-gogopool-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-12-gogopool-findings/issues",
+        "nr_issues": 56
+    },
+    "2022-12-ens-mitigation-findings": {
+        "url": "https://github.com/code-423n4/2022-12-ens-mitigation-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-12-ens-mitigation-findings/issues",
+        "nr_issues": 16
+    },
+    "2023-01-biconomy-findings": {
+        "url": "https://github.com/code-423n4/2023-01-biconomy-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-01-biconomy-findings/issues",
+        "nr_issues": 93
+    },
+    "2023-01-reserve-findings": {
+        "url": "https://github.com/code-423n4/2023-01-reserve-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-01-reserve-findings/issues",
+        "nr_issues": 104
+    },
+    "2023-01-opensea-findings": {
+        "url": "https://github.com/code-423n4/2023-01-opensea-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-01-opensea-findings/issues",
+        "nr_issues": 28
+    },
+    "2023-01-astaria-findings": {
+        "url": "https://github.com/code-423n4/2023-01-astaria-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-01-astaria-findings/issues",
+        "nr_issues": 171
+    },
+    "2023-01-ondo-findings": {
+        "url": "https://github.com/code-423n4/2023-01-ondo-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-01-ondo-findings/issues",
+        "nr_issues": 85
+    },
+    "2023-01-timeswap-findings": {
+        "url": "https://github.com/code-423n4/2023-01-timeswap-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-01-timeswap-findings/issues",
+        "nr_issues": 77
+    },
+    "2023-01-numoen-findings": {
+        "url": "https://github.com/code-423n4/2023-01-numoen-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-01-numoen-findings/issues",
+        "nr_issues": 35
+    },
+    "2023-01-drips-findings": {
+        "url": "https://github.com/code-423n4/2023-01-drips-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-01-drips-findings/issues",
+        "nr_issues": 36
+    },
+    "2023-01-rabbithole-findings": {
+        "url": "https://github.com/code-423n4/2023-01-rabbithole-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-01-rabbithole-findings/issues",
+        "nr_issues": 166
+    },
+    "2023-01-tessera-mitigation-findings": {
+        "url": "https://github.com/code-423n4/2023-01-tessera-mitigation-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-01-tessera-mitigation-findings/issues",
+        "nr_issues": 41
+    },
+    "2023-01-popcorn-findings": {
+        "url": "https://github.com/code-423n4/2023-01-popcorn-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-01-popcorn-findings/issues",
+        "nr_issues": 201
+    },
+    "2023-01-canto-identity-findings": {
+        "url": "https://github.com/code-423n4/2023-01-canto-identity-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-01-canto-identity-findings/issues",
+        "nr_issues": 47
+    },
+    "2023-02-reserve-mitigation-contest-findings": {
+        "url": "https://github.com/code-423n4/2023-02-reserve-mitigation-contest-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-02-reserve-mitigation-contest-findings/issues",
+        "nr_issues": 61
+    },
+    "2023-02-gogopool-mitigation-contest-findings": {
+        "url": "https://github.com/code-423n4/2023-02-gogopool-mitigation-contest-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-02-gogopool-mitigation-contest-findings/issues",
+        "nr_issues": 46
+    },
+    "2023-02-malt-findings": {
+        "url": "https://github.com/code-423n4/2023-02-malt-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-02-malt-findings/issues",
+        "nr_issues": 35
+    },
+    "2023-02-ethos-findings": {
+        "url": "https://github.com/code-423n4/2023-02-ethos-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-02-ethos-findings/issues",
+        "nr_issues": 190
+    },
+    "2023-02-kuma-findings": {
+        "url": "https://github.com/code-423n4/2023-02-kuma-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-02-kuma-findings/issues",
+        "nr_issues": 19
+    },
+    "2023-03-wenwin-findings": {
+        "url": "https://github.com/code-423n4/2023-03-wenwin-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-03-wenwin-findings/issues",
+        "nr_issues": 121
+    },
+    "2023-03-neotokyo-findings": {
+        "url": "https://github.com/code-423n4/2023-03-neotokyo-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-03-neotokyo-findings/issues",
+        "nr_issues": 140
+    },
+    "2022-07-canto-findings": {
+        "url": "https://github.com/code-423n4/2022-07-canto-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-07-canto-findings/issues",
+        "nr_issues": 0
+    },
+    "2022-08-prepo-findings": {
+        "url": "https://github.com/code-423n4/2022-08-prepo-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-08-prepo-findings/issues",
+        "nr_issues": 0
+    },
+    "2022-11-foundation-findings": {
+        "url": "https://github.com/code-423n4/2022-11-foundation-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2022-11-foundation-findings/issues",
+        "nr_issues": 0
+    },
+    "2023-03-zksync-findings": {
+        "url": "https://github.com/code-423n4/2023-03-zksync-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-03-zksync-findings/issues",
+        "nr_issues": 31
+    },
+    "2023-03-polynomial-findings": {
+        "url": "https://github.com/code-423n4/2023-03-polynomial-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-03-polynomial-findings/issues",
+        "nr_issues": 50
+    },
+    "2023-03-kuma-mitigation-contest-findings": {
+        "url": "https://github.com/code-423n4/2023-03-kuma-mitigation-contest-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-03-kuma-mitigation-contest-findings/issues",
+        "nr_issues": 23
+    },
+    "2023-03-canto-identity-findings": {
+        "url": "https://github.com/code-423n4/2023-03-canto-identity-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-03-canto-identity-findings/issues",
+        "nr_issues": 104
+    },
+    "2023-03-asymmetry-findings": {
+        "url": "https://github.com/code-423n4/2023-03-asymmetry-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-03-asymmetry-findings/issues",
+        "nr_issues": 263
+    },
+    "2023-03-mute-findings": {
+        "url": "https://github.com/code-423n4/2023-03-mute-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-03-mute-findings/issues",
+        "nr_issues": 23
+    },
+    "2023-04-party-findings": {
+        "url": "https://github.com/code-423n4/2023-04-party-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-04-party-findings/issues",
+        "nr_issues": 27
+    },
+    "2023-04-frankencoin-findings": {
+        "url": "https://github.com/code-423n4/2023-04-frankencoin-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-04-frankencoin-findings/issues",
+        "nr_issues": 212
+    },
+    "2023-04-caviar-findings": {
+        "url": "https://github.com/code-423n4/2023-04-caviar-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-04-caviar-findings/issues",
+        "nr_issues": 82
+    },
+    "2023-04-ens-findings": {
+        "url": "https://github.com/code-423n4/2023-04-ens-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-04-ens-findings/issues",
+        "nr_issues": 67
+    },
+    "2023-04-eigenlayer-findings": {
+        "url": "https://github.com/code-423n4/2023-04-eigenlayer-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-04-eigenlayer-findings/issues",
+        "nr_issues": 72
+    },
+    "2023-05-ajna-findings": {
+        "url": "https://github.com/code-423n4/2023-05-ajna-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-05-ajna-findings/issues",
+        "nr_issues": 132
+    },
+    "2023-05-asymmetry-mitigation-findings": {
+        "url": "https://github.com/code-423n4/2023-05-asymmetry-mitigation-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-05-asymmetry-mitigation-findings/issues",
+        "nr_issues": 53
+    },
+    "2023-05-venus-findings": {
+        "url": "https://github.com/code-423n4/2023-05-venus-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-05-venus-findings/issues",
+        "nr_issues": 106
+    },
+    "2023-05-juicebox-findings": {
+        "url": "https://github.com/code-423n4/2023-05-juicebox-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-05-juicebox-findings/issues",
+        "nr_issues": 72
+    },
+    "2023-05-caviar-mitigation-contest-findings": {
+        "url": "https://github.com/code-423n4/2023-05-caviar-mitigation-contest-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-05-caviar-mitigation-contest-findings/issues",
+        "nr_issues": 36
+    },
+    "2023-05-xeth-findings": {
+        "url": "https://github.com/code-423n4/2023-05-xeth-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-05-xeth-findings/issues",
+        "nr_issues": 26
+    },
+    "2023-05-base-findings": {
+        "url": "https://github.com/code-423n4/2023-05-base-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-05-base-findings/issues",
+        "nr_issues": 38
+    },
+    "2023-05-maia-findings": {
+        "url": "https://github.com/code-423n4/2023-05-maia-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-05-maia-findings/issues",
+        "nr_issues": 158
+    },
+    "2023-05-particle-findings": {
+        "url": "https://github.com/code-423n4/2023-05-particle-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-05-particle-findings/issues",
+        "nr_issues": 21
+    },
+    "2023-05-ambire-findings": {
+        "url": "https://github.com/code-423n4/2023-05-ambire-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-05-ambire-findings/issues",
+        "nr_issues": 17
+    },
+    "2023-06-llama-findings": {
+        "url": "https://github.com/code-423n4/2023-06-llama-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-06-llama-findings/issues",
+        "nr_issues": 62
+    },
+    "2023-05-party-findings": {
+        "url": "https://github.com/code-423n4/2023-05-party-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-05-party-findings/issues",
+        "nr_issues": 18
+    },
+    "2023-06-stader-findings": {
+        "url": "https://github.com/code-423n4/2023-06-stader-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-06-stader-findings/issues",
+        "nr_issues": 88
+    },
+    "2023-08-shell-findings": {
+        "url": "https://github.com/code-423n4/2023-08-shell-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-08-shell-findings/issues",
+        "nr_issues": 50
+    },
+    "2023-06-lukso-findings": {
+        "url": "https://github.com/code-423n4/2023-06-lukso-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-06-lukso-findings/issues",
+        "nr_issues": 37
+    },
+    "2023-06-xeth-mitigation-findings": {
+        "url": "https://github.com/code-423n4/2023-06-xeth-mitigation-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-06-xeth-mitigation-findings/issues",
+        "nr_issues": 25
+    },
+    "2023-06-ambire-mitigation-findings": {
+        "url": "https://github.com/code-423n4/2023-06-ambire-mitigation-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-06-ambire-mitigation-findings/issues",
+        "nr_issues": 15
+    },
+    "2023-06-canto-findings": {
+        "url": "https://github.com/code-423n4/2023-06-canto-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-06-canto-findings/issues",
+        "nr_issues": 21
+    },
+    "2023-06-lybra-findings": {
+        "url": "https://github.com/code-423n4/2023-06-lybra-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-06-lybra-findings/issues",
+        "nr_issues": 138
+    },
+    "2023-06-angle-findings": {
+        "url": "https://github.com/code-423n4/2023-06-angle-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-06-angle-findings/issues",
+        "nr_issues": 26
+    },
+    "2023-07-nounsdao-findings": {
+        "url": "https://github.com/code-423n4/2023-07-nounsdao-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-07-nounsdao-findings/issues",
+        "nr_issues": 49
+    },
+    "2023-07-pooltogether-findings": {
+        "url": "https://github.com/code-423n4/2023-07-pooltogether-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-07-pooltogether-findings/issues",
+        "nr_issues": 109
+    },
+    "2023-07-basin-findings": {
+        "url": "https://github.com/code-423n4/2023-07-basin-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-07-basin-findings/issues",
+        "nr_issues": 135
+    },
+    "2023-07-arcade-findings": {
+        "url": "https://github.com/code-423n4/2023-07-arcade-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-07-arcade-findings/issues",
+        "nr_issues": 85
+    },
+    "2023-07-angle-mitigation-findings": {
+        "url": "https://github.com/code-423n4/2023-07-angle-mitigation-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-07-angle-mitigation-findings/issues",
+        "nr_issues": 29
+    },
+    "2023-07-moonwell-findings": {
+        "url": "https://github.com/code-423n4/2023-07-moonwell-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-07-moonwell-findings/issues",
+        "nr_issues": 120
+    },
+    "2023-08-goodentry-findings": {
+        "url": "https://github.com/code-423n4/2023-08-goodentry-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-08-goodentry-findings/issues",
+        "nr_issues": 80
+    },
+    "2023-08-pooltogether-findings": {
+        "url": "https://github.com/code-423n4/2023-08-pooltogether-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-08-pooltogether-findings/issues",
+        "nr_issues": 43
+    },
+    "2023-08-arbitrum-findings": {
+        "url": "https://github.com/code-423n4/2023-08-arbitrum-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-08-arbitrum-findings/issues",
+        "nr_issues": 54
+    },
+    "2023-08-verwa-findings": {
+        "url": "https://github.com/code-423n4/2023-08-verwa-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-08-verwa-findings/issues",
+        "nr_issues": 153
+    },
+    "2023-08-pooltogether-mitigation-findings": {
+        "url": "https://github.com/code-423n4/2023-08-pooltogether-mitigation-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-08-pooltogether-mitigation-findings/issues",
+        "nr_issues": 97
+    },
+    "2023-08-livepeer-findings": {
+        "url": "https://github.com/code-423n4/2023-08-livepeer-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-08-livepeer-findings/issues",
+        "nr_issues": 36
+    },
+    "2023-09-ondo-findings": {
+        "url": "https://github.com/code-423n4/2023-09-ondo-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-09-ondo-findings/issues",
+        "nr_issues": 89
+    },
+    "2023-09-goodentry-mitigation-findings": {
+        "url": "https://github.com/code-423n4/2023-09-goodentry-mitigation-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-09-goodentry-mitigation-findings/issues",
+        "nr_issues": 47
+    },
+    "2023-09-centrifuge-findings": {
+        "url": "https://github.com/code-423n4/2023-09-centrifuge-findings",
+        "issues_url": "https://api.github.com/repos/code-423n4/2023-09-centrifuge-findings/issues",
+        "nr_issues": 76
+    }
+}

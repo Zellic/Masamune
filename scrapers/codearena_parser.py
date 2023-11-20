@@ -74,20 +74,6 @@ def get_repo_info(_repos, cache):
 
     return individual_repos
 
-def save_findings_info(_filename, _findings_info):
-    """
-    Saves the findings info to a json file.
-    """
-    with open(f'../results/{_filename}.json', 'w') as f:
-        json.dump(_findings_info, f)
-
-def load_findings_info(_findings_filename):
-    """
-    Loads the findings info from a json file.
-    """
-    with open(f'../results/{_findings_filename}.json', 'r') as f:
-        return json.load(f)
-
 def get_issues(_findings_info, cache):
     """
     Returns a list of all the issues of the findings repos.
@@ -157,6 +143,26 @@ def get_issues_text(_issues, cache):
             return json.load(f)
 
     selected_issues = []
+
+    # load the current issues_text.json to know where to continue from:
+    with open('../cache/issues_text.json', 'r') as f:
+        selected_issues = json.load(f)
+
+    # get the "body" of the last issue in the list
+    last_issue_html = selected_issues[-1]['html_url']
+
+    # find the index of the last issue in the _issues list
+    last_issue_index = 0
+
+    for index, issue in enumerate(_issues):
+        if issue['html_url'] == last_issue_html:
+            print("FOUND IT AT INDEX: " + str(index))
+            last_issue_index = index
+            break
+
+    print("CONTINUE FROM INDEX: " + str(last_issue_index))
+    # get the issues from the last issue index
+    _issues = _issues[last_issue_index + 1:]
     
     for issue in _issues:
         # if "sponsor acknowledged" in issue['labels'] or "2 (Med Risk)" in issue['labels'] or "3 (High Risk)" in issue['labels'] or "addressed" in issue['labels']:
@@ -179,59 +185,40 @@ def get_issues_text(_issues, cache):
                 issue['body'] = req['body'].replace("\n", " ").replace("\t", " ")
             except:
                 print("HAD TO SKIP AT ISSUE: " + issue['html_url'])
+                # break
+
+                # NOTE basically if this except is entered,
+                # it means that we got into a rate limit problem
+                # so what we do is we save everything up to this point
+                # and continue from the last issue in the list; 
+                # we can find that by "html_url" since that's probably the most unique
                 break
 
             issue['target'] = issue['target']
 
             selected_issues.append(issue)
 
-    if not cache:
-        with open('../cache/issues_text.json', 'w') as f:
-            json.dump(selected_issues, f)
+    with open('../cache/issues_text.json', 'w') as f:
+        # overwrite existing file
+        json.dump(selected_issues, f)
 
     return selected_issues
 
-def extract_text_and_save(_issues):
+def save_to_codearena_findings(_issues):
     """
-    Extracts the text from the issues and saves it to a json file.
+    Saves the issues to the codearena_findings.json file.
     """
 
-    print(f"Extracting text from {len(_issues)} relevant issues...")
+    curated_issues = []
 
-    # try:
-    with open("../results/codearena_findings.json", "r") as f:
-        existing_findings = json.load(f)
-
-    for index, issue in enumerate(_issues):
-
-        print(f"Extracting text from issue {index + 1} of {len(_issues)}...")
-
-        # from the html_url get the issue number, which is the last text after the last '/'
-        # issue_number = issue['html_url'].split('/')[-1]
-
-        # we want to update the Json file of the parsed codearena findings:
-        # load the existing json file and append the new findings
-        # essentially, we want to add a "body" field to each issue, querying it by the "title" field in the existing codearena findings json file
-
-        # find the issue in the existing findings
-        for existing_issue in existing_findings:
-            if existing_issue['title'] == issue['title']:
-
-                # remove utf-8 characters from the body
-                issue['body'] = issue['body'].encode('ascii', 'ignore').decode('ascii')
-
-                # update the description; if body doesn't exist, use title for now; TODO: improve codearena parser to get the body properly
-                existing_issue['body'] = issue['body']
-                break
-
-            # check if 'body' exists in existing_issue
-            if 'body' not in existing_issue:
-                existing_issue['body'] = existing_issue['title']
-
-    with open("../results/codearena_findings.json", "w") as f:
-        json.dump(existing_findings, f, indent=4)
+    # remove issues from the test-repo; i.e those whose target is "2022-01-dev-test-repo-findings"
+    for issue in _issues:
+        if issue['target'] != "2022-01-dev-test-repo-findings":
+            curated_issues.append(issue)
 
 
+    with open('../results/codearena_findings.json', 'w') as f:
+        json.dump(curated_issues, f)
 
 def main():
 
@@ -250,8 +237,8 @@ def main():
     print("Step 4: Getting the text of the issues...")
     selected_issues = get_issues_text(all_findings_issues, cache)
 
-    print("Step 5: Saving the text of the issues to a file...")
-    extract_text_and_save(selected_issues)
+    print("Step 5: Saving the issues to the codearena_findings.json file...")
+    save_to_codearena_findings(selected_issues)
     
 
 if __name__ == "__main__":
