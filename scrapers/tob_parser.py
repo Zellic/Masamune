@@ -6,7 +6,13 @@ import json
 
 
 def extract_finding(pdf_name):
-    text = extract_text("../pdfs/" + pdf_name)
+
+    try:
+        text = extract_text("../pdfs/publications/reviews/" + pdf_name)
+    except:
+        with open("errors.txt", "a") as f:
+            f.write(pdf_name + "\n")
+            return
 
     first_selection = text[text.find("Detailed Findings"):text.find("Summary of Recommendations")]
 
@@ -65,7 +71,7 @@ def extract_finding(pdf_name):
             return
 
     # Save the findings to a file
-    with open(f"../findings_newupdate/{pdf_name[:-4]}.txt", "w") as f:
+    with open(f"../findings_newupdate/tob/{pdf_name[:-4]}.txt", "w") as f:
         for elem in ordered_findings:
             if elem == "":
                 continue
@@ -74,7 +80,7 @@ def extract_finding(pdf_name):
 def jsonify_findings(pdf_name):
 
     try:
-        with open(f"../findings_newupdate/{pdf_name[:-4]}.txt", "r") as f:
+        with open(f"../findings_newupdate/tob/{pdf_name[:-4]}.txt", "r") as f:
             findings = f.read().splitlines()
     except FileNotFoundError:
         return
@@ -158,10 +164,13 @@ def jsonify_findings(pdf_name):
         
 if __name__ == "__main__":
 
-    # for pdf_file in os.listdir("../pdfs"):
-    #     extract_finding(pdf_file)
+    for pdf_file in os.listdir("../pdfs/publications/reviews"):
+        try:
+            extract_finding(pdf_file)
+        except:
+            print("SOME ISSUE WITH " + pdf_file)
 
-    for json_file in os.listdir("../pdfs"):
+    for json_file in os.listdir("../pdfs/publications/reviews"):
         jsonify_findings(json_file)
 
     # only keep unique findings, the file contains an array of findings

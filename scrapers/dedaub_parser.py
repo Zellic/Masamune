@@ -196,15 +196,18 @@ def jsonify_findings(json_name):
 if __name__ == "__main__":
 
     # Step 1: Extract findings text from PDFs
-    # for contents in os.walk("../pdfs/dedaub-audits"):
-    #     if contents[1]:
-    #         for subdir in contents[1]:
-    #             pdf_path = contents[0] + "/" + subdir
-    #             for pdf_file in os.listdir(pdf_path):
-    #                 # Skip Ethereum Foundation directory, those are impact studies not audits
-    #                 # Skip DeFi Saver and Mushroom Finance directory, they have very different report structures
-    #                 if pdf_path.find("Ethereum Foundation") < 0 and pdf_path.find("DeFi Saver") < 0 and pdf_path.find("Mushrooms Finance") < 0:
-    #                     extract_finding(subdir + "/" + pdf_file)
+    for contents in os.walk("../pdfs/dedaub-audits"):
+        if contents[1]:
+            for subdir in contents[1]:
+                pdf_path = contents[0] + "/" + subdir
+                for pdf_file in os.listdir(pdf_path):
+                    # Skip Ethereum Foundation directory, those are impact studies not audits
+                    # Skip DeFi Saver and Mushroom Finance directory, they have very different report structures
+                    if pdf_path.find("Ethereum Foundation") < 0 and pdf_path.find("DeFi Saver") < 0 and pdf_path.find("Mushrooms Finance") < 0:
+                        try:
+                            extract_finding(subdir + "/" + pdf_file)
+                        except:
+                            print("Error parsing " + pdf_file)
 
     # Step 2: Parse findings text into JSON
     for json_file in os.listdir("../findings_newupdate/dedaub"):
@@ -212,16 +215,16 @@ if __name__ == "__main__":
 
     # Step 3: deduplicate findings
     # only keep unique findings, the file contains an array of findings
-    # with open("../results/dedaub_findings.json", "r") as f:
-    #     findings = json.load(f)
+    with open("../results/dedaub_findings.json", "r") as f:
+        findings = json.load(f)
 
-    # unique_findings = []
-    # for finding in findings:
-    #     if finding not in unique_findings:
-    #         unique_findings.append(finding)
+    unique_findings = []
+    for finding in findings:
+        if finding not in unique_findings:
+            unique_findings.append(finding)
 
     # Step 4: write only unique findings to final json
-    # with open("../results/dedaub_findings.json", "w") as f:
-    #     json.dump(unique_findings, f, indent=4)
+    with open("../results/dedaub_findings.json", "w") as f:
+        json.dump(unique_findings, f, indent=4)
 
     
