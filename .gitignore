@@ -2,4 +2,5 @@
 *.log
 __pycache__/
 embedding/faiss_merged_extrametadata/
+embedding/nov20_openai/
 .env

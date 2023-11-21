@@ -8,6 +8,6 @@ services:
     ports:
       - 80:5000
     volumes:
-      - ./embedding/faiss_merged_extrametadata:/app/faiss_merged_extrametadata
+      - ./embedding/nov20_openai:/app/nov20_openai
     restart: unless-stopped
     env_file: .env
