@@ -148,7 +148,7 @@ def json_splitter():
 
 
     # List all the files in the `json_results` folder
-    json_results = os.listdir("json_results")
+    json_results = os.listdir("../json_results")
 
     # for each file, load the json and split it
 
@@ -177,7 +177,7 @@ if __name__ == "__main__":
 
     json_splitter()
     # List all the files in the `json_results` folder
-    json_results = os.listdir("json_results")
+    json_results = os.listdir("../json_results")
 
     for file in json_results:
         faiss_embed_with_metadata_openai(file)
