@@ -60,6 +60,9 @@ def search_endpoint():
 
     # Search the vectorstore
     results = search(query, vectorstore)
+
+    # results is a tuple so we want to get the first element for the results
+    results = [result[0] for result in results]
     
     # We want to return a list of the texts
     for result in results:
