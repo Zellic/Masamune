@@ -33,7 +33,7 @@ def faiss_embed_with_metadata_openai(file_name):
     
     parsed_metadata = []
 
-    with open ("../json_results/" + file_name, "r") as f:
+    with open ("../results/" + file_name, "r") as f:
 
         updated_json = []
 
@@ -66,11 +66,11 @@ def faiss_embed_with_metadata_openai(file_name):
             updated_json.append(parsed_file)
 
             # replace the json with the updated one
-        json.dump(updated_json, open("../json_results/" + file_name, "w"))
+        json.dump(updated_json, open("../results/" + file_name, "w"))
 
     # TODO the changes need to be done by the loader, not by the parsed file, since that's 
     loader = JSONLoader(
-        file_path = "../json_results/" + file_name,
+        file_path = "../results/" + file_name,
         jq_schema = to_be_schema
         )
     
@@ -148,13 +148,13 @@ def json_splitter():
 
 
     # List all the files in the `json_results` folder
-    json_results = os.listdir("../json_results")
+    json_results = os.listdir("../results")
 
     # for each file, load the json and split it
 
     for file in json_results:
 
-        json_file = json.load(open("../json_results/" + file, "r"))
+        json_file = json.load(open("../results/" + file, "r"))
 
         # check how many elements are in the json
         print(len(json_file))
@@ -166,18 +166,18 @@ def json_splitter():
 
             # save each chunk as a separate json file
             for i, chunk in enumerate(chunks):
-                with open(f"../json_results/{file.split('.')[0]}_{i+1}.json", "w") as f:
+                with open(f"../results/{file.split('.')[0]}_{i+1}.json", "w") as f:
                     json.dump(chunk, f)
 
             # remove the original file
-            os.remove("../json_results/" + file)
+            os.remove("../results/" + file)
         # else, we don't need to split it
 
 if __name__ == "__main__":
 
     json_splitter()
     # List all the files in the `json_results` folder
-    json_results = os.listdir("../json_results")
+    json_results = os.listdir("../results")
 
     for file in json_results:
         faiss_embed_with_metadata_openai(file)
