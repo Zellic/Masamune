@@ -24,7 +24,8 @@ def faiss_embed_with_metadata_openai(file_name):
 
     # TODO maybe replace the "body" with "title" where there's no body in the jsons
 
-    if file_name == "hacklabs_findings.json" or file_name == "codearena_findings.json":
+    # if file_name == "hacklabs_findings.json" or file_name == "codearena_findings.json":
+    if file_name.startswith("hacklabs") or file_name.startswith("codearena"):
         to_be_schema = ".[].title"
     else:
         to_be_schema = ".[].body"
@@ -33,7 +34,7 @@ def faiss_embed_with_metadata_openai(file_name):
     
     parsed_metadata = []
 
-    with open ("../results/" + file_name, "r") as f:
+    with open ("../results/split_final_results/" + file_name, "r") as f:
 
         updated_json = []
 
@@ -66,11 +67,11 @@ def faiss_embed_with_metadata_openai(file_name):
             updated_json.append(parsed_file)
 
             # replace the json with the updated one
-        json.dump(updated_json, open("../results/" + file_name, "w"))
+        json.dump(updated_json, open("../results/split_final_results/" + file_name, "w"))
 
     # TODO the changes need to be done by the loader, not by the parsed file, since that's 
     loader = JSONLoader(
-        file_path = "../results/" + file_name,
+        file_path = "../results/split_final_results/" + file_name,
         jq_schema = to_be_schema
         )
     
@@ -150,9 +151,11 @@ def json_splitter():
     # List all the files in the `json_results` folder
     json_results = os.listdir("../results")
 
-    # for each file, load the json and split it
-
+    # for each file, load each json and check how many elements are in it
     for file in json_results:
+    
+        if not file.endswith(".json"):
+            continue
 
         json_file = json.load(open("../results/" + file, "r"))
 
@@ -166,20 +169,26 @@ def json_splitter():
 
             # save each chunk as a separate json file
             for i, chunk in enumerate(chunks):
-                with open(f"../results/{file.split('.')[0]}_{i+1}.json", "w") as f:
+                with open(f"../results/split_final_results/{file.split('.')[0]}_{i+1}.json", "w") as f:
                     json.dump(chunk, f)
 
             # remove the original file
-            os.remove("../results/" + file)
-        # else, we don't need to split it
+            # os.remove("../results/" + file)
+        # else, we don't need to split and just save it to the split_final_results folder
+        else:
+            with open(f"../results/split_final_results/{file.split('.')[0]}.json", "w") as f:
+                json.dump(json_file, f)
+
 
 if __name__ == "__main__":
 
-    json_splitter()
+    # json_splitter()
     # List all the files in the `json_results` folder
-    json_results = os.listdir("../results")
+    # json_results = os.listdir("../results/split_final_results")
 
-    for file in json_results:
-        faiss_embed_with_metadata_openai(file)
+    # for file in json_results:
+    #     faiss_embed_with_metadata_openai(file)
 
-    print("DONE")
+    # print("DONE")
+    results = query_with_openai("routing")
+    print(results, len(results))
