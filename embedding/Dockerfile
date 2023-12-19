@@ -18,4 +18,4 @@ EXPOSE 5000
 
 # Run the Flask app with Gunicorn
 # CMD ["gunicorn", "--log-level", "debug", "-b", "0.0.0.0:5000", "app:app"]
-CMD ["gunicorn", "--log-level", "debug", "--access-logfile", "/var/log/gunicorn_access.log", "--error-logfile", "/var/log/gunicorn_error.log", "-b", "0.0.0.0:5000", "app:app"]
+CMD ["gunicorn", "--log-level", "debug", "--access-logfile", "-", "--error-logfile", "-", "-b", "0.0.0.0:5000", "app:app"]
