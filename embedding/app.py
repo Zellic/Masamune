@@ -26,7 +26,7 @@ def load_embeddings():
     :return: The vectorstore.
     """
     embeddings = OpenAIEmbeddings()
-    return FAISS.load_local("nov20_openai", embeddings)
+    return FAISS.load_local("dec10_openai", embeddings)
 
 def search(query, vectorstore):
     """
@@ -39,9 +39,11 @@ def search(query, vectorstore):
     """
     results = vectorstore.similarity_search_with_score(
         query, 
-        score_threshold=0.4, 
         k = 10
     )
+
+    results = [result for result in results if result[1] < 0.4]
+
     return results
 
 @app.route('/search', methods=['GET'])
@@ -91,4 +93,6 @@ def search_endpoint():
 
 # Run the app
 if __name__ == "__main__":
-    app.run()
+    app.run(
+        debug = True
+    )
