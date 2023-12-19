@@ -3,4 +3,5 @@
 __pycache__/
 embedding/faiss_merged_extrametadata/
 embedding/nov20_openai/
+embedding/dec10_openai/
 .env

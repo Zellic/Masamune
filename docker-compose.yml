@@ -8,6 +8,6 @@ services:
     ports:
       - 80:5000
     volumes:
-      - ./embedding/nov20_openai:/app/nov20_openai
+      - ./embedding/dec10_openai:/app/dec10_openai
     restart: unless-stopped
     env_file: .env
