@@ -1,0 +1,29 @@
+[
+    {
+        "title": "3.1 Lack of check of the recipient to the zero address in withdrawNative"
+    },
+    {
+        "title": "3.1 Lack of check of the recipient to the zero address in with-",
+        "target": " UltraLightNodeV2",
+        "category": " Coding Mistakes",
+        "severity": " Low",
+        "likelihood": " Low ",
+        "impact": " Low ",
+        "bodyDescription": "The commission in native tokens for Relayers, Oracles, and Treasury addresses is stored in the nativeFeesmapping. If the caller of thewithdrawNativefunction has any funds accrued for him, they will be sent to the address of the_toargument using theca ll function for transfer founds. This function does not reject the transaction in case of an error but returns the result as a boolean value. But since sending funds to the zero address is not an incorrect transfer, returned value will be true so the transaction will be completed successfully.  function withdrawNative(address payable _to, uint _amount) external override nonReentrant {  nativeFees[msg.sender] = nativeFees[msg.sender].sub(_amount);  (bool success, ) = _to.call{value: _amount}(\"\"); require(success, \"LayerZero: withdraw failed\"); emit WithdrawNative(msg.sender, _to, _amount);  } ",
+        "bodyImpact": "In case of an incorrect transfer of funds to the zero address, all funds sent will be lost. ",
+        "bodyRecommendations": "Add checks for the to argument.  require(_to !) address(0x0), \"LayerZero: _to cannot be zero address\");  Zellic 8 LayerZero Labs   ",
+        "remediation": "LayerZero Labs acknowledged this finding and implemented a fix in commit efc2c0cf ffbc10abfe87163e0c3ab29ce4f0d1a4.  Zellic 9 LayerZero Labs   "
+    },
+    {
+        "title": "3.2 Lack of check that chainAddressSizeMap is setted for dstChainId",
+        "* Target": " UltraLightNodeV2",
+        "* Category": " Coding Mistakes",
+        "* Likelihood": " N/A ",
+        "* Severity": " Informational",
+        "* Impact": " Informational ",
+        "Description": "The send function accepts the recipient's dstChainId and _dstAddress. Since the _ds tAddress is intended for another network, it is transmitted as bytes and its length is checked tomake sure that the address is correct. But if the length value for dstChainId is not set by the owner, dstAddress length will be compared to 0.  function send(address _ua, uint64 /)_nonce*), uint16 _dstChainId, bytes calldata _dstAddress, bytes calldata _payload, address payable _refundAddress, address _zroPaymentAddress, bytes calldata _adapterParams) external payable override onlyEndpoint {  ...)) require(ulnLookup[dstChainId] !) bytes32(0), \"LayerZero:  dstChainId does not exist\"); require(dstAddress.length =) chainAddressSizeMap[dstChainId],  \"LayerZero: incorrect remote address size\"); ",
+        "Impact": "In case of an incorrect message transfer to the empty value of _dstAddress and an unspecified value chainAddressSizeMap for dstChainId, the transaction will not be re- jected and the incorrect message will be successfully sent. ",
+        "Recommendations": "Add check that chainAddressSizeMap value for dstChainIdwas set. ",
+        "Remediation": "LayerZero Labs acknowledged this finding and implemented a fix in commit 32e54840 2066d9c7d37529b23de721b9a0601083.  Zellic 12 LayerZero Labs  https://sector7.computest.nl/post/2021-08-zoom/  \tAbout Zellic \tIntroduction \tAbout LayerZero Core \tMethodology \tScope \tProject Overview \tProject Timeline \tDisclaimer  \tExecutive Summary \tDetailed Findings \tLack of check of the recipient to the zero address in withdrawNative function \tLack of check that chainAddressSizeMap is setted for dstChainId  \tDiscussion \tNotes on in-scope contracts \tIncorrect parsing of data inside getPacketV2 function when using a zero _remoteAddressSize value \t_getVerifiedLog may allow out-of-bounds read via getItemByIndex  "
+    }
+]
