@@ -1,0 +1,106 @@
+[
+    {
+        "title": "3.1 An attacker may claim risk-free rewards without risking their staked"
+    },
+    {
+        "title": "3.3 Potential lock-up of funds in FractalVaultV1 as anySwap Router is not"
+    },
+    {
+        "title": "3.4 Potential lock-up of funds in the event of insufficient AnySwap liquidity 12"
+    },
+    {
+        "title": "3.1 An attackermay claim risk-free rewardswithout risking their",
+        "target": " Vault.sol",
+        "category": " Business Logic",
+        "severity": " High",
+        "likelihood": " High ",
+        "impact": " High ",
+        "bodyDescription": "The Example Vault aims for an APR of 20%. At the beginning of every new period (1 day), the vault distributes the daily interest and calculates the new token price. The caveat here is that users can stake capital at the end of a period and reap rewards instantly at the beginning of the next period. Depositing on the last block before the start of new period and redeeming it in the next block would essentially guarantee an instant riskless profit.  function compute () public { uint256 currentTimestamp = block.timestamp; /) solhint-disable-line not-rely-on-time uint256 newPeriod = DateUtils.diffDays(startOfYearTimestamp, currentTimestamp); if (newPeriod <= currentPeriod) return;  for (uint256 i = currentPeriod + 1; i <= newPeriod; i++) { _records[i].apr = _records[i - 1].apr; _records[i].totalDeposited = _records[i - 1].totalDeposited;  uint256 diff = uint256(_records[i - 1].apr) * USDF_DECIMAL_MULTIPLIER * uint(100)/ uint256(365);  _records[i].tokenPrice = _records[i - 1].tokenPrice + (diff / uint256(10000));  _records[i].dailyInterest = _records[i - 1].totalDeposited * uint256(_records[i - 1].apr) / uint256(365) / uint256(100); } currentPeriod = newPeriod;  }  Zellic 7 Fractal Protocol   ",
+        "bodyImpact": "An attacker can effectively siphon out money from vaults without participating in the strategies or taking on any risk. The profit is directly dependent on attackers' capital. For a concrete example: With an APR of 20% and a capital of 1 Million USDC, the attacker can freely profit 540 dollars a day (0.054%) disregarding the gas fee. The profit scales linearly and for 10 million USDC, the profit would be $5400/day. ",
+        "bodyRecommendations": "There are multiple strategies that can be taken to address this:  * Lock the users capital for a minimum period of time to prevent instant with- drawals.  * Immediately forward funds to the yieldReserve, so a large deposit is not with- drawable instantly. ",
+        "remediation": "The issue has been acknowledged by Fractal.  Zellic 8 Fractal Protocol   "
+    },
+    {
+        "title": "3.2 Lack of slippage checks on DEX swaps",
+        "target": " Multiple contracts",
+        "category": " Business Logic",
+        "severity": " High",
+        "likelihood": " High ",
+        "impact": " High ",
+        "bodyDescription": "In many separate areas of the project, interactions and swaps with Uniswap are han- dled through DexLibrary. There is no slippage check on these interactions and are thus vulnerable to market manipulation.  function swap( uint256 amountIn, address fromToken, address toToken, IPair pair  ) internal returns (uint256) { (address token0, ) = sortTokens(fromToken, toToken); (uint112 reserve0, uint112 reserve1, ) = pair.getReserves(); if (token0 != fromToken) (reserve0, reserve1) = (reserve1, reserve0); uint256 amountOut1 = 0; uint256 amountOut2 = getAmountOut(amountIn, reserve0, reserve1); if (token0 != fromToken)  (amountOut1, amountOut2) = (amountOut2, amountOut1); safeTransfer(fromToken, address(pair), amountIn); pair.swap(amountOut1, amountOut2, address(this), ZERO_BYTES); return amountOut2 > amountOut1 ? amountOut2 : amountOut1;  } ",
+        "bodyImpact": "Due the nature of most of the vulnerable methods being onlyOwner or onlyAdmin, the quantity of funds accumulatedwould be rather large alongwith the swap amount. An attacker could sandwich the the swap transaction, artificially inflating the spot price and profiting off the manipulated market conditions when the swap executes. ",
+        "bodyRecommendations": "Set the default slippage to 0.5% for Uniswap, customizable for bigger trades.  Zellic 9 Fractal Protocol   ",
+        "remediation": "The issue has been acknowledged by Fractal.  Zellic 10 Fractal Protocol   "
+    },
+    {
+        "title": "3.3 Potential lock-upof funds in FractalVaultV1 as anySwapRouter",
+        "target": " FractalVaultV1.sol",
+        "category": " Business Logic",
+        "severity": " Medium",
+        "likelihood": " Medium ",
+        "impact": " Medium ",
+        "bodyDescription": "The FractalVaultV1 does not approve the anySwap router before executing anySwapOut- Underlying, and would fail all the withdrawal attempts.  function withdrawToLayerOne(...))) { ...)) emit WithdrawToLayerOne(msg.sender, amount);  anySwapRouter.anySwapOutUnderlying(anyToken, anyswapRouter, amount, chainId); } ",
+        "bodyImpact": "The FractalVaultV1will never be able towithdraw to LayerOne. Though the recoverERC20 function can be used in an emergency to manually transfer funds as a backup func- tionality; however, this is likely not the intended flow of funds. ",
+        "bodyRecommendations": "Approve AnySwap router before anySwapOutUnderlying. ",
+        "remediation": "The issue has been acknowledged by Fractal.  Zellic 11 Fractal Protocol   "
+    },
+    {
+        "title": "3.4 Potential lock-upof funds in the event of insufficient AnySwap",
+        "target": " FractVaultV1.sol",
+        "category": " Business Logic",
+        "severity": " Low",
+        "likelihood": " Low ",
+        "impact": " Low ",
+        "bodyDescription": "AnySwap cross-chain transfers will provide the underlying token to the destination only if sufficient liquidity exists on AnySwap reserves. If not, AnySwap will mint a wrapped token (AnyToken) that can be redeemed later when liquidity is available. The FractVaultV1 does not handle that. Even if reserves are checked before executing a swap, since AnySwap is not atomic with no guarantee on order of transactions, simultaneous swaps by other users would lead to locked tokens. ",
+        "bodyImpact": "FractalVaultV1 currently has no way to redeem the AnyTokens to the underlying to- kens. However, the recoverERC20 method can be used by the owner to manually recover the anySwap tokens, mitigating this issue's impact. ",
+        "bodyRecommendations": "Add functionality to redeem AnyTokens to their underlying. ",
+        "remediation": "The issue has been acknowledged by Fractal.  Zellic 12 Fractal Protocol   "
+    },
+    {
+        "title": "3.5 Access Control functions should emit events",
+        "target": " Mintable.sol, Address- Whitelist.sol, Migrations.sol ",
+        "category": " Access Control",
+        "severity": " Informational",
+        "likelihood": " N/A ",
+        "impact": " Informational ",
+        "bodyDescription": "Several methods in multiple contracts related to access control such as whitelisting and minter/burner roles do not emit events. ",
+        "bodyImpact": "In the case of a compromise, events allow for secure and early detection of breaches & security incidents. ",
+        "bodyRecommendations": "Add events to all functions relating to access control. ",
+        "remediation": "The issue has been acknowledged by Fractal.  Zellic 13 Fractal Protocol   "
+    },
+    {
+        "title": "3.6 Multiple internal inconsistencies",
+        "target": " Multiple contracts",
+        "category": " Business Logic",
+        "severity": " Informational",
+        "likelihood": " N/A ",
+        "impact": " Informational ",
+        "bodyDescription": "In several areas of the project, internal inconsistencies were noted, such as lack of checks that were present in other areas, or non-standard practices in general.  The respective areas are affected:  * FractalVaultV1: withdrawToLayerOne - No chainId Checks. * Mintable.sol: mint - Transfer event should mint from address 0. * DexLibrary.sol: convertRewardTokensToDepositTokens - lack of slippage checks mentioned. ",
+        "bodyImpact": "These issues are minor, and do not pose a security hazard at present. More broadly however, this is a source of developer confusion and a general coding hazard. Internal inconsistencies may lead to future problems or bugs. Avoiding internal inconsisten- cies alsomakes it easier for developers to understand the code and helps any potential auditors more quickly and thoroughly assess it. ",
+        "bodyRecommendations": "Consider changing the code to fix the inconsistencies. ",
+        "remediation": "The issue has been acknowledged by Fractal.  Zellic 14 Fractal Protocol   "
+    },
+    {
+        "title": "3.7 Lack of documentation",
+        "target": " Multiple contracts",
+        "category": " Business Logic",
+        "severity": " Informational",
+        "likelihood": " N/A ",
+        "impact": " Informational ",
+        "bodyDescription": "Several files in the project are lacking documentation, the following being:  * DateUtils.sol: diffDays * DateUtils.sol: _daysToDate * DateUtils.sol: _daysFromDate * DateUtils.sol: getYear * DateUtils.sol: timestamp * Migrations.sol: setCompleted ",
+        "bodyImpact": "This is a source of developer confusion and a general coding hazard. Lack of doc- umentation, or unclear documentation, is a major pathway to future bugs. It is best practice to document all code. Documentation also helps third-party developers inte- grate with the platform, and helps any potential auditors more quickly and thoroughly assess the code. ",
+        "bodyRecommendations": "Add documentation to the affected functions. ",
+        "remediation": "The issue has been acknowledged by Fractal.  Zellic 15 Fractal Protocol   "
+    },
+    {
+        "title": "3.8 Insufficient code documentation",
+        "* Target": " DateUtils.sol",
+        "* Severity": " Informational",
+        "* Impact": " Informational ",
+        "* Category": " Business Logic",
+        "* Likelihood": " N/A ",
+        "Description": "We found that the code quality unsatisfactory for certain functions, namely:  * DateUtils.sol: _daysToDate  function _daysToDate(uint256 _days) internal pure returns (uint256 year, uint256 month, uint256 day) { int256 __days = int256(_days);  int256 L = __days + 68569 + OFFSET19700101; int256 N = 4 * L / 146097; L = L - (146097 * N + 3) / 4; int256 _year = 4000 * (L + 1) / 1461001; L = L - 1461 * _year / 4 + 31; int256 _month = 80 * L / 2447; int256 _day = L - 2447 * _month / 80; L = _month / 11; _month = _month + 2 - 12 * L; _year = 100 * (N - 49) + _year + L;  ...))  _daysToDate uses a lot of abstract math to converts days to a date. * DateUtils.sol: _daysFromDate  function _daysFromDate(uint256 year, uint256 month, uint256 day) internal pure returns (uint256 _days) { require(year >= 1970, \"Error\"); int _year = int(year); int _month = int(month); int _day = int(day);  int __days = _day - 32075 + 1461 * (_year + 4800 + (_month - 14) / 12) / 4 + 367 * (_month - 2 - (_month - 14) / 12 * 12) / 12  Zellic 16 Fractal Protocol    - 3 * ((_year + 4900 + (_month - 14) / 12) / 100) / 4 - OFFSET19700101;  _days = uint256(__days); }  _daysFromDate uses a lot of optimized math to converts days to a date. * Vault.sol: Compute  function compute () public { ...)) for (uint256 i = currentPeriod + 1; i <= newPeriod; i++) {  _records[i].apr = _records[i - 1].apr; _records[i].totalDeposited = _records[i - 1].  totalDeposited;  uint256 diff = uint256(_records[i - 1].apr) * USDF_DECIMAL_MULTIPLIER * uint256(100) / uint256(365);  _records[i].tokenPrice = _records[i - 1].tokenPrice + ( diff / uint256(10000));  _records[i].dailyInterest = _records[i - 1]. totalDeposited * uint256(_records[i - 1].apr) / uint256(365) / uint256(100);  } ...))  }  A lack of comments here renders this function difficult to understand. ",
+        "Impact": "Code maturity is very important in a code base, this is because commented out code and unused variables can result in increased complexity and confusion when devel- opers have to modify the business logic. ",
+        "Remediation": "The issue has been acknowledged by Fractal.  Zellic 17 Fractal Protocol    4 Discussion  In this section, we discussmiscellaneous interesting observations during the audit that are noteworthy and merit some consideration.  We applaud Fractal's initiative for taking on the challenge of yield farming over frag- mented liquidity in multiple chains.  The quality of code is commendable, and the test coverage reaches almost 100% (99.6%).  Another point to considermay be that many functions such as mintwhich are allowed to be called bywhitelisted addresses dictated by the owner pose a large centralization risk. This is by design but we would still suggest the following:  * Use amulti-signature address wallet, this would prevent an attacker from caus- ing irreversible damage if the EOA wallet were compromised.  * Place dangerous functions like whitelists behind a timelock to catch malicious executions in the case of compromise.  Zellic 18 Fractal Protocol   \tAbout Zellic \tIntroduction \tAbout Fractal Protocol \tMethodology \tScope \tProject Overview \tDisclaimer  \tExecutive Summary \tDetailed Findings \tAn attacker may claim risk-free rewards without risking their staked capital \tLack of slippage checks on DEX swaps \tPotential lock-up of funds in FractalVaultV1 as anySwap Router is not approved \tPotential lock-up of funds in the event of insufficient AnySwap liquidity \tAccess Control functions should emit events \tMultiple internal inconsistencies \tLack of documentation \tInsufficient code documentation  \tDiscussion "
+    }
+]

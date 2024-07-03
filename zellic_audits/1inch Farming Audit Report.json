@@ -1,0 +1,73 @@
+[
+    {
+        "title": "3.1 Insufficient validation of parameters",
+        "target": " FarmingPool/Farm",
+        "category": " Business Logic",
+        "severity": " Low",
+        "likelihood": " Low ",
+        "impact": " Low ",
+        "bodyDescription": "The function setDistributor verifies that the new distributor is not the old distributor, but it does not verify that the new distributor is nonzero.  function setDistributor(address distributor_) external onlyOwner { address oldDistributor = distributor; require(distributor_ != oldDistributor, \"FP: distributor is already set\"); emit DistributorChanged(oldDistributor, distributor_); distributor = distributor_;  } ",
+        "bodyImpact": "If an incorrect/default input is supplied to any of these functions, it will result in the loss of funds and/or control over the mentioned farms. ",
+        "bodyRecommendations": "Add zero checks to the affected functions. ",
+        "remediation": "The issue has been acknowledged by 1inch. Their official response is reproduced be- low:  This behavior is by design: a) Owner may change the distributor any time. b) in case an owner wants to stop a farm from starting new farmings, they may set the address to zero.  Zellic 6 1inch Farming   "
+    },
+    {
+        "title": "3.2 ERC20 decimals() method may be unimplemented",
+        "target": " FarmingPool",
+        "category": " Business Logic",
+        "severity": " Informational",
+        "likelihood": " n/a ",
+        "impact": " Informational ",
+        "bodyDescription": "FarmingPool provides a publicmethod to get the number of decimals of the stakingToken which calls the decimalsmethod of the underlying IERC20 token. However, the EIP-20 standard declares that the decimals method is optional and that other contracts and interfaces should not rely on it being present.  According to the excerpt from the EIP-20 standard:  Excerpt from the EIP-20 standard ",
+        "bodyImpact": "The function could revert or return incorrect data. This may pose a composability risk for other contracts that try to interact with the farming pool. ",
+        "bodyRecommendations": "Add documentation stipulating that the decimals method is required, or that the im- plementation may be unreliable. ",
+        "remediation": "The issue has been acknowledged by 1inch, and they will add natspec documentation when it will be implemented.  Zellic 7 1inch Farming   "
+    },
+    {
+        "title": "3.3 Undocumented code",
+        "target": " Multiple contracts",
+        "category": " Code Maturity",
+        "severity": " Low",
+        "likelihood": " n/a ",
+        "impact": " Informational ",
+        "bodyDescription": "The methods in the contracts FarmingPool, IFarmingPool, ERC20Farmable, Farm, IFarm, UserAccounting, FarmAccounting, IERC20Farmable lack documentation in general. There are few or no code comments available. ",
+        "bodyImpact": "This is a source of developer confusion and a general coding hazard. Lack of doc- umentation, or unclear documentation, is a major pathway to future bugs. It is best practice to document all code. Documentation also helps third-party developers inte- grate with the platform, and helps any potential auditors more quickly and thoroughly assess the code. Since there are plans to eventually merge the contracts into Open- Zeppelin, a widespread community library, the code should be as mature as possible. ",
+        "bodyRecommendations": "Document the functions in the affected contracts so that the purpose, preconditions, and semantics are clearly explained. Return values and function arguments should be detailed to help prevent mistakes when calling the functions. ",
+        "remediation": "The issue has been acknowledged by 1inch, and they will add additional documenta- tion.  Zellic 8 1inch Farming   "
+    },
+    {
+        "title": "3.4 Internal discrepancy between function access control",
+        "target": " Farm, FarmingPool",
+        "category": " Code Maturity",
+        "severity": " Low",
+        "likelihood": " n/a ",
+        "impact": " Informational ",
+        "bodyDescription": "The functions _updateCheckpoint in Farm and FarmingPool both have the private ac- cess control modifier. However, when passed to the startFarming function as a call- back, the parameter type is labeled as internal. ",
+        "bodyImpact": "Amanual review found no security issues with the current implementation. However, while there is no immediate impact, inconsistencies like these canmake the code con- fusing and difficult to reason about, which could lead to future bugs. Since there are plans to eventually merge the contracts into OpenZeppelin, a widespread community library, the code should be as mature as possible. ",
+        "bodyRecommendations": "Modify the function _updateCheckpoint to be an internal function if this was not a de- liberate design decision. ",
+        "remediation": "The issue was fixed by 1inch in commit e513e429.  Zellic 9 1inch Farming  https://github.com/1inch/farming/pull/23/commits/e513e42920436d78db162cbbf9ac220ebe2be733  "
+    },
+    {
+        "title": "3.5 Some methods are not exposed by their interface",
+        "target": " IFarm, IFarmingPool",
+        "category": " Code Maturity",
+        "severity": " Low",
+        "likelihood": " n/a ",
+        "impact": " Informational ",
+        "bodyDescription": "The interfaces IFarm and IFarmingPooldo not expose the followingmethods from their concrete implementation:  IFarm.sol  * startFarming (Farm.sol)  IFarmingPool.sol  * startFarming (FarmingPool.sol) * decimals (FarmingPool.sol)  The interfaces also do not expose the onlyOwner setDistributor function, but we as- sume this is part of the intended design. ",
+        "bodyImpact": "Consumers of this interface will not be able to call the unexposed methods. ",
+        "bodyRecommendations": "If this is not the intended design, add the methods to the interface declarations. ",
+        "remediation": "The issue was fixed by 1inch in commit 29bf4aed.  Zellic 10 1inch Farming  https://github.com/1inch/farming/pull/23/commits/29bf4aed9446df19180c9bbac4d01671735542e8  "
+    },
+    {
+        "title": "3.6 Insufficient test suite code coverage",
+        "* Target": " Multiple contracts",
+        "* Severity": " Low",
+        "* Impact": " Informational ",
+        "* Category": " Code Maturity",
+        "* Likelihood": " n/a ",
+        "Description": "Several functions in the smart contract are not covered by any unit or integration tests, to the best of our knowledge. We examined the tests ERC20Farmable.js and FarmingPool.js. The following functions do not have test coverage:  ERC20Farmable.sol  * farmBalanceOf * userIsFarming * userFarmsCount * userFarmsAt * quitAll * claimAll * updateCheckpoint  Because correctness is so critically important when developing smart contracts, we always recommend that projects strive for 100% code coverage. Testing is an essen- tial part of the software development lifecycle. No matter how simple a function may be, untested code is always prone to bugs. ",
+        "Recommendations": "Expand the test suite so that all functions are covered by unit or integration tests. ",
+        "Remediation": "The issue has been acknowledged by 1inch, and they will add additional tests.  Zellic 11 1inch Farming   \tAbout Zellic \tIntroduction \tAbout 1inch Farming \tMethodology \tScope \tDisclaimer  \tExecutive Summary \tDetailed Findings \tInsufficient validation of parameters \tERC20 decimals() method may be unimplemented \tUndocumented code \tInternal discrepancy between function access control \tSome methods are not exposed by their interface \tInsufficient test suite code coverage  "
+    }
+]
