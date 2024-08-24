@@ -1,4 +1,0 @@
-1. Incorrect transfer of funds on token exit Severity: High Difficulty: n/a Type: n/a Target: n/a Description: Calling exitToToken(ExitQuoteData calldata quoteData, address recipient) user can define address recipient to receive the funds but this address is ignored and all funds are sent to the message sender instead. 
-2. Avoid double checking Severity: Gas Difficulty: n/a Type: n/a Target: n/a Description: At L222 there is a check for condition reserveTokenAmount != 0, which already checked at L213. 
-3. Incorrect comment Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: File MintableToken has a comment with an incorrect function accessibility. 
-4. Governable and GovernableUpgradeable should abstract common code into a common contract Severity: Informational Difficulty: n/a Type: n/a Target: n/a Description: 
