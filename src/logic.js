@@ -165,6 +165,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // fetch all the .json files(immunefi_findings.json, hacklabs_findings.json, codearena_findings.json) and concatenate them into a single array
     // then update the results table with the new dataset
     const fetchAll = async () => {
+
+        const zellic = await fetch('./results/zellic_findings.json');
+        const zellicJson = await zellic.json();
+
         const immunefi = await fetch('./results/immunefi_findings.json');
         const immunefiJson = await immunefi.json();
 
@@ -210,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const oak_security = await fetch('./results/oak_security_findings.json');
         const oak_securityJson = await oak_security.json();
 
-        const dataset = immunefiJson.concat(hacklabsJson, codearenaJson, /*gitbook_docsJson,*/ tobJson, yauditJson, spearbitJson, openzeppelinJson, slowmistJson, halbornJson, certoraJson, chainsecurityJson, consensysJson, leastauthorityJson, oak_securityJson);
+        const dataset = immunefiJson.concat(zellicJson, hacklabsJson, codearenaJson, /*gitbook_docsJson,*/ tobJson, yauditJson, spearbitJson, openzeppelinJson, slowmistJson, halbornJson, certoraJson, chainsecurityJson, consensysJson, leastauthorityJson, oak_securityJson);
         window.dataset = dataset;
         currentSet = window.dataset;
         window.controls.updateResults(resultsTable, window.dataset);
