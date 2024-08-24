@@ -35,22 +35,3 @@ Currently, Masamune works on the following data sources:
 5. [yAudit findings](https://reports.yaudit.dev/).
 6. [Trail of Bits audits](https://github.com/trailofbits/publications)
 4. Various Gitbooks, such as the [Layer Zero Docs](https://layerzero.gitbook.io), [Curve Finance Docs](https://resources.curve.fi/), [MEV Wiki](https://www.mev.wiki/), etc.
-
-## Creating a custom scraper
-
-To add a new data source, a custom scraper for the report format must be created. Existing examples are found in the `scrapers` directory.
-
-Scrapers have 2 main functions. The `extract_finding()` function parses the report files and stores the stored output in a text file in the `findings_newupdate` directory. The `jsonify_findings()` function parses this text file and outputs a JSON file stored in the `results` directory. The format of the JSON data is found in other scraper files but generally follows this format:
-
-```
-        "title": "MobileCoin Foundation could infer token IDs in certain scenarios",
-        "labels": [
-            "Trail of Bits",
-            "Severity: Informational",
-            "Difficulty: High",
-            "Type: Data Exposure",
-        ]
-        "body": ...
-```
-
-For Masamune V1, after the new scraper is created and the JSON output is stored in the `results` directory, the JSON file must be added to the `dataset` variable in logic.js to be included in the search results.
