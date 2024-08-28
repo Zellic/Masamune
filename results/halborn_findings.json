@@ -90,6 +90,86 @@
         ]
     },
     {
+        "title": "UNLIMITED MINTING BY REUSING FAILED HYPERLANE MESSAGES",
+        "html_url": "https://github.com/HalbornSecurity/PublicReports/tree/master/DAMfinance Audits/DAMfinance_LMCV_part_3_Smart_Contract_Security_Audit_Report_Halborn_Final.pdf",
+        "body": "It is possible to transfer dPrime tokens across chains using the If minting the tokens on the dPrimeConnectorHyperlane contract. destination chain fails, then the program stores the failed transaction in a mapping. It is possible to manually retry the failed transactions The function by calling the retry function on the destination chain. reads the failed transaction details from a mapping and mints the specified tokens for the receiver. However, the function does not update the mapping after a successfully retried transaction, so it is possible to mint as many tokens as desired by calling the retry function multiple times with the data of the failed transaction. Code Location: Listing 1: hyperlane/dPrimeConnectorHyperlane.sol (Lines 144,145) 141 function retry ( uint32 _origin , address _recipient , uint256 _nonce )  external { 142 143 144 145 146 147 uint256 amount = failedMessages [ _origin ][ _recipient ][ _nonce ]; try dPrimeLike ( dPrimeContract ). mint ( _recipient , amount ) { emit ReceivedTransferRemote ( _origin , _recipient , amount ); } catch { emit FailedTransferRemote ( _origin , _recipient , nonce ,  amount ); 148 149 } } 14 Proof of Concept: As proof of concept, a failed Hyperlane message was created in a local test environment. Then the same failed message was used multiple times to mint dPrime tokens for the receiver. It is noted that it is possible to mint as many tokens as desired using the failed message. Risk Level: Likelihood - 5 Impact - 5 Recommendation: The retry function should delete the successfully retried messages from the failedMessages mapping. 15 Remediation Plan: SOLVED: The DAMfinance team solved the issue in commit cfc13a8 by deleting the successfully retried messages from the failedMessages mapping. 16 ",
+        "labels": [
+            "Halborn",
+            "DAMfinance_LMCV_part_3",
+            "Severity: Critical"
+        ]
+    },
+    {
+        "title": "MISMATCHING DATA LOCATION DURING INHERITANCE",
+        "html_url": "https://github.com/HalbornSecurity/PublicReports/tree/master/DAMfinance Audits/DAMfinance_LMCV_part_3_Smart_Contract_Security_Audit_Report_Halborn_Final.pdf",
+        "body": "It was identified that the dPrimeConnectorHyperlane contract was incom- patible with the latest Hyperlane protocol and might not work with new versions of Hyperlane Inbox contracts, which can lead to users losing their dPrime tokens during cross-chain transfers. The dPrimeConnectorHyperlane contract is inherited from the Hyperlane Router abstract contract. When receiving a message from another chain, the handle function is called by the corresponding Hyperlane Inbox contract. This function calls the internal _handle function that can be overridden in the derived contracts. The following code is an example from the Hyperlane Router version 0.5.0: Listing 2: 85,95) @hyperlane-xyz/app/contracts/Router.sol (0.5.0) (Lines ) external virtual override onlyInbox onlyRemoteRouter ( _origin function handle ( uint32 _origin , bytes32 _sender , bytes memory _message 82 83 84 85 86  , _sender ) { 87 88 89 90 91 92 93 94 95 96 } // TODO : callbacks on success / failure _handle ( _origin , _sender , _message ); // ============ Virtual functions ============ function _handle ( uint32 _origin , bytes32 _sender , bytes memory _message ) internal virtual ; 17 The _handle function was overridden in the dPrimeConnectorHyperlane con- tract: Listing 3: hyperlane/dPrimeConnectorHyperlane.sol (Line 123) 120 121 122 123 124 function _handle ( uint32 _origin , bytes32 , bytes memory _message ) internal override alive { However, from Hyperlane version 0.5.1, the storage location of the _message parameter was changed from memory to calldata: Listing 4: 85,95) @hyperlane-xyz/app/contracts/Router.sol (0.5.1) (Lines function handle ( uint32 _origin , bytes32 _sender , bytes calldata _message ) external virtual override onlyInbox onlyRemoteRouter ( _origin 82 83 84 85 86  , _sender ) { 87 88 89 90 91 92 93 94 95 96 } // TODO : callbacks on success / failure _handle ( _origin , _sender , _message ); // ============ Virtual functions ============ function _handle ( uint32 _origin , bytes32 _sender , bytes calldata _message ) internal virtual ; A bug concerning data location during inheritance was identified in Solidity on May 17, 2022. According to the Solidity team, the calldata pointer in these cases is interpreted as a memory pointer which results in reading invalid data from memory. It is also noted that the current protocol is not configured with a fixed version of Hyperlane dependencies. In the package.json configuration 18 file, floating versions are used, which means that the contract might be deployed with an incompatible Hyperlane messaging protocol: Listing 5: package.json (Lines 25,26) 23 24 25 26 27 28 29 30 \" dependencies \": { \" @chainlink / contracts \" : \" ^0.4.1 \" , \" @hyperlane - xyz / app \": \" ^0.5.0 \" , \" @hyperlane - xyz / sdk \": \" ^0.5.0 \" , \" @layerzerolabs / solidity - examples \": \" ^0.0.4 \" , \" @openzeppelin / contracts \" : \" ^4.5.0 \" , \" solc \": \" ^0.8.15 \" } Proof of Concept: As proof of concept, the dPrimeConnectorHyperlane contract was deployed with Hyperlane version 0.5.0. It was possible to mint tokens by calling the handle function: 19 The contract was also deployed using the Hyperlane version 0.5.1. Calling the handle function with the same parameters resulted in an error and corrupted data: Note that it is not possible to recover the tokens from corrupted data using the retry function of the dPrimeConnectorHyperlane contract. Risk Level: Likelihood - 4 Impact - 4 Recommendation: The dPrimeConnectorHyperlane contract should be updated to work with the latest version of Hyperlane contracts. Before deployment, DAMfinance team should ensure the dPrimeConnectorHyperlane contract is compatible with the Hyperlane Inbox contract deployed on the same chain. It is also recommended to fix the versions of the external contracts in the package.json configuration file to versions that have been tested thoroughly with the protocol. 20 Remediation Plan: SOLVED: The DAMfinance team solved the issue in commit c19b217 by changing the storage location of the _message parameter from memory to calldata and fixing the versions of the Hyperlane contracts in the package.json configuration file. 21 ",
+        "labels": [
+            "Halborn",
+            "DAMfinance_LMCV_part_3",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "DENIAL OF SERVICE USING MINT DELAY",
+        "html_url": "https://github.com/HalbornSecurity/PublicReports/tree/master/DAMfinance Audits/DAMfinance_LMCV_part_3_Smart_Contract_Security_Audit_Report_Halborn_Final.pdf",
+        "body": "The new version of the dPrime token contract was extended with an addi- tional security feature that prevents transferring funds for a certain The delay allows the number of blocks after a cross-chain transfer. DAMfinance team team to pause the contract in case the cross-chain mes- saging is compromised to limit the impact of such security incidents. However, a malicious actor can also exploit this behavior to manipu- late the market during volatile times or perform a griefing attack by The likelihood of continuously sending tokens to the targeted users. such attacks is increased because it is enough to send only one token to prevent the transfer of the targeted users funds temporarily. Code Location: Listing 6: dPrime.sol (Line 192) 191 function mintAndDelay ( address to , uint256 value ) external auth  { 192 transferBlockRelease [ to ] = block . number +  transferBlockWait ; 193 194 } _mint ( to , value ); Listing 7: dPrime.sol (Line 123) 121 function transferFrom ( address from , address to , uint256 value )  external alive returns ( bool ) { 122 require ( to != address (0) && to != address ( this ) , \" dPrime /  invalid - address \"); 123 require ( block . number > transferBlockRelease [ from ], \" dPrime  / transfer too soon after cross - chain mint \" ); 22 Risk Level: Likelihood - 3 Impact - 3 Recommendation: Adding a configurable threshold to the mintAndDelay function is recom- mended. The function should be able to mint tokens below the set threshold directly. The threshold and the length of the delay should be configured based on the specific blockchain and actual market characteristics to make it more expensive for an attacker to perform a denial of service attack while limiting the potential damage in case the cross-chain messaging of the protocol is compromised. Remediation Plan: SOLVED: The DAMfinance team solved the issue in commit e76f394 by adding a configurable threshold to the mintAndDelay function. 23 ",
+        "labels": [
+            "Halborn",
+            "DAMfinance_LMCV_part_3",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "INCOMPLETE GUARDIAN IMPLEMENTATION",
+        "html_url": "https://github.com/HalbornSecurity/PublicReports/tree/master/DAMfinance Audits/DAMfinance_LMCV_part_3_Smart_Contract_Security_Audit_Report_Halborn_Final.pdf",
+        "body": "It was identified that in the dPrimeGuardian contract, it is not possible to add any values to the pipeAddresses mapping. And therefore, in case of an incident, the dPrimeGuardian contract cannot be used to take back the admin privileges of any insecure connector from the dPrime token because the removeConnectorAdmin reads the required addresses from the mapping. Code Location: Listing 8: dPrimeGuardian.sol (Line 26) 25 function removeConnectorAdmin ( bytes32 pipeName ) external auth { 26 27 28 } dPrimeLike ( dPrimeContract ). deny ( pipeAddresses [ pipeName ]) ; emit HaltedPipe ( pipeName ); Risk Level: Likelihood - 2 Impact - 4 Recommendation: Modify the contract to allow the removeConnectorAdmin function to be used. Remediation Plan: SOLVED: The DAMfinance team solved the issue in commit cfc13a8 by adding the setPipeAddress function to the dPrimeGuardian contract. 24 ",
+        "labels": [
+            "Halborn",
+            "DAMfinance_LMCV_part_3",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "MISSING EVENTS FOR RELEVANT OPERATIONS",
+        "html_url": "https://github.com/HalbornSecurity/PublicReports/tree/master/DAMfinance Audits/DAMfinance_LMCV_part_3_Smart_Contract_Security_Audit_Report_Halborn_Final.pdf",
+        "body": "The connector and guardian contracts are inherited from the AuthAdmin contract. It was identified that in this contract, the cage function did not emit any events. As a result, blockchain monitoring systems might not be able to timely detect suspicious behaviors related to the cage function. Note that the Cage event declared in the dPrimeConnectorHyperlane contract is not used and could be removed from the contract. Risk Level: Likelihood - 2 Impact - 2 Recommendation: Adding events for all important operations is recommended to help monitor the contracts and detect suspicious behavior. A monitoring system that tracks relevant events would allow the timely detection of compromised system components. Remediation Plan: SOLVED: The DAMfinance team solved the issue in commit cfc13a8 by emitting the event in the cage function of the AuthAdmin contract and removing the redundant Cage event from the dPrimeConnectorHyperlane contract. 25 ",
+        "labels": [
+            "Halborn",
+            "DAMfinance_LMCV_part_3",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "MISSING ZERO VALUE CHECKS",
+        "html_url": "https://github.com/HalbornSecurity/PublicReports/tree/master/DAMfinance Audits/DAMfinance_LMCV_part_3_Smart_Contract_Security_Audit_Report_Halborn_Final.pdf",
+        "body": "It was identified that within the code, several functions were lacking zero address or zero value validation on important parameters. Set- ting invalid parameters in the examples below might result in loss of funds, waste of gas, lose of administrative controls, or reverting during important operations: Missing zero address checks: LayerZero/dPrimeConnectorLZ.sol: - Line 24 constructor is missing zero-address checks for _lzEndpoint, _dPrimeContract. Line initialize hyperlane/dPrimeConnectorHyperlane.sol: - 71 _abacusConnectionManager, . - Line 95 transferRemote is missing zero-address check for _recipient. is _interchainGasPaymaster, for dPrimeContract zero-address missing checks dPrimeGuardian.sol - Line 16: constructor is missing zero-address check for _dPrimeContract. It is also recommended to validate the following parameters and variables: hyperlane/dPrimeConnectorHyperlane.sol: - Line 95 transferRemote is missing zero value checks for _destination, _amount. - Line 142 retry is missing zero-value check for amount. Risk Level: Likelihood - 1 Impact - 3 26 Recommendation: It is recommended to review the above list of functions and add checks where applicable. Remediation Plan: SOLVED: The DAMfinance team solved the issue in commit cfc13a8 by adding checks where appropriate. 27 ",
+        "labels": [
+            "Halborn",
+            "DAMfinance_LMCV_part_3",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "REVERT STRING SIZE OPTIMIZATION",
+        "html_url": "https://github.com/HalbornSecurity/PublicReports/tree/master/DAMfinance Audits/DAMfinance_LMCV_part_3_Smart_Contract_Security_Audit_Report_Halborn_Final.pdf",
+        "body": "Shortening the revert strings to fit within 32 bytes will decrease de- ployment time gas and reduce runtime gas when the revert condition is met. Revert strings that are longer than 32 bytes require at least one addi- tional mstore, along with additional overhead to calculate memory offset, etc. Recommendation: Shorten the revert strings to fit within 32 bytes. That will affect gas optimization. Remediation Plan: ACKNOWLEDGED: The DAMfinance team acknowledged this finding. 28 ",
+        "labels": [
+            "Halborn",
+            "DAMfinance_LMCV_part_3",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "STATE VARIABLES MISSING IMMUTABLE MODIFIER",
+        "html_url": "https://github.com/HalbornSecurity/PublicReports/tree/master/DAMfinance Audits/DAMfinance_LMCV_part_3_Smart_Contract_Security_Audit_Report_Halborn_Final.pdf",
+        "body": "State variables can be declared as constant or immutable. In both cases, the variables cannot be modified after the contract has been constructed. For constant variables, the value has to be fixed at compile-time, while for immutable, it can still be assigned at construction time. The following state variables are missing the immutable modifier: dPrimeGuardian.sol - Line 16: address public dPrimeContract; dPrimeConnectorLZ.sol - Line 19: address public dPrimeContract; Risk Level: Likelihood - 1 Impact - 1 Recommendation: It is recommended to add the immutable modifier to the state variables mentioned. Remediation Plan: SOLVED: The DAMfinance team solved the issue in commits e1a2d28 and cfc13a8 by adding the immutable modifier to the state variables. 29 ",
+        "labels": [
+            "Halborn",
+            "DAMfinance_LMCV_part_3",
+            "Severity: Informational"
+        ]
+    },
+    {
         "title": "USER FUNDS MAY GET LOCKED IN JOIN CONTRACTS",
         "html_url": "https://github.com/HalbornSecurity/PublicReports/tree/master/DAMfinance Audits/DAMfinance_LMCV_part_2_Smart_Contract_Security_Audit_Report_Halborn_Final.pdf",
         "body": "The RewardJoin and StakeJoin contracts have possibility to be stopped/dis- abled by the administrator using cage function. When the administrator calls the cage function, user funds will get locked as the users will not be able to call the exit function successfully and get the staked and rewards tokens. The contracts also do not implement a possibility to start the contract again (setting the live flag to 1), so all funds will get locked inside the contract. Code Location: cage function: Listing 1: contracts/staking/RewardJoin.sol (Line 71) 70 function cage () external auth { 71 72 73 } live = 0; emit Cage () ; staking/RewardJoin.sol Listing 2: contracts/staking/RewardJoin.sol (Line 100) 99 function exit ( address usr , uint256 wad ) external { require ( live == 1 , \" CollateralJoin / not - live \" ); stakingVault . pullRewards ( collateralName , msg . sender , wad ); require ( collateralContract . transfer ( usr , wad ) , \" RewardJoin / 100 101 102  failed - transfer \"); 103 104 } emit Exit ( usr , wad ); 16 staking/StakeJoin.sol Listing 3: contracts/staking/StakeJoin.sol (Line 98) 97 function exit ( address usr , uint256 wad ) external { require ( live == 1 , \" CollateralJoin / not - live \" ); 98 stakingVault . pullStakingToken ( msg . sender , wad ); 99 require ( collateralContract . transfer ( usr , wad ) , \" CollateralJoin 100  / failed - transfer \" ); 101 102 } emit Exit ( usr , wad ); Test scenario: Example Hardhat test cases: Listing 4 // User stakes tokens let userStakeJoin = stakeJoin . connect ( addr1 ); await userStakeJoin . join ( addr1 . address , fwad ( \" 1000 \")) ; 1 it ( \" HAL -01 User staked tokens are locked ( StakeJoin )\" , async  function () { 2 3 4 5 6 7 8 9 10 11 12 }) ; // User can 't exit , collateral is locked in the contract await expect ( userStakeJoin . exit ( addr1 . address , fwad ( \" 500 \"))) // Contract is stopped await stakeJoin . cage () ; . to . be . revertedWith ( \" CollateralJoin / not - live \" ); Listing 5 // User stakes tokens let userStakeJoin = stakeJoin . connect ( addr1 ); await userStakeJoin . join ( addr1 . address , fwad ( \" 1000 \")) ; 1 it ( \" HAL -01 User rewards are locked ( RewardsJoin ) \" , async function  () { 2 3 4 5 6 7 // User stakes tokens in the vault userSV = stakingVault . connect ( addr1 ); 17 await userSV . stake ( fwad ( \" 800 \") , addr1 . address ); // Rewards are added await fooJoin . join ( fwad ( \" 1000 \" )) ; // User stakes 0 to claim rewards await userSV . stake ( \"0 \" , addr1 . address ); 8 9 10 11 12 13 14 15 16 17 18 19 20 21  1000000000000000000000 \" )) 22 23 }) ; // Contract is stopped await fooJoin . cage () ; // User tries to exit rewards join contract let userFooJoin1 = fooJoin . connect ( addr1 ); await expect ( userFooJoin1 . exit ( addr1 . address , \" . to . be . revertedWith ( \" CollateralJoin / not - live \" ); Risk Level: Likelihood - 3 Impact - 5 Recommendation: Consider allowing users to call exit when the contract is not live, or add a possibility to make the contract live again. Remediation Plan: SOLVED: The cage function in the RewardJoin and StakeJoin contracts was updated, adding a possibility to make the contract live again. Reference: RewardJoin.sol and StakeJoin.sol 18 ",
@@ -176,86 +256,6 @@
         "labels": [
             "Halborn",
             "DAMfinance_LMCV_part_2",
-            "Severity: Informational"
-        ]
-    },
-    {
-        "title": "UNLIMITED MINTING BY REUSING FAILED HYPERLANE MESSAGES",
-        "html_url": "https://github.com/HalbornSecurity/PublicReports/tree/master/DAMfinance Audits/DAMfinance_LMCV_part_3_Smart_Contract_Security_Audit_Report_Halborn_Final.pdf",
-        "body": "It is possible to transfer dPrime tokens across chains using the If minting the tokens on the dPrimeConnectorHyperlane contract. destination chain fails, then the program stores the failed transaction in a mapping. It is possible to manually retry the failed transactions The function by calling the retry function on the destination chain. reads the failed transaction details from a mapping and mints the specified tokens for the receiver. However, the function does not update the mapping after a successfully retried transaction, so it is possible to mint as many tokens as desired by calling the retry function multiple times with the data of the failed transaction. Code Location: Listing 1: hyperlane/dPrimeConnectorHyperlane.sol (Lines 144,145) 141 function retry ( uint32 _origin , address _recipient , uint256 _nonce )  external { 142 143 144 145 146 147 uint256 amount = failedMessages [ _origin ][ _recipient ][ _nonce ]; try dPrimeLike ( dPrimeContract ). mint ( _recipient , amount ) { emit ReceivedTransferRemote ( _origin , _recipient , amount ); } catch { emit FailedTransferRemote ( _origin , _recipient , nonce ,  amount ); 148 149 } } 14 Proof of Concept: As proof of concept, a failed Hyperlane message was created in a local test environment. Then the same failed message was used multiple times to mint dPrime tokens for the receiver. It is noted that it is possible to mint as many tokens as desired using the failed message. Risk Level: Likelihood - 5 Impact - 5 Recommendation: The retry function should delete the successfully retried messages from the failedMessages mapping. 15 Remediation Plan: SOLVED: The DAMfinance team solved the issue in commit cfc13a8 by deleting the successfully retried messages from the failedMessages mapping. 16 ",
-        "labels": [
-            "Halborn",
-            "DAMfinance_LMCV_part_3",
-            "Severity: Critical"
-        ]
-    },
-    {
-        "title": "MISMATCHING DATA LOCATION DURING INHERITANCE",
-        "html_url": "https://github.com/HalbornSecurity/PublicReports/tree/master/DAMfinance Audits/DAMfinance_LMCV_part_3_Smart_Contract_Security_Audit_Report_Halborn_Final.pdf",
-        "body": "It was identified that the dPrimeConnectorHyperlane contract was incom- patible with the latest Hyperlane protocol and might not work with new versions of Hyperlane Inbox contracts, which can lead to users losing their dPrime tokens during cross-chain transfers. The dPrimeConnectorHyperlane contract is inherited from the Hyperlane Router abstract contract. When receiving a message from another chain, the handle function is called by the corresponding Hyperlane Inbox contract. This function calls the internal _handle function that can be overridden in the derived contracts. The following code is an example from the Hyperlane Router version 0.5.0: Listing 2: 85,95) @hyperlane-xyz/app/contracts/Router.sol (0.5.0) (Lines ) external virtual override onlyInbox onlyRemoteRouter ( _origin function handle ( uint32 _origin , bytes32 _sender , bytes memory _message 82 83 84 85 86  , _sender ) { 87 88 89 90 91 92 93 94 95 96 } // TODO : callbacks on success / failure _handle ( _origin , _sender , _message ); // ============ Virtual functions ============ function _handle ( uint32 _origin , bytes32 _sender , bytes memory _message ) internal virtual ; 17 The _handle function was overridden in the dPrimeConnectorHyperlane con- tract: Listing 3: hyperlane/dPrimeConnectorHyperlane.sol (Line 123) 120 121 122 123 124 function _handle ( uint32 _origin , bytes32 , bytes memory _message ) internal override alive { However, from Hyperlane version 0.5.1, the storage location of the _message parameter was changed from memory to calldata: Listing 4: 85,95) @hyperlane-xyz/app/contracts/Router.sol (0.5.1) (Lines function handle ( uint32 _origin , bytes32 _sender , bytes calldata _message ) external virtual override onlyInbox onlyRemoteRouter ( _origin 82 83 84 85 86  , _sender ) { 87 88 89 90 91 92 93 94 95 96 } // TODO : callbacks on success / failure _handle ( _origin , _sender , _message ); // ============ Virtual functions ============ function _handle ( uint32 _origin , bytes32 _sender , bytes calldata _message ) internal virtual ; A bug concerning data location during inheritance was identified in Solidity on May 17, 2022. According to the Solidity team, the calldata pointer in these cases is interpreted as a memory pointer which results in reading invalid data from memory. It is also noted that the current protocol is not configured with a fixed version of Hyperlane dependencies. In the package.json configuration 18 file, floating versions are used, which means that the contract might be deployed with an incompatible Hyperlane messaging protocol: Listing 5: package.json (Lines 25,26) 23 24 25 26 27 28 29 30 \" dependencies \": { \" @chainlink / contracts \" : \" ^0.4.1 \" , \" @hyperlane - xyz / app \": \" ^0.5.0 \" , \" @hyperlane - xyz / sdk \": \" ^0.5.0 \" , \" @layerzerolabs / solidity - examples \": \" ^0.0.4 \" , \" @openzeppelin / contracts \" : \" ^4.5.0 \" , \" solc \": \" ^0.8.15 \" } Proof of Concept: As proof of concept, the dPrimeConnectorHyperlane contract was deployed with Hyperlane version 0.5.0. It was possible to mint tokens by calling the handle function: 19 The contract was also deployed using the Hyperlane version 0.5.1. Calling the handle function with the same parameters resulted in an error and corrupted data: Note that it is not possible to recover the tokens from corrupted data using the retry function of the dPrimeConnectorHyperlane contract. Risk Level: Likelihood - 4 Impact - 4 Recommendation: The dPrimeConnectorHyperlane contract should be updated to work with the latest version of Hyperlane contracts. Before deployment, DAMfinance team should ensure the dPrimeConnectorHyperlane contract is compatible with the Hyperlane Inbox contract deployed on the same chain. It is also recommended to fix the versions of the external contracts in the package.json configuration file to versions that have been tested thoroughly with the protocol. 20 Remediation Plan: SOLVED: The DAMfinance team solved the issue in commit c19b217 by changing the storage location of the _message parameter from memory to calldata and fixing the versions of the Hyperlane contracts in the package.json configuration file. 21 ",
-        "labels": [
-            "Halborn",
-            "DAMfinance_LMCV_part_3",
-            "Severity: High"
-        ]
-    },
-    {
-        "title": "DENIAL OF SERVICE USING MINT DELAY",
-        "html_url": "https://github.com/HalbornSecurity/PublicReports/tree/master/DAMfinance Audits/DAMfinance_LMCV_part_3_Smart_Contract_Security_Audit_Report_Halborn_Final.pdf",
-        "body": "The new version of the dPrime token contract was extended with an addi- tional security feature that prevents transferring funds for a certain The delay allows the number of blocks after a cross-chain transfer. DAMfinance team team to pause the contract in case the cross-chain mes- saging is compromised to limit the impact of such security incidents. However, a malicious actor can also exploit this behavior to manipu- late the market during volatile times or perform a griefing attack by The likelihood of continuously sending tokens to the targeted users. such attacks is increased because it is enough to send only one token to prevent the transfer of the targeted users funds temporarily. Code Location: Listing 6: dPrime.sol (Line 192) 191 function mintAndDelay ( address to , uint256 value ) external auth  { 192 transferBlockRelease [ to ] = block . number +  transferBlockWait ; 193 194 } _mint ( to , value ); Listing 7: dPrime.sol (Line 123) 121 function transferFrom ( address from , address to , uint256 value )  external alive returns ( bool ) { 122 require ( to != address (0) && to != address ( this ) , \" dPrime /  invalid - address \"); 123 require ( block . number > transferBlockRelease [ from ], \" dPrime  / transfer too soon after cross - chain mint \" ); 22 Risk Level: Likelihood - 3 Impact - 3 Recommendation: Adding a configurable threshold to the mintAndDelay function is recom- mended. The function should be able to mint tokens below the set threshold directly. The threshold and the length of the delay should be configured based on the specific blockchain and actual market characteristics to make it more expensive for an attacker to perform a denial of service attack while limiting the potential damage in case the cross-chain messaging of the protocol is compromised. Remediation Plan: SOLVED: The DAMfinance team solved the issue in commit e76f394 by adding a configurable threshold to the mintAndDelay function. 23 ",
-        "labels": [
-            "Halborn",
-            "DAMfinance_LMCV_part_3",
-            "Severity: Medium"
-        ]
-    },
-    {
-        "title": "INCOMPLETE GUARDIAN IMPLEMENTATION",
-        "html_url": "https://github.com/HalbornSecurity/PublicReports/tree/master/DAMfinance Audits/DAMfinance_LMCV_part_3_Smart_Contract_Security_Audit_Report_Halborn_Final.pdf",
-        "body": "It was identified that in the dPrimeGuardian contract, it is not possible to add any values to the pipeAddresses mapping. And therefore, in case of an incident, the dPrimeGuardian contract cannot be used to take back the admin privileges of any insecure connector from the dPrime token because the removeConnectorAdmin reads the required addresses from the mapping. Code Location: Listing 8: dPrimeGuardian.sol (Line 26) 25 function removeConnectorAdmin ( bytes32 pipeName ) external auth { 26 27 28 } dPrimeLike ( dPrimeContract ). deny ( pipeAddresses [ pipeName ]) ; emit HaltedPipe ( pipeName ); Risk Level: Likelihood - 2 Impact - 4 Recommendation: Modify the contract to allow the removeConnectorAdmin function to be used. Remediation Plan: SOLVED: The DAMfinance team solved the issue in commit cfc13a8 by adding the setPipeAddress function to the dPrimeGuardian contract. 24 ",
-        "labels": [
-            "Halborn",
-            "DAMfinance_LMCV_part_3",
-            "Severity: Medium"
-        ]
-    },
-    {
-        "title": "MISSING EVENTS FOR RELEVANT OPERATIONS",
-        "html_url": "https://github.com/HalbornSecurity/PublicReports/tree/master/DAMfinance Audits/DAMfinance_LMCV_part_3_Smart_Contract_Security_Audit_Report_Halborn_Final.pdf",
-        "body": "The connector and guardian contracts are inherited from the AuthAdmin contract. It was identified that in this contract, the cage function did not emit any events. As a result, blockchain monitoring systems might not be able to timely detect suspicious behaviors related to the cage function. Note that the Cage event declared in the dPrimeConnectorHyperlane contract is not used and could be removed from the contract. Risk Level: Likelihood - 2 Impact - 2 Recommendation: Adding events for all important operations is recommended to help monitor the contracts and detect suspicious behavior. A monitoring system that tracks relevant events would allow the timely detection of compromised system components. Remediation Plan: SOLVED: The DAMfinance team solved the issue in commit cfc13a8 by emitting the event in the cage function of the AuthAdmin contract and removing the redundant Cage event from the dPrimeConnectorHyperlane contract. 25 ",
-        "labels": [
-            "Halborn",
-            "DAMfinance_LMCV_part_3",
-            "Severity: Low"
-        ]
-    },
-    {
-        "title": "MISSING ZERO VALUE CHECKS",
-        "html_url": "https://github.com/HalbornSecurity/PublicReports/tree/master/DAMfinance Audits/DAMfinance_LMCV_part_3_Smart_Contract_Security_Audit_Report_Halborn_Final.pdf",
-        "body": "It was identified that within the code, several functions were lacking zero address or zero value validation on important parameters. Set- ting invalid parameters in the examples below might result in loss of funds, waste of gas, lose of administrative controls, or reverting during important operations: Missing zero address checks: LayerZero/dPrimeConnectorLZ.sol: - Line 24 constructor is missing zero-address checks for _lzEndpoint, _dPrimeContract. Line initialize hyperlane/dPrimeConnectorHyperlane.sol: - 71 _abacusConnectionManager, . - Line 95 transferRemote is missing zero-address check for _recipient. is _interchainGasPaymaster, for dPrimeContract zero-address missing checks dPrimeGuardian.sol - Line 16: constructor is missing zero-address check for _dPrimeContract. It is also recommended to validate the following parameters and variables: hyperlane/dPrimeConnectorHyperlane.sol: - Line 95 transferRemote is missing zero value checks for _destination, _amount. - Line 142 retry is missing zero-value check for amount. Risk Level: Likelihood - 1 Impact - 3 26 Recommendation: It is recommended to review the above list of functions and add checks where applicable. Remediation Plan: SOLVED: The DAMfinance team solved the issue in commit cfc13a8 by adding checks where appropriate. 27 ",
-        "labels": [
-            "Halborn",
-            "DAMfinance_LMCV_part_3",
-            "Severity: Low"
-        ]
-    },
-    {
-        "title": "REVERT STRING SIZE OPTIMIZATION",
-        "html_url": "https://github.com/HalbornSecurity/PublicReports/tree/master/DAMfinance Audits/DAMfinance_LMCV_part_3_Smart_Contract_Security_Audit_Report_Halborn_Final.pdf",
-        "body": "Shortening the revert strings to fit within 32 bytes will decrease de- ployment time gas and reduce runtime gas when the revert condition is met. Revert strings that are longer than 32 bytes require at least one addi- tional mstore, along with additional overhead to calculate memory offset, etc. Recommendation: Shorten the revert strings to fit within 32 bytes. That will affect gas optimization. Remediation Plan: ACKNOWLEDGED: The DAMfinance team acknowledged this finding. 28 ",
-        "labels": [
-            "Halborn",
-            "DAMfinance_LMCV_part_3",
-            "Severity: Informational"
-        ]
-    },
-    {
-        "title": "STATE VARIABLES MISSING IMMUTABLE MODIFIER",
-        "html_url": "https://github.com/HalbornSecurity/PublicReports/tree/master/DAMfinance Audits/DAMfinance_LMCV_part_3_Smart_Contract_Security_Audit_Report_Halborn_Final.pdf",
-        "body": "State variables can be declared as constant or immutable. In both cases, the variables cannot be modified after the contract has been constructed. For constant variables, the value has to be fixed at compile-time, while for immutable, it can still be assigned at construction time. The following state variables are missing the immutable modifier: dPrimeGuardian.sol - Line 16: address public dPrimeContract; dPrimeConnectorLZ.sol - Line 19: address public dPrimeContract; Risk Level: Likelihood - 1 Impact - 1 Recommendation: It is recommended to add the immutable modifier to the state variables mentioned. Remediation Plan: SOLVED: The DAMfinance team solved the issue in commits e1a2d28 and cfc13a8 by adding the immutable modifier to the state variables. 29 ",
-        "labels": [
-            "Halborn",
-            "DAMfinance_LMCV_part_3",
             "Severity: Informational"
         ]
     }
