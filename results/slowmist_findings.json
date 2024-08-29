@@ -6708,5 +6708,93 @@
             "Type: Authority Control Vulnerability",
             "Severity: Medium"
         ]
+    },
+    {
+        "title": "Preemptive Initialization",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/SlowMist Audit Report - Doubler - 20240117.pdf",
+        "body": "contracts/FRNFT.sol This function has the problem of being preempted. function initialize(address doublerPool) external { require(_initialized == false, \"initialized err\"); _initialized = true; _doublerPool = doublerPool; _grantRole(DOUBLER_ROLE, doublerPool); } contracts/Doubler.sol This function has the problem of being preempted. function initialize( address _initTeam, address _initEco, address _initFastPriceFeed, address _initDoublerNFT, address _initDbrTokenAddress, address _initMultiSigWallet, uint16 _initProtectBlock ) external { if (_initialized == true) revert E_Initialized(); _initialized = true; _team = _initTeam; _eco = _initEco; _fastPriceFeed = _initFastPriceFeed; _FRNFT = _initDoublerNFT; _ecoFeeRatio = 2000; // 20% * 100 _feeRatio = 20; // 0.2% * 100 _protectBlock = _initProtectBlock; _grantRole(DEFAULT_ADMIN_ROLE, _initMultiSigWallet); emit Initialize(_initTeam, _initFastPriceFeed, _initDoublerNFT, _initDbrTokenAddress, _initMultiSigWallet); }",
+        "labels": [
+            "SlowMist",
+            "Doubler - 20240117",
+            "Type: Race Conditions Vulnerability",
+            "Severity: Suggestion"
+        ]
+    },
+    {
+        "title": "Risk of excessive authority",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/SlowMist Audit Report - Doubler - 20240117.pdf",
+        "body": "contracts/FastPriceFeed.sol The admin role can be set to price related, if the private key leakage will cause the price anomaly caused by the pool function is impaired. admin can newAsset admin can updatePriceAggregator admin can upgradePlan admin can setTwapInterval",
+        "labels": [
+            "SlowMist",
+            "Doubler - 20240117",
+            "Type: Authority Control Vulnerability Audit",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "Pool depth and TWAP interval in uniswap V3 price queries",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/SlowMist Audit Report - Doubler - 20240117.pdf",
+        "body": "contracts/FastPriceFeed.sol When getting the price of the token, you should pay attention to the depth of the corresponding pool, if the depth of the pool is too shallow and the price range is set too low, there is still a possibility of price manipulation. function getPriceFromDex(address _asset) internal view returns (uint256 price) { require(_isSupported[_asset], 'UniV3: oracle in mainnet not initialized yet!'); address uniswapV3Pool = _assetFeedMap[_asset]; uint32 twapInterval = _twapIntervals[_asset]; IUniswapV3Pool pool = IUniswapV3Pool(uniswapV3Pool); IUniswapV3Pool.Slot0 memory slot0; IUniswapV3Pool.Observation memory obs; slot0 = pool.slot0(); obs = pool.observations((slot0.observationIndex + 1) % slot0.observationCardinality); require(obs.initialized, \"UNIV3: Pair did't initialized\"); uint32 delta = uint32(block.timestamp) - obs.blockTimestamp; require(delta >= twapInterval, 'UniV3: token pool does not have enough transaction history in mainnet'); uint32[] memory secondsAgos = new uint32[](2); secondsAgos[0] = twapInterval; secondsAgos[1] = 0; (int56[] memory tickCumulatives, ) = pool.observe(secondsAgos); uint160 sqrtPriceX96 = TickMath.getSqrtRatioAtTick( int24((tickCumulatives[1] - tickCumulatives[0]) / int56(uint56(twapInterval))) ); (uint256 price0, uint256 price1) = mockDexPrice(pool, sqrtPriceX96); return pool.token0() == _asset ? price0 : price1; }",
+        "labels": [
+            "SlowMist",
+            "Doubler - 20240117",
+            "Type: Others",
+            "Severity: Suggestion"
+        ]
+    },
+    {
+        "title": "Recommendations on the conditions of winner",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/SlowMist Audit Report - Doubler - 20240117.pdf",
+        "body": "contracts/Doubler.sol In some extreme cases, it may be possible to control the nal winner.",
+        "labels": [
+            "SlowMist",
+            "Doubler - 20240117",
+            "Type: Others",
+            "Severity: Suggestion"
+        ]
+    },
+    {
+        "title": "Suggestions for setTwapInterval",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/SlowMist Audit Report - Doubler - 20240117.pdf",
+        "body": "contracts/FastPriceFeed.sol It should be a supported token to set the interval. function setTwapInterval(address _asset, uint32 _twapInterval) external onlyRole(DEFAULT_ADMIN_ROLE) { require(!_isSupported[_asset], 'Oracle: do not support this token'); require(_plans[_asset] == Plan.DEX, \"setTwapInterval: Only dex _asset\"); require( MAX_INTERVA >= _twapIntervals[_asset] && _twapIntervals[_asset] >= MIN_INTERVA, 'setTwapInterval: Invalid twapInterval' ); emit SetTwapInterval(_asset, _twapIntervals[_asset], _twapInterval); _twapIntervals[_asset] = _twapInterval; }",
+        "labels": [
+            "SlowMist",
+            "Doubler - 20240117",
+            "Type: Others",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "Redundant code",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/SlowMist Audit Report - Doubler - 20240117.pdf",
+        "body": "contracts/Doubler.sol The hot in the structure is not used. struct Pool { address asset; address creator; address terminator; uint16 fallRatio; uint16 profitRatio; uint16 rewardRatio; uint16 winnerRatio; uint32 double; uint32 lastLayer; uint256 tokenId; uint256 unitSize; uint256 maxRewardUnits; uint256 winnerOffset; uint256 endPrice; uint256 hot; //SLOWMIST// unused uint256 lastOpenPrice; uint256 tvl; uint256 amount; uint256 margin; uint256 joins; uint256 lastInputBlockNo; uint256 kTotal; }",
+        "labels": [
+            "SlowMist",
+            "Doubler - 20240117",
+            "Type: Others",
+            "Severity: Suggestion"
+        ]
+    },
+    {
+        "title": "Function permission control issues",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/SlowMist Audit Report - Doubler - 20240117.pdf",
+        "body": "contracts/FRNFT.sol The roles used by these functions are not set and cannot be executed subsequently. setTokenRoyalty resetTokenRoyalty setDefaultRoyaltyInfo deleteDefaultRoyalty",
+        "labels": [
+            "SlowMist",
+            "Doubler - 20240117",
+            "Type: Authority Control Vulnerability Audit",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "Overlooking purchase price relative to target prot in pool ending logic",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/SlowMist Audit Report - Doubler - 20240117.pdf",
+        "body": "contracts/Doubler.sol The scenario where the purchase price is less than or equal to the target prot price has not been considered. When the price at the time of purchase is less than or equal to the target prot price, the purchase should not be allowed. Otherwise, users can manipulate the ending of the pool after purchasing to position themselves as the winner. function _input(AddInput memory _addInput, uint8 _decimals) internal returns (uint256 tokenId) { Pool memory pool = _poolMap[_addInput.poolId]; if (_addInput.margin == 0 || _addInput.margin > _addInput.amount || _addInput.margin.mod(pool.unitSize) != 0) revert E_Margin(); if (IERC20(pool.asset).allowance(_msgSender(), address(this)) < _addInput.margin) revert E_Approve(); if (IERC20(pool.asset).balanceOf(_msgSender()) < _addInput.margin) revert E_Balance(); if (_addInput.multiple < 1 || _addInput.margin.mul(_addInput.multiple) != _addInput.amount) revert E_Multiple(); if (_addInput.multiple > 1 && _addInput.multiple > _getMaxMultiple(pool, _addInput.curPrice, _decimals)) revert E_MultipleLimit(); _addInput.layer = _getLastLayer(_addInput.poolId, _addInput.curPrice, _addInput.amount); LayerData memory layer = _layerDataMap[_addInput.poolId][_addInput.layer]; if (layer.amount >= layer.cap) revert E_LayerCap(); if (layer.cap.sub(layer.amount) < _addInput.margin) { _addInput.margin = _addInput.amount = layer.cap.sub(layer.amount); } else { _addInput.amount = layer.cap.sub(layer.amount) < _addInput.amount ? layer.cap.sub(layer.amount) : _addInput.amount; } IERC20(pool.asset).safeTransferFrom(_msgSender(), address(this), _addInput.margin); uint256 layerAmount = _addTvl(_addInput); uint256 layerRanking = layerAmount.div(pool.unitSize); tokenId = IFRNFT(_FRNFT).mint( _msgSender(), _addInput.poolId, _addInput.layer, _addInput.margin, _addInput.amount, _addInput.curPrice, layerRanking ); emit NewInput( tokenId, _addInput.poolId, _msgSender(), _addInput.layer, _addInput.margin, _addInput.amount, _addInput.curPrice ); }",
+        "labels": [
+            "SlowMist",
+            "Doubler - 20240117",
+            "Type: Others",
+            "Severity: High"
+        ]
     }
 ]

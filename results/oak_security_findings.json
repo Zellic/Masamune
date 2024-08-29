@@ -17044,5 +17044,32 @@
             "Oak Security",
             "Severity: Informational"
         ]
+    },
+    {
+        "title": "16. Limitations on base two logarithm implementation",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/DoraHacks/2024-03-04 Audit Report - DoraHacks Quadratic Grant Injective v1.0.pdf",
+        "body": "In src/helper.rs:2-25, the log2_u64_with_decimal function implements a custom version of a base two logarithm. However, there are issues with its current implementation:  The function returns 0 for the base 0 logarithm, which is incorrect because the result run reproduce undened please value. this, be To should an log2_u64_with_decimal(0).  The function does not correctly handle all values of u64. An overow error will trigger during multiplication if a large value is provided. To reproduce this error, please run log2_u64_with_decimal(7259549383510990226).",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "10. Coecient calc implementation diers from documentation",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Eris Protocol/2023-02-15 Audit Report - Eris Protocol v1.0.pdf",
+        "body": "calc_coefficient The in packages/eris/src/helpers/slope.rs:6-10 is documented with the following line: Coefficient to 1 and [`MAX_LOCK_TIME`] is 9. However, the actual implementation does not adhere to this comment as when the interval is zero weeks, the returned value will be zero instead of one. calculation [`WEEK`] function where equal found is This issue has been raised as informational as every instance that calls the aected function checks the supplied interval to not be zero before or cant be zero given the contracs logic.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "3. Multiple rounding issues may cause zero rewards being distributed",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Comdex/2022-10-28 Audit Report - Comdex Locking and Vesting Contracts v1.0.pdf",
+        "body": "functions of Several the locking contract are aected by rounding issues since their mathematical operations use U128 integers for divisions where the numerator is smaller than the denominator. This causes the result to be truncated to zero instead of the desired ratio before it is multiplied, causing the whole operation to be zero. Therefore, reward distribution will result in a zero tokens distribution. In particular in the The aected operations can be found on rewards related features. calculate_bribe_reward, and calculate_surplus_reward functions. The aected instances can be found at and locking:src/contract.rs:770, locking:src/query.rs:322. calculate_rebase_reward 888, 870, 904, 919,",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
     }
 ]
