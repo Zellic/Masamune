@@ -17071,5 +17071,14 @@
             "Oak Security",
             "Severity: High"
         ]
+    },
+    {
+        "title": "16. Limitations on base two logarithm implementation",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/DoraHacks/2024-03-04 Audit Report - DoraHacks Quadratic Grant Injective v1.0.pdf",
+        "body": "In src/helper.rs:2-25, the log2_u64_with_decimal function implements a custom version of a base two logarithm. However, there are issues with its current implementation:  The function returns 0 for the base 0 logarithm, which is incorrect because the result run reproduce please value. this, be To should an log2_u64_with_decimal(0). undened  The function does not correctly handle all values of u64. An overow error will trigger during multiplication if a large value is provided. To reproduce this error, please run log2_u64_with_decimal(7259549383510990226).",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
     }
 ]
