@@ -17080,5 +17080,23 @@
             "Oak Security",
             "Severity: Informational"
         ]
+    },
+    {
+        "title": "16. Limitations on base two logarithm implementation",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/DoraHacks/2024-03-04 Audit Report - DoraHacks Quadratic Grant Injective v1.0.pdf",
+        "body": "In src/helper.rs:2-25, the log2_u64_with_decimal function implements a custom version of a base two logarithm. However, there are issues with its current implementation:  The function returns 0 for the base 0 logarithm, which is incorrect because the result run reproduce undened please value. this, To should an log2_u64_with_decimal(0). be  The function does not correctly handle all values of u64. An overow error will trigger during multiplication if a large value is provided. To reproduce this error, please run log2_u64_with_decimal(7259549383510990226).",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "1. Tight coupling of the Mint and Burn MsgServer and Keeper functions",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Noble/2024-01-17 Audit Report - Noble tokenfactory Changes and fiattokenfactory v1.0.pdf",
+        "body": "and Burn Mint The and in keeper/msg_server_burn.go in both the tokenfactory and fiattokenfactory modules were refactored by extracting the logic from the MsgServer functions to separate Keeper functions to expose them to other Cosmos SDK modules within the same chain. keeper/msg_server_mint.go functions The original MsgServer function signatures have been reused. Specically, the MsgMint and MsgBurn message types are used as parameters. Moreover, the keeper functions return the same response types as the MsgServer functions. it is considered best practice to keep the MsgServer and Keeper functions However, decoupled by using explicit function parameters and appropriate return types. This allows for more exibility in the future, for example, if the MsgMint message or MsgMintResponse return type needs to be refactored.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
     }
 ]
