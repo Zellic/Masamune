@@ -14338,5 +14338,15 @@
             "Severity: Undetermined",
             "Difficulty: High"
         ]
+    },
+    {
+        "title": "7. World writable and readable sockets Fix Status: Unresolved ",
+        "html_url": "https://github.com/trailofbits/publications/tree/master/reviews/2023-08-worldcoin-orb-securityreview.pdf",
+        "body": "The socket les in the /tmp directory of the production device have permissions that are too broad. The camsock , nvscsock , and worldcoin_bus_socket sockets can be read and written to by any user on the system; additionally, the wpa_ctrl_1216-1 socket can be read by any user (gure 7.1). These permissions allow users or processes that should not have access to these sockets to access them; depending on the data that these sockets read/write, any user or process may be able to gain additional privileges or exploit the device. 320 Aug 16 14 :07 . 211 Jul 9 09 :53 .. 40 Mar 27 17 :54 .ICE-unix 40 Mar 27 17 :54 .Test-unix 40 Mar 27 17 :54 .X11-unix 40 Mar 27 17 :54 .XIM-unix 40 Mar 27 17 :54 .font-unix root@localhost:/home/worldcoin# ls -la --color=auto /tmp total 0 drwxrwxrwt 12 root root drwxrwxrwx 1 root root drwxrwxrwt 2 root root drwxrwxrwt 2 root root drwxrwxrwt 2 root root drwxrwxrwt 2 root root drwxrwxrwt 2 root root srwxrwxrwx 1 root root srwxrwxrwx 1 root root drwx------ 2 worldcoin worldcoin 40 Aug 11 14 :22 pulse-PKdhtXMmr18n drwx------ 3 root root systemd-private-a86ceebec50c43a3b1b3c79e36389670-haveged.service-2XXwnh drwx------ 3 root root systemd-private-a86ceebec50c43a3b1b3c79e36389670-systemd-logind.service-etQOVh drwx------ 3 root root systemd-private-a86ceebec50c43a3b1b3c79e36389670-systemd-resolved.service-EYsKKg drwx------ 3 root root systemd-private-a86ceebec50c43a3b1b3c79e36389670-systemd-timesyncd.service-veio4h srw-rw-rw- 1 worldcoin worldcoin 0 Mar 27 17 :54 worldcoin_bus_socket srwxr-xr-x 1 root root 0 Mar 27 17 :54 camsock 0 Mar 27 17 :54 nvscsock 0 Mar 27 17 :54 wpa_ctrl_1216-1 60 Aug 16 13 :13 60 Aug 14 20 :57 60 Mar 27 17 :54 60 Mar 27 17 :54 Figure 7.1: Permissions of sockets in the /tmp path that are too broad Recommendations Short term, change the permissions with which the sockets are created so they have the least required permissions in order for the Worldcoin Orb software to function properly. Do not set any of the socket les to be readable or writable by any user of the system. Long term, add tests to ensure the production device never ends up with a world readable or writable socket le or any other important le.",
+        "labels": [
+            "Trail of Bits",
+            "Severity: Undetermined",
+            "Difficulty: High"
+        ]
     }
 ]
