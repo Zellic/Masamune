@@ -17098,5 +17098,113 @@
             "Oak Security",
             "Severity: Informational"
         ]
+    },
+    {
+        "title": "1. Slippage is not correctly applied during liquidity balancing",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Apollo/2024-09-04 Audit Report - Apollo Osmosis Fixed Width Range Vault v1.0.pdf",
+        "body": "In contracts/osmosis-cl-vault-fixed-width/sc/helpers/mod.rs:377-383, a swap message is created to balance the inventory held by the vault post-subscription or -redemption. This message ensures that the token_out_min_amount is not lower than an the variable token_out_amount is estimate plus the specied slippage. However, calculated using an estimate of the swap to which slippage is subsequently applied. As the output estimate already includes any price impact the further application of slippage is not eective.",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "2. The contracts position can arbitrarily be set to zero",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Apollo/2024-09-04 Audit Report - Apollo Osmosis Fixed Width Range Vault v1.0.pdf",
+        "body": "The execute_compound function passes the argument disregard_funds to the in BalanceLiquidity contracts/osmosis-cl-vault-fixed-width/src/execute/compound.rs:52 and 61. CreatePosition messages and If the argument disregard_funds is identical to the contracts current position in the concentrated liquidity pool, an empty position will be created as CreatePosition will ignore the provided funds when eectively creating the new position after having withdrawn the position in full due to the MsgWithdrawPosition message added in line 73. The previous deposits will sit as a balance in the contract until a new Compound message is processed not ignoring the aected funds. In addition to preventing any incentives and rewards from being generated in the meantime, this action could move the market signicantly if the action is successful. As the Compound entry point is permissionless an attacker could combine this as part of a larger attack aimed to aect the price of the pool.",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "3. Reply handler errors may block deposits and redemptions",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Apollo/2024-09-04 Audit Report - Apollo Osmosis Fixed Width Range Vault v1.0.pdf",
+        "body": "The deposit and redeem functions of the contract rst dispatch a compound sub-message functionality. The execute_compound function in before proceeding with their contracts/osmosis-cl-vault-fixed-width/src/execute/compound.rs:18 dispatches MsgCollectIncentives and MsgCollectSpreadRewards sub-messages to the Osmosis concentrated-liquidity module. The Osmosis module then collects incentives and spread rewards for the contract address and returns the coins that the reply handler of the contract passes to the send_fees_to_treasury function. in the reply issue exists handler in The contracts/osmosis-cl-vault-fixed-width/src/reply.rs:163 and 169. The reply handlers do not account for the situation where the Osmosis responses return no coins the to send_fees_to_treasury function attempts to send an empty vector of coins. This would create a situation where deposits or redemptions could be blocked if there are no incentives or spread rewards to be collected. handlers would error when collected. contract case, reply this the the be of In An example scenario would be if there are some deposits or withdrawals within a single block. The rst operation would successfully claim the spread rewards and incentives, but then subsequent calls would error because the amount of rewards and incentives would be returned as None.",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "4. Inability to rebalance would prevent all deposits and redemptions",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Apollo/2024-09-04 Audit Report - Apollo Osmosis Fixed Width Range Vault v1.0.pdf",
+        "body": "of execution in During contracts/osmosis-cl-vault-fixed-width/src/helpers/mod.rs:225-398, a binary search is used to calculate how many tokens should be swapped to keep the target thrown in search cannot be completed, inventory contracts/osmosis-cl-vault-fixed-width/src/helpers/mod.rs369-373. rebalance an error operation ratio. the is a If This could occur frequently in a particularly illiquid market with an imbalanced vault and would prevent both deposits and redemptions from taking place and locking users' funds. We classify this issue as minor as the scenario in which this occurs is unlikely.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "5. Depositor funds may remain unused",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Apollo/2024-09-04 Audit Report - Apollo Osmosis Fixed Width Range Vault v1.0.pdf",
+        "body": "The share of the pool that a user receives during the deposit of funds into the vault is calculated using the delta in liquidity provided. However, during the creation of the new in position contracts/osmosis-cl-vault-fixed-width/src/execute/compound.rs:159 -171 it is possible that not all deposited funds are added. Under certain market conditions, the dierence in the amount of liquidity supplied and added to the position could be non-negligible resulting in the depositor receiving a smaller proportion of share funds.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "6. Lack of conguration validations",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Apollo/2024-09-04 Audit Report - Apollo Osmosis Fixed Width Range Vault v1.0.pdf",
+        "body": "the The osmosis-cl-vault-fixed-width contract performs validation of its conguration through in ConfigUnchecked::check contracts/osmosis-cl-vault-fixed-width/src/state.rs:149-244. However, some elds lack validation which would prevent some features from being rendered unusable if an incorrect value is assigned by mistake. function  If discount_factor remains unvalidated, to a value such as Decimal::one() which would cause the vault to sell staked assets far below the market value. Therefore the allowed range should be limited, for example to be between 0 and 25%. it could be set  If the range_width in contracts/osmosis-cl-vault-fixed-width/src/helpers/mod.rs:169, resulting in an arbitrarily large lower_tick. overow exceeds occur one, will an  If balancing_tolerance is set to zero, it could make balancing unreachable within the iterations due to dust rounding.  If redemption_rate_age_tolerance in contracts/osmosis-cl-vault-fixed-width/src/helpers/mod.rs:162 would always error. On the other hand, an excessively large value would allow old rates to be taken as valid. check zero, the set to is  If redemption_fee to contracts/osmosis-cl-vault-fixed-width/src/reply.rs:125 result in a transfer of zero value, causing the whole transaction to revert. ban message one, the set is crafter in will  If deposit_fee one, contracts/osmosis-cl-vault-fixed-width/src/execute/basic_vaul t.rs:55 results in no remaining balance being available for AddLiquidity which will make MsgAddToPosition fail and the transaction revert. set to is  If incentive_denoms contains duplicate assets, the BasketLiquidate message in of execute_compound contracts/osmosis-cl-vault-fixed-width/src/execute/compound.r s:108 will fail, reverting the whole transaction.  If incentive_denoms has a large enough number of assets, the for loop in contracts/osmosis-cl-vault-fixed-width/src/execute/compound.r s:91 may run out of gas, preventing compounding.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "7. Cong update is lacking incentive denom validation",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Apollo/2024-09-04 Audit Report - Apollo Osmosis Fixed Width Range Vault v1.0.pdf",
+        "body": "execute_update_config in The contracts/osmosis-cl-vault-fixed-width/src/execute/basic_vault.rs: 120-139 allows the admin to modify the congurations incentive_denoms vector. However, as it relies on ConfigUnchecked::check for validating the contents of the vector, the incentive_denoms vectors. This results in redundant operations as it will rst swap one of the pool tokens for the other and then the BalanceLiquidity message will swap them again for the correct amounts. tokens token0 and token1 would be allowed to be part of the pool function Please note that this is not the case upon instantiation, as additional validation to cover this in scenario contracts/osmosis-cl-vault-fixed-width/src/contract.rs:50-58. included is",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "8. Overow checks not enabled for release prole",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Apollo/2024-09-04 Audit Report - Apollo Osmosis Fixed Width Range Vault v1.0.pdf",
+        "body": "The following packages and contracts do not enable overow-checks for the release prole:  contracts/osmosis-cl-vault-fixed-width/Cargo.toml  Cargo.toml",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "9. Remove unnecessary and unused code",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Apollo/2024-09-04 Audit Report - Apollo Osmosis Fixed Width Range Vault v1.0.pdf",
+        "body": "The osmosis-cl-vault-fixed-width contract contains several pieces of unnecessary or unused code. Although not a security issue, this decreases readability and maintainability while slightly increasing gas costs in some scenarios.  In contracts/osmosis-cl-vault-fixed-width/src/execute/compound.r s:130 the CONFIG is loaded, but never used.  In contracts/osmosis-cl-vault-fixed-width/src/reply.rs:146 the balances of the pool assets are queried and assigned to _pool_balances but never used.  The PREVIOUS_LIQUIDITY in contracts/osmosis-cl-vault-fixed-width/src/state.rs:37 is never used. constant storage  The FORCE_WITHDRAW_WHITELIST in contracts/osmosis-cl-vault-fixed-width/src/state.rs:33 is only used in queries but information is never saved using it. constant storage  In contracts/osmosis-cl-vault-fixed-width/src/state.rs:208 and 216 Decimal values are validated to not be below zero. These conditions will never be met as the type only allows unsigned values.  The get_pool_asset_balances in contracts/osmosis-cl-vault-fixed-width/src/helpers/mod.rs:120 -131 is never used. function  In  When contracts/osmosis-cl-vault-fixed-width/src/execute/contract.r s:51 a duplicate pool query is performed. performing in contracts/osmosis-cl-vault-fixed-width/src/helpers/mod.rs:318 the pool is queried on each iteration. However, the value could be retrieved prior to the loop saving computational resources. search binary the  The balance_liquidity function calculates tokens_after_swap and includes in it contracts/osmosis-cl-vault-fixed-width/src/helpers/mod.rs:386 -395. However, this information is never checked by the callee in a later reply handler, making it unused. return value as a  During the contract instantiation, the get_cl_pool_with_id query is called twice with in same contracts/osmosis-cl-vault-fixed-width/src/contract.rs:38 and 51. pool_id the",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "10. Error message can be improved",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Apollo/2024-09-04 Audit Report - Apollo Osmosis Fixed Width Range Vault v1.0.pdf",
+        "body": "ConfigError in The currently contracts/osmosis-cl-vault-fixed-width/src/contract.rs:42 does not provide an informative error message to users. It is best practice to provide meaningful errors where possible. In this case, the minimum funds that must be sent are not communicated. message",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "11. Unimplemented queries",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Apollo/2024-09-04 Audit Report - Apollo Osmosis Fixed Width Range Vault v1.0.pdf",
+        "body": "the queries Many of are unimplemented. Users wil hencel be unable to access vital information about the contracts state. The following queries are currently unimplemented: in the osmosis-cl-vault-fixed-width contract  PreviewDeposit  PreviewRedeem  TotalAssets  ConvertToShares  ConvertToAssets",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "12. Ineective sub-message error handling",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Apollo/2024-09-04 Audit Report - Apollo Osmosis Fixed Width Range Vault v1.0.pdf",
+        "body": "Sub-messages dispatched by the contract are all sent with the ReplyOn::Always directive. This option is useful when the contract specically handles the return reply with a specic operation as is done for the InternalMsgCompound reply handler. In the reply handler in other contracts/osmosis-cl-vault-fixed-width/src/reply.rs:183 sub-message errors will simply be caught in the last condition. This is potentially error-prone and unnecessary as the sub-message errors will be eectively handled without the reply handling. Specically, the following messages do not need to be dispatched with the ReplyOn::Always directive: all  MsgCollectIncentives in contracts/osmosis-cl-vault-fixed-width/src/execute/compound.r s:64  MsgCollectSpreadRewards in contracts/osmosis-cl-vault-fixed-width/src/execute/compound.r s:68  MsgCreatePosition in contracts/osmosis-cl-vault-fixed-width/src/execute/compound.r s:182  MsgAddToPosition in contracts/osmosis-cl-vault-fixed-width/src/execute/compound.r s:233  MsgWithdrawPosition in contracts/osmosis-cl-vault-fixed-width/src/execute/compound.r s:263",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
     }
 ]
