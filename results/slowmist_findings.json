@@ -6796,5 +6796,82 @@
             "Type: Others",
             "Severity: High"
         ]
+    },
+    {
+        "title": "Potential Token Compatibility Issues",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/STONE BTC - SlowMist Audit Report_en-us.pdf",
+        "body": "In the StoneBTCVault contract, users can deposit funds through the deposit/depositMultiple functions. The contract directly transfers the user-specied amount of wrapped BTC tokens using the safeTransferFrom function. It is important to note that the contract is not compatible with fee-on-transfer wrapped BTC tokens. Similarly, when users make deposits or withdrawals, the contract performs decimal conversion using 18- tokenDecimals[_token] . This renders the contract incompatible with any wrapped BTC tokens that have a decimal greater than 18. ",
+        "labels": [
+            "SlowMist",
+            "STONE BTC - SlowMist Audit Report",
+            "Type: Design Logic Audit",
+            "Severity: Suggestion"
+        ]
+    },
+    {
+        "title": "Potential risk of not being able to collect fees",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/STONE BTC - SlowMist Audit Report_en-us.pdf",
+        "body": "In the StoneBTCVault contract, users are charged a certain fee when making deposits or withdrawals. The fee amount is determined by amount * feeRate / FEE_BASE . Due to Solidity's division operation truncating the decimal part, if the user's deposit or withdrawal amount is relatively small, the calculated fee will be 0. This prevents the contract from collecting deposit/withdrawal fees. ",
+        "labels": [
+            "SlowMist",
+            "STONE BTC - SlowMist Audit Report",
+            "Type: Design Logic Audit",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "Unnecessary unchecked",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/STONE BTC - SlowMist Audit Report_en-us.pdf",
+        "body": "In the StoneBTCVault contract, all the for loop functionalities use unchecked for incrementing i to reduce gas consumption. However, the contract's Solidity compilation uses ^0.8.26 , and Solidity introduced the unchecked loop increments feature in version 0.8.22, making the use of unchecked unnecessary. ",
+        "labels": [
+            "SlowMist",
+            "STONE BTC - SlowMist Audit Report",
+            "Type: Gas Optimization Audit",
+            "Severity: Suggestion"
+        ]
+    },
+    {
+        "title": "Risk of DoS when removing supported tokens",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/STONE BTC - SlowMist Audit Report_en-us.pdf",
+        "body": "In the StoneBTCVault contract, privileged roles can add/remove supported wrapped BTC tokens through the addSupportedTokens/removeSupportedTokens functions. When performing the removeSupportedTokens operation, the contract checks that the balance of the token being removed must be zero. This can be easily exploited, as users can donate a small amount of tokens to prevent the removeSupportedTokens function from working properly. It is also important to note that when users withdraw, the contract converts the decimal to the decimal of the token being withdrawn. When the decimal of this token is smaller than the decimal of STONE BTC, there will always be a small amount of dust tokens left in the vault. This indirectly prevents the removeSupportedTokens function from working correctly. ",
+        "labels": [
+            "SlowMist",
+            "STONE BTC - SlowMist Audit Report",
+            "Type: Denial of Service Vulnerability",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "The actual deposit amount may dier from the contract balance",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/STONE BTC - SlowMist Audit Report_en-us.pdf",
+        "body": "In the StoneBTCVault contract, the _checkDepositAllowed function checks the depositCapacity based on the balance of wrapped BTC tokens in the contract. Similarly, the getDepositAmounts function retrieves token balances to determine the deposit amounts. These values may dier from the actual deposit amounts made by users. Users might accidentally transfer supported tokens into the vault, or some users might send small donations to the vault. Both scenarios will cause the above two functions to obtain amounts that are greater than the users' actual deposit amounts. ",
+        "labels": [
+            "SlowMist",
+            "STONE BTC - SlowMist Audit Report",
+            "Type: Design Logic Audit",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "Not checking if withAmount is greater than 0 when retrieving all tokens",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/STONE BTC - SlowMist Audit Report_en-us.pdf",
+        "body": "In the Proposal contract, users can retrieve all their STONE tokens used for voting through the retrieveAllToken function. It uses a temporary variable withAmount to record the amount of STONE tokens that can be withdrawn. However, it does not check if withAmount is greater than 0 before initiating the transfer, which may result in the contract sending a 0 transfer and wasting gas. ",
+        "labels": [
+            "SlowMist",
+            "STONE BTC - SlowMist Audit Report",
+            "Type: Design Logic Audit",
+            "Severity: Suggestion"
+        ]
+    },
+    {
+        "title": "Risks of excessive privilege",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/STONE BTC - SlowMist Audit Report_en-us.pdf",
+        "body": "In the StoneBTC contract, the contract deployer is set as the DEFAULT_ADMIN_ROLE. The admin role can arbitrarily change the MINTER_ROLE/BURNER_ROLE roles, which are involved in minting and burning STONE BTC. This leads to the risk of excessive privileges. Similarly, in the StoneBTCVault and Proposal contracts, the initial DEFAULT_ADMIN_ROLE is also the deployer. Assigning sensitive permissions to an EOA address not only creates the risk of excessive privileges but also introduces a single point of failure. ",
+        "labels": [
+            "SlowMist",
+            "STONE BTC - SlowMist Audit Report",
+            "Type: Authority Control Vulnerability Audit",
+            "Severity: Medium"
+        ]
     }
 ]
