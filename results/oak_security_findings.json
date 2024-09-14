@@ -17206,5 +17206,95 @@
             "Oak Security",
             "Severity: Informational"
         ]
+    },
+    {
+        "title": "1. Attackers can trigger a share ination attack to steal user funds",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/ixo/2024-09-13 Audit Report - IxoSwap v1.1.pdf",
+        "body": "In ixo-swap/src/contract.rs:265, the get_lp_token_amount_to_mint function mints the LP token amount based on the sent amount if the total supply is zero. This is problematic because attackers can execute a share ination attack to steal funds provided by the user, resulting in a loss of funds scenario. An attack scenario is illustrated below: 1. The contract is newly instantiated",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "6. The attacker redeems their LP tokens for the underlying liquidity, which includes the users funds. Consequently, the funds provided by the user are stolen by the attacker. Since the LP tokens total supply reverts back to zero after exploitation, the attacker can repeatedly execute this attack to steal funds from subsequent users who provide liquidity to the pool. Please refer reproduce this issue. to the test_share_inflation_attack test case in the appendix to Recommendation We recommend burning a small number of dead shares to the pool contract when providing initial liquidity. Status: Resolved 2. Attackers can swap lower-value tokens for valuable assets",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/ixo/2024-09-13 Audit Report - IxoSwap v1.1.pdf",
+        "body": "",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "7. Contracts should implement a two-step ownership transfer",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/ixo/2024-09-13 Audit Report - IxoSwap v1.1.pdf",
+        "body": "The contracts within the scope of this audit allow the current owner to execute a one-step ownership transfer. While this is common practice, it presents a risk for the ownership of the contract to become lost if the owner transfers ownership to the incorrect address.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "8. Lack of attributes emitted",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/ixo/2024-09-13 Audit Report - IxoSwap v1.1.pdf",
+        "body": "In several instances of the codebase, the emitted attributes do not include information about the entry points and values in ixo-swap/src/contract.rs:  The execute_add_liquidity, execute_remove_liquidity, and execute_swap, execute_update_config functions does not emit the action attribute to be the called function. Consider adding the attribute in the response eld, similar to line 241.  The execute_freeze_deposits function should include the freeze value in line execute_pass_through_swap, 241.  The execute_swap function should include the recipient address in line 1117.  The reply entry point should include the LP token address in line 1400. It is best practice to emit events and attributes to improve the usability of the contracts and to support o-chain event listeners and blockchain indexers.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "9. execute_freeze_deposits can be called with the same status",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/ixo/2024-09-13 Audit Report - IxoSwap v1.1.pdf",
+        "body": "In ixo-swap/src/contract.rs:227, the execute_freeze_deposits function does not validate that the freeze status is not equal to the FROZEN state status. For example, if the FROZEN state is true, calling the function with freeze value as true will not trigger any actual changes to the contract as the results are the same. Consequently, this may mislead o-chain listeners and indexers since no actual changes are made to the contract.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "10. FROZEN storage state is not exposed through smart queries",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/ixo/2024-09-13 Audit Report - IxoSwap v1.1.pdf",
+        "body": "the query entry point does not expose the In ixo-swap/src/contract.rs:1281, FROZEN storage state value through smart queries. This forces third-party contracts to perform a raw query to read the stored value, which is error-prone and decreases user experience.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "11. Unused error message in the codebase",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/ixo/2024-09-13 Audit Report - IxoSwap v1.1.pdf",
+        "body": "In ixo-swap/src/error.rs:13, the NoneError is dened but not implemented across the codebase. Unused code reduces the code readability and maintainability in the codebase.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "12. Panic usage should be avoided",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/ixo/2024-09-13 Audit Report - IxoSwap v1.1.pdf",
+        "body": "ixo-swap/src/token_amount.rs:20 In and get_single functions panic with a plain error message if the provided TokenAmount is incorrect. This decreases user experience as users will not be able to interpret the actual error that occurred. get_multiple and 29, the",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "13. Outstanding TODO comment in the codebase",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/ixo/2024-09-13 Audit Report - IxoSwap v1.1.pdf",
+        "body": "In ixo-swap/src/contract.rs:1323, the query_info function contains a TODO comment to retrieve the total supply. However, the query for the LP tokens total supply has already been implemented in line 1329.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "14. In-house implementation of well-known features is discouraged",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/ixo/2024-09-13 Audit Report - IxoSwap v1.1.pdf",
+        "body": "In ixo-swap/src/contract.rs:493-505, the validate_input_amount function validates the user sent the actual funds as specied based on the given_amount and given_denom parameters. Although no vulnerability was found aecting the function, well-known libraries that are continuously reviewed by the community. it is still best practice to use",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
     }
 ]
