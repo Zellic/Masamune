@@ -30548,5 +30548,355 @@
             "Gauntlet",
             "Severity: Critical Risk"
         ]
+    },
+    {
+        "title": "Bypass of EntityType check when null attribute is returned by Quadrata",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "In QuadrataKYCVerifier when a deal's EntityType requirement is set to Individual or Business and Quadrata returns a null business attribute (all fields bytes32(0)) then the EntityType requirement check is bypassed. The EntityType requirement check looks like this: if (requirements.entityType != IQuadrataKYCVerifier.EntityType.Any) { bool isBusiness = businessAttribute.value.isBusinessEqual(true) && !_isExpired(investorAttribute, ,! maxAllowedAttributeAge); if (requirements.entityType == EntityType.Individual && isBusiness) { revert EntityTypeCheckFailed(deal, account); } if (requirements.entityType == EntityType.Business && !isBusiness) { revert EntityTypeCheckFailed(deal, account); } } The issue arises when:  An account's didAttribute.value is not bytes32(0).  businessAttribute.value is bytes32(0).  Then businessAttribute.value.isBusinessEqual(true) will equate to false.  Due to the && operation _isExpired function won't be called-  Hence the isBusiness flag will become false.  Due to which the next if blocks (L141 - L147) won't be executed. Hence the EntityType requirement check gets bypassed for the account.",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: High Risk"
+        ]
+    },
+    {
+        "title": "AML requirement checks skipped if no AML attribute for user",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "The _isExpired function returns false when attribute.epoch == 0 which happens when the attribute is missing and was not set by any Quadrata issuer. /// Checks if an attribute is expired. function _isExpired( IQuadPassportStore.Attribute memory attribute, uint256 maxAttributeAge ) { } internal view returns (bool) return attribute.epoch > 0 && attribute.epoch < block.timestamp - maxAttributeAge; The AML check is implemented as // Check: AML risk score. if ( !amlAttribute.value.amlLessThanEqual(requirements.maxAMLRiskScore) || _isExpired(amlAttribute, maxAllowedAttributeAge) ) { } revert AMLCheckFailed(deal, account); For a non-existent AML attribute, all amlAttribute values will be zero and the revert is never reached. If a deal requires an AML score of 5 or below and the investor has not performed KYC/AML checks they will still be able to invest in the deal.",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: High Risk"
+        ]
+    },
+    {
+        "title": "InvestmentManager::_deleteOffer should subtract escrowAmount instead of $.offers[id].amount",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "When an investor submits an offer to DealManager, the payment is initially escrowed, waiting for the offer to be reviewed by an Originator. If, after a delay of offerEscrowPeriod (initially 5 days), the offer is not reviewed, the investor can call withdrawOffer to get his funds back. However the accounting is incorrect in that case, since amount is deducted from the escrowed funds, whereas escrowAmount (amount + fees) has been escrowed. The surplus amount (equivalent to the fee), stays locked in the contract. hasSufficientAvailableFunds would deduct escrowedAmount from current contract balance to deter- mine the funds which can be distributed or withdrawn by admin.",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: High Risk"
+        ]
+    },
+    {
+        "title": "Deal tokens are mistakenly burnt for all fiat accounts on principal payout",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "The principal payout distribution function can burn all fiat tokens unintentionally if the payoutAmount is set to a non-zero value, in a period where there are only fiat holders. The function calculation uses the _principalPayoutDistribution function, which differentiates the fiat payment amount and on chain payment amount. Due to incorrect logic, the function incorrectly burns the deal tokens for all fiat accounts, where none should be burnt. If you take a scenario in which every current holder or yield recipient is a fiat account, the calculations in the relevant context mentioned above is: fiatAccountsTotalBalance = fiat total balance onchainAccountsTotalBalance = totalSupply - fiat total balance = 0 fiatPayoutAmount = onchainAccountsTotalBalance==0, therefore = 0 These are used to construct a list of payouts -- addresses and amounts of tokens that should be burnt. Notably, the accountTokensToBurn is going to continue to increase and the principalPayouts continue to grow in size. function _principalPayoutDistribution( IDeal deal, uint256 payoutAmount ) { internal view returns (Payout[] memory principalPayouts, uint256 netPayoutAmount, uint256 tokensToBurn) uint256 totalSupply = deal.totalSupply(); if (totalSupply == 0) return (new Payout[](0), 0, 0); 7 // Compute the fiat accounts total balance, to infer total payout amount. uint256 fiatAccountsTotalBalance = deal.fiatAccountsTotalBalance(); uint256 onchainAccountsTotalBalance = totalSupply - fiatAccountsTotalBalance; uint256 fiatPayoutAmount = (onchainAccountsTotalBalance > 0) ? payoutAmount.mulDiv(fiatAccountsTotalBalance, onchainAccountsTotalBalance) : 0; // Calculate the total amount of tokens to burn. uint256 totalTokensToBurn = currencyToDealTokens(payoutAmount + fiatPayoutAmount); IDeal.TokenHolder[] memory dealHolders = deal.holders(); uint256 length = dealHolders.length; principalPayouts = new Payout[](length); for (uint256 i = 0; i < length; i++) { IDeal.TokenHolder memory holder = dealHolders[i]; // forgefmt: disable-next-item uint256 amount = holder.isFiatAccount ? 0 : holder.balance.mulDiv(payoutAmount, ,! onchainAccountsTotalBalance); netPayoutAmount += amount; uint256 accountTokensToBurn = holder.balance.mulDiv(totalTokensToBurn, totalSupply); tokensToBurn += accountTokensToBurn; principalPayouts[i] = Payout({ account: holder.account, amount: amount, burnTokenAmount: accountTokensToBurn, isFiatAccount: holder.isFiatAccount }); } } The function is called in the _initiatePrincipalPayout which will then iterate over all the payouts and start burning the respective token amount for all payouts -- which in this case, would include the payouts for all fiat accounts. Scenario: A deal is created, with only fiat holders. These newly created fiat accounts receives deal tokens in exchange for their fiat deposit. When the principal payout process starts, this function will burn all the on-chain deal tokens, despite the loan terms not ending. As a result, the principal and interest denominations between fiat accounts and on-chain accounts will also be mismatched.",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Critical Risk"
+        ]
+    },
+    {
+        "title": "DealManager::initiatePrincipalPayout unbounded slippage on burnt tokens",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "A total payout amount is computed off-chain and an amount proportional to the on-chain only pay- ment is passed as an argument to the call on DealManager::initiatePrincipalPayout. During execution, the total payout amount is reconstructed from the values of onChainTotalBalance, fiatTotalBalance and on chain payout. This total amount is used to determine the quantity of deal tokens to burn, but if the ratio has changed since the payoutAmount has been precomputed (some tokens are burnt or transferred), more tokens than needed will be burnt. Scenario:  Initial state: onChainTotalBalances = 1000 fiatTotalBalances = 1000 1. The originator computes a payout amount for a total payout of 1000, since onChainTotalBal- ances/totalSupply == 1/2, payoutAmount passed as an argument to initiatePrincipalPayout is 500. 2. The state changes, and 500 tokens are burnt from a on chain account. As a result the state is:  Intermediate state_ onChainTotalBalances = 500 fiatTotalBalances = 1000  The originator emits the computed transaction and as the ratios have changed, the total reconstructed payout is 1500 instead of 1000, and instead of half the tokens, all of the tokens are burnt. Note that the scenario likelihood is yet to determine, since only an originator can do all of the operations outlined above (initiatePrincipalPayout, burn or forceTransfer).",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Investors cannot receive their deposited principal or due interest if their deal requirement checks start failing",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "In PayoutManager contract the investor's eligibility check is performed when principal or interest is claimed for an investor.  The claimPayout reverts if checkAccountEligibility(msg.sender) reverts.  In _pushPayout the investor is skipped when isEligibleAccount(account) returns false. There could be scenarios where an investor was eligible when he deposited principal in a deal but going forward some of his quadrata attributes become invalid as per the deal's requirement. A simple example could be when a deal was set up to allow investors whose AML score is upto 3. An investor with AML score of 3 invests into the deal. After a while the investor's AML score increases to 4. Now neither that 9 investor nor the protocol admin can pull out the investor's deposited principal and due interest. This leads to loss of funds for the investor.",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "payoutPeriodStartTime skips 1 second for payouts",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "When yield is being distributed via PayoutManager._initiateInterestPayout, the deal admin specifies a period end time. The period start time is taken as the last end time + 1 in payoutPeriodStartTime. function payoutPeriodStartTime() public view returns (uint48) { PMStorage storage $ = _pmStorage(); // If there are no interest payouts yet, return the yield generation start. if ($.latestInterestPeriodEnd > 0) { return $.latestInterestPeriodEnd + 1; } // ... } The idea is that the timeline is perfectly subdivided into consecutive periods so no period can be missed. However, the new periods start at latestInterestPeriodEnd + 1, skipping the 1-second period from [latestInterestPe- riodEnd, latestInterestPeriodEnd + 1] each time when a yield distribution is made. This leads to unfair distributions and in the worst case, a yield recipient will not receive their yield. Example 1: Assume holders are entitled to yield from time t + 0 to t + 200 which hasn't been distributed yet. At t+101 a new investor joins the deal and is minted deal tokens, entitling them to yield for the period [t + 101, t + 200].  First, yield is distributed up to t + 100.  Afterwards, yield is distributed up to t + 200, note that this period is starting at payoutPeriodStartTime = t+101 instead of t+100.  The new investor will receive the same yield for the second distribution for the [t+100, t+200] period as an existing investor with the same balance. The existing investor should have received more yield for the second distribution as they held their deal token balance for 1 second longer (the period of [t + 100, t + 101]). Example 2: The contracts are intended to be deployed on zkSync. The block time on zkSync is 1 second: An L2 block is generated every 1 second, encompassing all transactions received within that timeframe. zkSync docs An investor joins the deal and is minted deal tokens at time t + 0. They exit the deal one second later at time t + 1 (force transfer, principal payout, etc.). If the previous yield distribution ended at t + 0 they won't receive any yield.",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "QuadrataKYCVerifier::verifyEligibility wrong expiration check for businessAttribute",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "The following parameters are checked during KYC verification in QuadrataKYCVerifier.sol#L80-85:  s attributes from Quadrata. // Query the account bytes32[] memory attributesToQuery = new bytes32[](5); attributesToQuery[0] = QuadrataAttributes.DID; attributesToQuery[1] = QuadrataAttributes.COUNTRY; attributesToQuery[2] = QuadrataAttributes.AML; attributesToQuery[3] = QuadrataAttributes.IS_BUSINESS; attributesToQuery[4] = QuadrataAttributes.INVESTOR_STATUS; And for each of these parameters, a deadline is checked to ensure that the attribute is not expired. Here is an example to check expiry for the business attribute: bool isBusiness = businessAttribute.value.isBusinessEqual(true) && !_isExpired(investorAttribute, maxAllowedAttributeAge); //@audit: check expiry, but checked on wrong attribute ,! Unfortunately the expiry is checked on investorAttribute instead of businessAttribute which would lead to wrong validation of an expired businessAttribute.",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Contracts do not support tokens with fees or rebasing tokens",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "All these contracts assumes the payment currency is a standard-abiding ERC20, where there are no fees on transfer. Given Tradable Finance is considering DAI, USDC, and maybe USDT -- transfer amounts may not be exactly equal to expected values when transferring a token with fee. For example, while an investor is answering a capital call, the actual amount sent to the capital recipient may not match the cc.amount, when a portion of the transfer is given to the owner of USDT. Moreover, the fee recipient will also receive a smaller amount than intended after feeAmount has been transferred. In this particular example, the deal tokens minted to the investor are based on the amount transferred, without considering the amount lost by fees, which can result in a mismatch between deal tokens and the amount a user should have received, with the fee taken into consideration. 12 /// @notice Answers a capital call. /// @dev Handles the capital call answer and emits the /// @param id The capital call ID. function _answerCapitalCall(uint256 id) internal {  CapitalCallAnswered event.  [...] paymentCurrency.safeTransferFrom(msg.sender, capitalRecipient(), cc.amount); // Transfer fee amount from investor to fee recipient. if (cc.feeAmount > 0) paymentCurrency.safeTransferFrom(msg.sender, feeRecipient(), cc.feeAmount); // Finally mint the deal tokens to the investor. IDeal.Mint[] memory mints = new IDeal.Mint[](1); mints[0] = IDeal.Mint(msg.sender, currencyToDealTokens(cc.amount)); deal().mint(mints); emit CapitalCallAnswered(id, cc.investor, cc.amount, cc.feeAmount); } This may also result in unexpected behaviour with rebasing tokens, where balances and totalSupply adjust, how- ever does not seem to be as major of a concern, as Tradable is not considering adding these tokens. Exploit Scenario: USDT with fee enabled is added into the system. When an investor answers a capital call and submits the funds for it, the capital recipient receives less than they asked for; and the investor receives more deal tokens than the amount that they actually submitted.",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: High Risk"
+        ]
+    },
+    {
+        "title": "PayoutManager::_initiatePrincipalPayout totalTokensToBurn can be greater than totalSupply due to roundings",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "Due to multiple down roundings, the onchain payout amount can be slightly bigger than the maximum (e.g totalTokensToBurn > totalSupply). Scenario: -Initial state:  Alice balance: 250 (onchain).  Bob balance: 250 (onchain).  Charlie balance: 250 (fiat).  David balance: 250 (fiat). Deal admin wants to initiate a full principal payout, so for a total of 1000. The max value he should be able to provide as on chain payout should be 500. Let's see what happens if the deal admin provides 501 instead: 1. fiatPayoutAmount is computed to be 501: 13 uint256 fiatPayoutAmount = (onchainAccountsTotalBalance > 0) ? payoutAmount.mulDiv(fiatAccountsTotalBalance, onchainAccountsTotalBalance) : 0 2. As a result totalTokensToBurn is computed to be 1002. 3. Now iterating over accounts, and computing individual amounts to burn which are rounded down: Alice, Bob, Charlie, David: (250*1002)/1000 == 250 Since the individual amounts to burn are equal to the balances of each participant, the call succeeds.",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Open access of verifyEligibility, checkAccountEligibility & isEligibleAccount functions",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "The protocol has these three open access functions:  QuadrataKYCVerifier.verifyEligibility  DealManager.checkAccountEligibility  DealManager.isEligibleAccount The functions perform an account's eligibility check based upon a deal's requirement. The Quadrata's QuadReader.getAttributesBulk function has these statements: bool hasPreapproval = governance.preapproval(msg.sender); require(hasPreapproval, \"SENDER_NOT_AUTHORIZED\"); which shows that Quadrata exposes attributes to whitelisted readers only. Quadrata may whitelist Tradable's QuadrataKYCVerifier contract to read attribute data but Tradable is currently exposing that data to be read by all on-chain smart contracts. Due to this, any on-chain contract can perform Quadrata based KYC check for an account on behalf of Tradable. Quadrata will always assume that the KYC check call is coming from Tradable protocol. In case Quadrata imple- ments an access fee then Tradable can be forced to pay more fees than expected by abusing the mentioned open access functions.",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Investors have no control over the amount of service fee they pay on interest",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "The Tradable protocol has two fees  Origination fee: it is the fee taken on amounts that investors invest.  Service fee: it is the fee taken on amount of interest generated by the investments. When investing into a deal the investors has the ability to set/view the max origination fee. But since the Tradable DEAL_ADMIN can change the service fee percentage using _setServiceFee during a deal's lifespan, the investors will never to sure about the max service fee they will pay at the end of deal term. Investors can be forced to pay higher service fee than they originally expected.",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "BaseManager::__BaseManager_init is missing onlyInitializing modifier",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "The __BaseManager_init is the initialization function of abstract BaseManager contract which gets invoked in DealManager.initialize function. Initialization functions must be only allowed to be invoked during the contract initialization. However the BaseMan- ager.__BaseManager_init can currently be invoked at any point in time by a contract which inherits BaseManager.",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "yieldDistribution iterates over unbounded yieldRecipients array",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "The Deal.yieldDistribution function is used whenever yield is distributed in DealMan- ager.initiateInterestPayout. the entire Deal's $.yieldRecipients state array. The function iterates over This array never shrinks, yield recipients are only ever pushed onto it as soon as an account receives a balance. Note that while there is a maxHoldersLimit limit for the current holders ($.currentHolders), this limit does not apply to $.yieldRecipients as old holders are replaced by new holders (through mint and burn or forceTrans- fer). Once the array becomes too large, the yield distribution's gas usage might not fit into a single block anymore. 15",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "InvestmentManager::_issueCapitalCall Capital calls are silently overridden",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "Capital calls can be used by an originator to ask for investors to provide more funds. However when one capital call has already been issued for an investor, issuing another one to the same investor will silently override the existing capital call. There are two mappings to keep track of issued capital calls:  capitalCalls  investorCalls When a new capital call is added over an existing one, the value in investorCalls is updated for the investor, whereas a new value is simply added for capitalCalls at the new id. This means that in the case 2 capital calls have been added for an investor, the investor can answer any of those 2 capital calls, but only the most recent one will be shown by the view functions capital- Calls(address investor), capitalCalls()",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Unnecessary second binary search for _yieldAt",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "The Deal._yieldAt function looks at timestamp. It first performs a binary search to find the closest checkpoint older or at the search timestamp (upperCheckpointLookup). Afterwards, a second binary search is performed to find the closest checkpoint newer than the search timestamp (lowerCheckpointLookup). the closest checkpoints left and right of",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Assumptions made by off-chain smart contracts",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "The smart contract system relies heavily on the DealAdmin calling functions frequent enough to keep the smart contracts as a single source of truth. The below highlight assumptions that we have made of the behaviour in the off-chain system during this review:  The DealAdmin chooses when to mint deal tokens and must be matched timely to off-chain actions:  Tradable has specific requirements of interest accrual to specific parties while off-chain wire transfers are in flight, thus the DealAdmin must only mint deal tokens when a party receives their respective tokens, and when they want interest for different parties to start accruing.  Tradable must also correctly mint and burn tokens, especially for fiat-accounts, where the number of tokens they hold is representative of an off-chain value.  Tradable determines when deals are deployed, and must make sure that any off-chain contracts are signed before on-chain interaction begins.  Tradable determines when to issue a capital call to an investor on behalf of a user requesting said capital call, and is trued to put the correct amount and due date on-chain.  Tradable is trusted such that it should not cancel a capital call that was not intended to be cancelled.  Tradable updates whatever necessary on-chain data is required in order to have a well-informed decision about the state of a deal. This can include the price, the net asset value, and other fields.",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "PayoutManager::_initiatePrincipalPayout Edge case preventing all supply to be burnt",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "The function initiatePrincipalPayout can be used to repay investors of a deal, and burn all of the deal tokens, if the repayment is full. However there is an edge case which would prevent burning all of the tokens when some tokens have been burnt already, and which is due to difference of precision between underlying and deal token. Scenario:  paymentCurrency is USDC with 6 decimals.  Alice has an on chain account. 1. Admin issues a capital call for Alice. Alice mints for a deposit of 1000 USDC, 1000 deal tokens (1000e18). 2. Admin burns (5e18 - DUST) deal tokens from Alice. Alice balance in deal tokens is now (995e18 + DUST). 3. Admin is unable to issue a full principal payout for Alice, because of the difference in precision between USDC (6 decimals) and deal token (18 decimals). This is due to the fact that the number of tokens to burn from Alice is determined from the payout amount denominated in USDC, and which is then scaled up using currencyToDealTokens: 18 // Calculate the total amount of tokens to burn. uint256 totalTokensToBurn = currencyToDealTokens(payoutAmount + fiatPayoutAmount); So by providing the max amount allowed: 995 USDC, Alice keeps DUST of deal tokens.",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "DEAL_MAX_INVESTMENT_AMOUNT check is superfluous",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "DEAL_MAX_INVESTMENT_AMOUNT is set to be type(uint128).max which is not a realistic value for limiting investment size. There are two distinct cases where this check is used:  Issuing a capital call, in which case the DEAL_ADMIN can provide an arbitrary amount, because no funds In this case the check can prevent some amount values, but there are still are transferred at that time. unreasonable amounts (below type(uint128).max) which would be accepted.  Submitting an offer, in this case the amount is bounded by the balance of the submitter, since funds are transferred straight away.",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Deal::price function can return incorrect or outdated price values",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "The price value of deal tokens is determined by net asset value / total supply. Since NAV needs to be updated manually by admin. In case there is a lag in the NAV updates then price will return incorrect price. For example, suppose that initially Nav = 100 & supply = 100 so price is 1. After some time 100 more deal tokens get minted so now price will be 100/200 = 0.5 (assuming a delay in NAV update). Incorrect price will be returned. Similarly opposite scenario occurs when deal tokens are burned and NAV update is delayed. The function also returns the most recent timestamp between supplyUpdateTimestamp & nav.timestamp. When the above explained delay scenario happens, the function will also return the more recent supplyUpdateTimestamp timestamp further tricking the price consumer into trusting the returned price. The current natspec of Price.timestamp type says it is The price latest update timestamp.",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "_beaconProxyBytecodeHash depends on specific compiler used",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "zkSync uses a different bytecode hash format and the deployments work differently, the bytecode for a bytecode hash must be known beforehand. The _beaconProxyBytecodeHash function returns the bytecode hash as the word at offset of 36 bytes of type(BeaconProxy).creationCode. function _beaconProxyBytecodeHash() private pure returns (bytes32 bytecodeHash) { bytes memory creationCode = type(BeaconProxy).creationCode; assembly { // +32 to skip the length of creationCode, + 36 bytecodeHash := mload(add(creationCode, 68)) } }",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "for loop iteration for contracts can be unbounded",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "The contracts contain functions that loop over lists that can grow significantly in size. Once these contracts store enough data, this can potentially run out of gas. For example, the DealRegistry function has a list function that iterates through all the deals that have been created to return the address of all deals. Once the list of deals grows significantly, this function can become problematic:  DealRegistry.sol#L80-L90: /// @inheritdoc IDealRegistry function list() external view returns (address[] memory) { EnumerableMap.Bytes32ToAddressMap storage deals = _storage().deals; uint256 length = deals.length(); address[] memory result = new address[](length); for (uint256 i = 0; i < length; i++) { (, address deal) = deals.at(i); result[i] = deal; } return result; } The same list is iterated over in DealPriceEngine::dealPrices() to calculate the prices of all deals. 20  DealPriceEngine.sol#L73-L79: function dealPrices() external view returns (DealPrice[] memory) { address[] memory dealAddresses = _storage().dealRegistry.list(); uint256 length = dealAddresses.length; DealPrice[] memory prices = new DealPrice[](length); for (uint256 i = 0; i < length; i++) { prices[i] = _price(IDeal(dealAddresses[i])); }",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Missing short-circuit to halt yield period calculation for periods with no checkpoints",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "If the contract has not accrued any yield, the _yieldForPeriod will needlessly call the _yieldAt function when it could instead, short circuit and just return 0 directly. The _yieldForPeriod function uses the _yieldAt function which immediately returns zero if there are no check- points. In essence, the _yieldAt function will be called twice, both times returning zero, and the _yieldForPeriod will just return a result of 0. function _yieldAt( Checkpoints.Trace208 storage checkpoints, uint48 timestamp, uint256 tokenBalance ) { private view returns (uint256) // If there are no checkpoints, return 0. if (checkpoints.length() == 0) return 0; Given the fact that the yieldDistribution function iterates over the yield period for every single recipient in the for loop below, it would save on logic and gas costs to halt as early as a 0 period is known. 21 contexts. the period. /// @notice Returns the yield distribution for a period. /// @dev The yield is distributed pro rata based on the deal historical holding share of each holder in ,! /// @dev CAUTION: This function is gas-intensive and should be used with caution in transactional ,! /// @param periodStartTime The start timestamp. /// @param periodEndTime The end timestamp. function yieldDistribution( uint48 periodStartTime, uint48 periodEndTime ) { public view assertValidPeriod(periodStartTime, periodEndTime) returns (YieldRecipient[] memory yieldRecipients) DealStorage storage $ = _storage(); yieldRecipients = new YieldRecipient[]($.yieldRecipients.length()); uint256 recipientsCount = 0; for (uint256 i = 0; i < yieldRecipients.length; i++) { address account = $.yieldRecipients.at(i); uint256 yield = _yieldForPeriod($.accountYieldCheckpoints[account], periodStartTime, periodEndTime, ,! balanceOf(account)); if (yield > 0) { // forgefmt: disable-next-item yieldRecipients[recipientsCount++] = YieldRecipient({ account: account, yield: yield, isFiatAccount: $.fiatAccounts.contains(account) }); } } if (recipientsCount < yieldRecipients.length) { assembly { mstore(yieldRecipients, recipientsCount) } } }",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "PayoutManager::_initiateInterestPayout should revert if yieldGenerationStart is zero",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "DealManager::initiateInterestPayout can be called even if no deal tokens have ever been emit- ted for the deal, and this would generate a yield period going from the timestamp 0 to periodEndTime. Although it does hinder any functionality of the protocol, this can cause bugs in tools displaying yield period data, since there would be an overly large first period.",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Incorrect yield can be distributed due to insufficient period validity checks of assertValidPeriod",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "The Deal::assertValidPeriod modifier looks like this: modifier assertValidPeriod(uint48 periodStartTime, uint48 periodEndTime) { if (periodStartTime >= periodEndTime) revert DealYieldInvalidPeriod(periodStartTime, periodEndTime); if (periodEndTime < yieldGenerationStart()) revert DealYieldPastLookup(periodEndTime, yieldGenerationStart()); if (periodStartTime >= clock()) revert DealYieldFutureLookup(periodStartTime, clock()); _; ,! } Also note that yieldGenerationStart function can return 0 in case no global checkpoint has been created yet. Currently the assertValidPeriod modifier doesn't sufficiently validate the periodStartTime & periodEndTime timestamps which can lead to incorrect yield distributions. Some scenarios are listed below: 1. periodStartTime can be 0 when yieldGenerationStart returns 0 . 2. periodStartTime can be any value between [0, block.timestamp - 1]. 3. periodEndTime can be any value between [yieldGenerationStart, type(uint48).max]. As the Deal._yieldAt function performs extrapolation of yield checkpoints, the scenario 3 becomes more severe. 24 Accounts can receive extrapolated yields for a future timestamp T, deal tokens of those accounts can be burned, transferred or increased before the actual timestamp T occurs, which leads to incorrect yield distribution.",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Capital calls can be issued to non KYCed users",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "Currently the DEAL_ADMIN can issue capital calls to non-KYCed (ineligible) users. Though those ineligible users cannot answer any capital call. This is because the _issueCapitalCall is missing checkAccoun- tEligibility call.",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Deal::_yieldAt - Missing safecasting the extrapolated yield checkpoint value",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "In _yieldAt when the next checkpoint does not exist then the next checkpoint value is extrapolated assuming linear growth. if (!nextExists) return prevValue + ((timestamp - prevTimestamp) * tokenBalance); As tokenBalance is an uint256 the (timestamp - prevTimestamp) * tokenBalance is also casted to uint256 by default. Ideally, following the checkpoint convention throughout the Deal contract the (timestamp - prevTimestamp) * tokenBalance value should be safecasted to uint208 before performing any other arithmetic operation.",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Missing input validations in QuadrataKYCVerifier::setDealRequirements",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "The setDealRequirements simply writes the input DealKYCRequirements parameter to storage with- out validating its individual parameters. This creates two issues: 1. Empty countries array can be set as DealKYCRequirements.allowedCountries. In verifyEligibility execution is reverted if a deal's DealKYCRequirements.allowedCountries is an empty array. 2. DealKYCRequirements.maxAMLRiskScore of 0 can be set as a deal requirement. Since Quadrata returns a number [1 - 10] as AML risk score, a 0 value will make the deal unusable.",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Assert correct Deal and DealManager factory deployment",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "The DealFactory precomputes the beacon proxy addresses for the Deal and DealManager as there's a cyclic dependency between their addresses. However, it does not check if the actual deployed addresses match the precomputed ones.",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Typos, Documentation & Unused Code",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "There are typos and documentation errors in the code: 1. Checkpoints.sol#L184: \"Return the index of the last (most recent) checkpoint with key lower or equal than the search key\". This function returns the first index (oldest) that is strictly greater than the search key. The usage is correct and no code adjustments are required. (This has also been reported to the upstream OZ repo). 26 2. Deal.sol#L103: The Deal contract's authorization is done by checking if the caller is the DealManager con- tract. It does currently not require AccessManagedUpgradeable with the authority checks. Consider removing the dependency for Deal. 3. Constants.sol#L15 The PUBLIC role is currently not used in the contracts and deployment scripts. 4. DealFactory#L101 Natspec for DealFactory::deployDeal specifies: The deal ID is used as the salt for the create2 address. Which is currently not the case. 5. ACL.md: Rename autorizeUpgrade to authorizeUpgrade.",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Add explicit periodStartTime < periodEndTime check to _initiateInterestPayout",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "When PayoutManager._initiateInterestPayout distributes yield, it's important that no period can be distributed twice. As the code sets the next period start to the previous period's end time, it's important that no period end in the past can be specified. The periodStartTime < periodEndTime check is already performed downstream in _interestPayoutDistribution ! Deal.totalYield ! assertValidPeriod.",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Use internal setters to initialize contract state",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "Some contracts set contract state directly in their constructor or initialization function even though there is a setter function for the state. 1. InvestmentManager.sol#L58: Use _setOfferEscrowPeriod. 2. QuadrataKYCVerifier.sol#L59-L60: Use an internal _setQuadrataReader and _setAttributeMaxAge func- tion that the external setQuadrataReader and setAttributeMaxAge will also use.",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Rename __CapitalCallManager_init to __InvestmentManager_init",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "The InvestmentManager's initialization function is currently called __CapitalCallManager_init.",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Using currencyToDealTokens and dealTokensToCurrency may result in rounding errors",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "These two functions are expected to be inverses of each other. However, the rounding directions specified here can result in this inverse assumption failing. For example, take a simple example such as a currency amount of 1e18+1: *currencyToDeal function -- * currencyAmount = 1e18 + 1 = (1e18+1) * 1e18 = 1e36+1e18 *dealTokensToCurrency function -- * dealTokenAmount = 1e36+1e18 = (1e36+1e18)/1e18 = 1e36/1e18 + 1e18/1e18 = 1e18 For larger values, x/scalingFactor will be truncated when downscaling which can cause unexpected behaviour. However, since dealTokensToCurrency is not used in this codebase, this is marked as an \"informational\" issue.",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Fiat/onchain account state must be set prior to distribution",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tradable-Spearbit-Security-Review-July2024.pdf",
+        "body": "**Adding/removing a fiat account can increase/decrease fiatAccountsTotalYield if the account had a balance during that period. This will in turn decrease/increase the onchainAccountsTotalYield computed in PayoutManager._interestPayoutDistribution. The yield payout can be wrong when it uses the wrong baseline which can happen in the following cases. 1. A fiat account Deal holder is not set as a fiat account in Deal when the yield distribution happens. 2. An onchain account Deal holder is set as a fiat account in Deal when the yield distribution happens. 3. An account received Deal tokens from both fiat and onchain payments. The account's balance is always fully counted as either fiat or onchain, never partially. The onchain payout parameter payoutAmount must also fully account the balance for either offchain or onchain payment. 28",
+        "labels": [
+            "Spearbit",
+            "Tradable",
+            "Severity: Informational"
+        ]
     }
 ]
