@@ -17296,5 +17296,14 @@
             "Oak Security",
             "Severity: Informational"
         ]
+    },
+    {
+        "title": "2. The new owner account claims ownership, which applies the conguration changes. Status: Acknowledged 13. Miscellaneous comments",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Volta/2024-09-18 Audit Report - Volta CosmWasm v1.0.pdf",
+        "body": "Miscellaneous recommendations can be found below.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
     }
 ]
