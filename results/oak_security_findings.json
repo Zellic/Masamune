@@ -17305,5 +17305,257 @@
             "Oak Security",
             "Severity: Informational"
         ]
+    },
+    {
+        "title": "1. Block production halts if the mempool size exceeds 100MB",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Slide SDK/2024-09-20 Audit Report - Slide SDK v1.1.pdf",
+        "body": "the CreateProposalBlock method of In the BlockExecutor, dened in vm/types/state/executor.go:99-149, transactions from the mempool are processed by the PrepareProposal method and subsequently validated by the Validate function to ensure their combined size is smaller than MaxBlockSizeBytes, set at 100MB. This security check is intended to prevent the constructed transaction list from exceeding this size, as it should have been enforced by the PrepareProposal. However, due to the Incorrect cast from into64 to uint64 makes the txSelector unable to prune transactions in the PrepareProposal and Unlimited transaction retrieval from mempool can lead to DoS issues, this maximum size is not enforced and the proposed block contains all the transactions in the mempool. Consequently, attackers can exploit this vulnerability by sending more than 100MB of transactions to the mempool, causing the Validate function to return an error. This error is propagated to the BuildBlock method which returns an error to AvalancheGo leading to the impossibility for the VM to create new blocks.",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "2. Casting uint to int can lead the VM to panic",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Slide SDK/2024-09-20 Audit Report - Slide SDK v1.1.pdf",
+        "body": "the GenesisChunked RPC method, the In vm/rpc.go:329, during the execution of chunk argument is dened as uint and it is then cast to an int, which can result in a negative number due to overow if the chunk value is large. this causes the subsequent conditional statement to evaluate to false, Consequently, resulting in ResultGenesisChunk being returned with a negative ChunkNumber which is then used to access the rpc.vm.genChunks array. Since array indices must be non-negative, attempting to access the array with a negative index causes a panic, halting the block production of the VM. Attackers can leverage this behavior by sending arbitrary chunk values to the RPC endpoint to stop the VM.",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "3. Incorrect cast from int64 to uint64 makes the txSelector unable to prune transactions in the PrepareProposal",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Slide SDK/2024-09-20 Audit Report - Slide SDK v1.1.pdf",
+        "body": "In vm/types/state/executor.go:121, the CreateProposalBlock method of the BlockExecutor sets maxDataBytes to -1, which is invalid as it must be a positive value since only maxBytes can accept a negative value. This results in constructing the RequestPrepareProposal struct with MaxTxBytes set to -1. Then the PrepareProposalHandler of the Cosmos SDK baseapp is executed, MaxTxBytes, which is represented as int64, is cast to uint64 and then passed to the SelectTxForProposal method of the txSelector to prune transactions exceeding the maximum bytes and gas limits. However, 18446744073709551615 bytes, which is approximately 18446744TB. casting -1 from int64 to uint64 results in MaxTxBytes being Consequently, an exceedingly large transaction limit could lead to processing an enormous transaction list, allowing attackers to perform denial-of-service (DoS) attacks by spamming a large number of transactions.",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "4. Unlimited transaction retrieval from mempool can lead to DoS",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Slide SDK/2024-09-20 Audit Report - Slide SDK v1.1.pdf",
+        "body": "In vm/types/state/executor.go:99 the CreateProposalBlock method of BlockExecutor ReapMaxBytesMaxGas function, passing -1 for both maxBytes and maxGas parameters. from the mempool transactions retrieves invoking by the the However, this eectively instructs the CListMempool implementation to ignore any size and gas limits when fetching transactions, resulting in all transactions in the mempool being handled in a single batch. This behavior can cause denial-of-service (DoS) attacks and timeouts, as the node may become overloaded by attempting to process all transactions in the mempool within a single block.",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "5. Overly permissive gRPC default options",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Slide SDK/2024-09-20 Audit Report - Slide SDK v1.1.pdf",
+        "body": "The Serve function, dened In landslidevm.go:73-160, is responsible for starting the gRPC server and it accepts various grpc.ServerOption arguments. When not specied, landslidevm.go:51-65. these arguments default to DefaultServerOptions, dened in However, this default conguration is excessively permissive and could lead to potential denial-of-service (DoS) attacks. Specically, setting MaxRecvMsgSize to math.MaxInt changes the default maximum receive message size from 4MB to 9223372TB. Similarly, MaxConcurrentStreams is set to math.MaxUint32, allowing an excessively large number of concurrent streams. We are reporting this issue with minor severity since the aforementioned server is expected to be only exposed locally to interact with the AvalancheGo node.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "6. Incorrect boolean value assigned to allowShutdown during VM initialization",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Slide SDK/2024-09-20 Audit Report - Slide SDK v1.1.pdf",
+        "body": "When initializing the VM, the New function is called, which subsequently invokes the NewViaDB function to congure some VM state parameters. One of these parameters is allowShutdown, which stores information about whether a node is ready to shut down via the Shutdown operation. However, the default assigned value is True, while the logic does not allow the parameter value to be changed to False anywhere in the code. Consequently, when in landslidevm.go:110 via the CanShutdown function will always return True, which will result in incorrect execution of the syscall management logic. performed operation, Serve calling check the the",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "1. Faulty header validation in the attestation",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Dusk/2024-09-20 Audit Report - Rusk Node Library.pdf",
+        "body": "node/src/chain/header_validation.rs:409, In verify_block_att identies all committee members as voters by merging them without validating that they voted. the This might lead to faulty validation of the block header, i.e. in labeling a non-valid candidate header as valid, which is considered a critical error.",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "2. Faults are not written into a block",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Dusk/2024-09-20 Audit Report - Rusk Node Library.pdf",
+        "body": "In consensus/src/proposal/block_generator.rs:140, saved into the new block. the vector faults is However, the vector is empty because it is only initialized on line 114 with expression Vec::<Fault>::new(). The header of this block doesnt contain any information about the faults as well, because the merkle root is derived from the empty vector.",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "3. MAX_PENDING_SENDERS ag gets ignored",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Dusk/2024-09-20 Audit Report - Rusk Node Library.pdf",
+        "body": "In node/src/network.rs:43-51 the reroute function ignores if there are too many messages to be rerouted. the pending_senders counter is reset to zero and a warning message is logged. However no the MAX_PENDING_SENDERS ag is exceeded, If other actions such as limiting the messages are performed and logic for intervention for operators is provided. This could lead to an excessive rerouting of messages and potentially an overload of the operating or other nodes.",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "4. Transaction lters are unimplemented",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Dusk/2024-09-20 Audit Report - Rusk Node Library.pdf",
+        "body": "In node/src/mempool.rs:51-59 the TxFilter is unimplemented. As a consequence is it not checked if a transaction is a duplicate, nullied, or exists in the issue in production, unimplemented features are mempool. While this can be a critical reported as major.",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "5. Hardcoded genesis date can lead to a stuck network",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Dusk/2024-09-20 Audit Report - Rusk Node Library.pdf",
+        "body": "At node startup, as dened in node/src/chain.rs:276, the genesis block is generated if the current chain tip is not yet initialized in local storage. However, the genesis date is hardcoded to March 25, 2024 as can be seen in node/src/chain/genesis.rs:14. Not only a network based on this particular commit is dicult to be launched, but also this approach in general poses challenges if the network launch fails and needs rescheduling. Genesis date modication requires source code modication, followed by recompilation and distribution of the binary to the node environment. Providing the genesis date via a genesis cong could streamline this process. rst block, candidate More importantly, the genesis date is not validated against the local clock. The timestamp for the is determined by fall consensus/src/proposal/block_generator.rs:122. This timestamp must within a specic time range, relative to clocks of other provisioners in the network. Delay in block production is a slashable event, so a block timestamp must not be too far in the past. Delayed blocks are rejected in node/src/chain/header_validation.rs:105. This the genesis block, atop built means that the next block after the genesis cannot be built without violating the protocol rules. At the same time, setting the timestamp of the genesis block too far into the future is also see block's problematic, node/src/chain/header_validation.rs:115. acceptance prevents nodes, other the by as it",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "6. Mempool can grow arbitrarily large",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Dusk/2024-09-20 Audit Report - Rusk Node Library.pdf",
+        "body": "In node/src/mempool.rs, the function accept_tx does not perform any checks on the number of transactions that are already in the mempool. An attacker could abuse this by spamming a lot of low-value transactions and overwhelm nodes with these transactions, which can ultimately lead to a Denial of Service for particular nodes or the whole network.",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "1. Missing entitlement causes deposit transactions to fail",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Celer/2024-09-20 - Celer Flow Contracts.pdf",
+        "body": "In transactions/safebox_deposit.cdc:13, the from argument is not implemented as an authorized reference with the FungibleToken.Withdraw entitlement. This is required as the deposit function in cadence/contracts/SafeBox.cdc:134 requires as the auth(FungibleToken.Withdraw)&{FungibleToken.Provider}. reference type Consequently, the transaction will fail to execute.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "2. Missing receiver capability validation leads to locked funds at Flow chain",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Celer/2024-09-20 - Celer Flow Contracts.pdf",
+        "body": "A FungibleToken.Receiver capability named receiverCap is retrieved from a congured token public path in contracts/SafeBox.cdc:186 for the receiver address. This oversight may However, no validation ensures the fetched capability supports the intended receiving token in type. contracts/DelayedTransfer.cdc:101 if the receiver capability reference (indicated as recRef) does not align with the receiving token vault type. cause the executeDelayXfer function to fail Consequently, users may be unable to withdraw funds from Flow chain despite the corresponding burn transaction already executed on the counterparty chain. We classify this issue as minor because the likelihood of encountering an invalid receiving capability at the specied public path is low. Potential causes include users holding a dierent token at the same path or interacting with malicious dApps that manipulate user capability paths. A recovery plan could be initiated in which users must manually replace the incorrect capability with the correct capability in the congured path and re-execute the this leads to operational overhead and executeDelayXfer function. Nevertheless, decreased user experience.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "3. Verifying signatures may fail due to the execution limit",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Celer/2024-09-20 - Celer Flow Contracts.pdf",
+        "body": "In contracts/cBridge.cdc:57, the verify function accepts a variable-length array of signatures in the sigs argument. The function logic implements an inner loop inside an outer loop to nd the matched signature, as seen in lines 61-87. This may cause the execution eort of such logic to reach the execution limit on Flow chain, causing the verify function to fail if there are many signatures.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "4. Inconsistent return types cause obstacles in writing generic transactions and scripts",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Celer/2024-09-20 - Celer Flow Contracts.pdf",
+        "body": "Throughout the implementation of the fungible token contracts, the following functions do not return the @{FungibleToken.Vault} type value:  withdraw  contracts/ceAVAX.cdc:105  contracts/ceBNB.cdc:107  contracts/ceMATIC.cdc:84  mintTokens  contracts/ceAVAX.cdc:199  contracts/ceBNB.cdc:201  contracts/ceDAI.cdc:178  contracts/ceMATIC.cdc:178  contracts/ceUSDT.cdc:199  contracts/ceWETH.cdc:199  createEmptyVault  contracts/ceBNB.cdc:138  contracts/ceBNB.cdc:162  contracts/ceBUSD.cdc:139  contracts/ceDAI.cdc:115 Consequently, the code complexity and maintainability will increase because each contract requires its own customized transaction and script les to return the correct resource types.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "5. Unused entitlement",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Celer/2024-09-20 - Celer Flow Contracts.pdf",
+        "body": "In cadence/contracts/VolumeControl.cdc:3, the Update entitlement is dened but not implemented, which reduces code readability and maintainability.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "6. Getter functions are not marked with the view keyword",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Celer/2024-09-20 - Celer Flow Contracts.pdf",
+        "body": "In Cadence 1.0, view functions are introduced to enforce getter functions that do not modify any state. However, this is not enforced in the following functions:  getSigners in cadence/contracts/cBridge.cdc  delayTransferExist and getDelayBlockTs in cadence/contracts/DelayedTransfer.cdc  hasMore, toUint64, toUint256, toAddress, toUFix64, and toString in cadence/contracts/Pb.cdc  eqToken in cadence/contracts/PbPegged.cdc  getTokenConfig and recordExist in cadence/contracts/PegBridge.cdc  getTokenConfig and recordExist in cadence/contracts/SafeBox.cdc  getEpochVolume and getLastOpTimestamp in cadence/contracts/VolumeControl.cdc",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "7. Suboptimal balance update",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Celer/2024-09-20 - Celer Flow Contracts.pdf",
+        "body": "In cadence/contracts/RLY.cdc:133, the burnCallback function sets the balance to zero regardless of the current balance. This is suboptimal as the balance may already be zero, making it a redundant operation. This issue also aects the following contracts:  cadence/contracts/ceAVAX.cdc:133  cadence/contracts/ceBNB.cdc:135  cadence/contracts/ceBUSD.cdc:112  cadence/contracts/ceDAI.cdc:112  cadence/contracts/ceFTM.cdc:112  cadence/contracts/ceMATIC.cdc:112  cadence/contracts/ceUSDT.cdc:133  cadence/contracts/ceWBTC.cdc:133  cadence/contracts/ceWETH.cdc:133",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "1. Unlimited transactions in proposal blocks can lead to denial of service",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Dusk/2024-09-20 Audit Report - Rusk Consensus.pdf",
+        "body": "block. In rusk/consensus/src/proposal/handler.rs:80-112 the verify_new_block function of the ProposalHandler, there is no limit on the number of transactions in a operation candidate p.candidate.txs().iter().map(|t| t.hash()).collect() iterates over all transactions to calculate their hashes before computing the merkle root. An attacker could exploit this by submitting a candidate block with an extremely large number of transactions, causing excessive computation time and potential denial of service. The",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "2. Committee members can vote multiple times",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Dusk/2024-09-20 Audit Report - Rusk Consensus.pdf",
+        "body": "The function collect_vote in consensus/src/aggregator.rs should ensure that each committee member can only vote once per round. However, it only contains a debug_assert in line 96 which will panic when a committee member has already voted. But because debug_assert instead of assert is used, this will only be done for non optimized builds, i.e. not for production builds.",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "3. Committee members can submit conicting votes",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Dusk/2024-09-20 Audit Report - Rusk Consensus.pdf",
+        "body": "A committee member that has voted valid during the validation step could vote invalid during the ratication step. This could be used by committee members to obfuscate malicious behavior, while sabotaging the consensus.",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "4. Emergency block is unimplemented",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Dusk/2024-09-20 Audit Report - Rusk Consensus.pdf",
+        "body": "According to the documentation an emergency empty emergency block is produced after 255 iterations. This is not the case. Unimplemented production relevant features are a major issue.",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "5. Slashing for block generator is disabled after 10 iterations",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Dusk/2024-09-20 Audit Report - Rusk Consensus.pdf",
+        "body": "consensus/src/proposal/step.rs:62, constant In config::RELAX_ITERATION_THRESHOLD is used to limit the number of iterations from which we extract failed attestations. Currently, this constant is declared to be the number 10. the After the number of iterations in a single round reaches 10, only the 10th iteration is used to extract failed attestations, even if the 50th iteration is in progress. Failed attestations are used in rusk/src/lib/chain/rusk.rs to extract generators to slash them for inactivity, see the function reward_slash_and_update_root (line 538). As a consequence of using this limit, generators from iterations 11, 12, 13 etc. are not slashed for neglecting their duties. Malicious generators can safely idle till the end of round if the block has not been conrmed during the rst 10 iterations.",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "6. Inecient order of checks in verify_new_block can be exploited by attackers to overload the system.",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Dusk/2024-09-20 Audit Report - Rusk Consensus.pdf",
+        "body": "rusk/consensus/src/proposal/handler.rs:80-112 function In the verify_new_block, expected_generator!= p.sign_info.signer.bytes() at the end of the function. This means computationally intensive operations like signature verication, previous block hash checking, and merkle root calculation are performed before conrming the block came from the expected generator. Attackers can exploit this even if the issue Unlimited transactions in proposal blocks can lead executes check the to denial of service is xed to cause an excessive number of unnecessary calculations and potentially overload the system.",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "7. Dierent calculation logic for majority and supermajority",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Dusk/2024-09-20 Audit Report - Rusk Consensus.pdf",
+        "body": "In the le consensus/src/user/committee.rs, the required credits for the majority and supermajority are calculated in lines 41-45. For the supermajority, the credits are determined by multiplying the committee credits with the threshold and taking the ceiling of this result. For the majority, the committee credits are also multiplied with the majority threshold, but this is then casted to a usize and 1 is added to the result. In most cases, these two approaches are equivalent. However, when the committee credits are an exact multiple of MAJORITY_THRESHOLD, the required credits are higher by one. For instance if there are 4 the 0.5 committee SUPERMAJORITY_THRESHOLD set to 0.67, the required credits will be 3 for both. MAJORITY_THRESHOLD credits with and the set to If the MAJORITY_THRESHOLD and SUPERMAJORITY_THRESHOLD were set to the same value, this would also mean that the required credits for the majority would be higher than for the supermajority, which does not make sense. Moreover, if it was set to 1.0, it would never be reachable.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "8. Iteration context is not reset when new iteration begins",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Dusk/2024-09-20 Audit Report - Rusk Consensus.pdf",
+        "body": "Within consensus/src/iteration_ctx.rs:105-108 the function on_begin is dened. This function is called when a new iteration begins, and it updates the iteration counter inside the IterationCtx structure. However, this increment is not consistent with the other elds of the structure, namely join_set and timestamps. The join_set variable tracks all asynchronous tasks started during an iteration. If it's not reset when the new iteration begins, computation from the previous iteration might still be running and cause inconsistent state changes. The timeouts variable is involved in the adaptive timeout algorithm and contains current values of delays. New iteration involves a dierent committee with dierent availability, so timeouts should be reset to its default value.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "9. Suboptimal usage of BTreeMap",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Dusk/2024-09-20 Audit Report - Rusk Consensus.pdf",
+        "body": "The le consensus/src/user/provisioners.rs demonstrates a wise choice of data structure to track all available provisioners, namely BTreeMap. However, the structure is not utilized to the maximum of its capabilities. The set of provisioners eligible for participation in the current round committee is computed by iterating all provisioners (line 154), ltering them by round and minimum stake (line 155), cloning their stakes (line 245), comparing each public key with an excluded one (line 251) and, nally, constructing a new map from the iterator (line 252). These iterations are excessive and reduce tolerance to DoS attacks against the network.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
     }
 ]
