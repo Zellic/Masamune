@@ -17557,5 +17557,248 @@
             "Oak Security",
             "Severity: Low"
         ]
+    },
+    {
+        "title": "1. Potential loss of funds due to missing address validation in submit function",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/DoraFactory/2024-09-23 Audit Report - Dora Vota Migration Contract v1.0.pdf",
+        "body": "In contracts/DoraBridge.sol:95-113, the submit function allows users to burn their tokens on Ethereum and emits an event to mint the same tokens on the Dora Vota chain at a specied _votaAddr address. However, there is no validation to ensure that the _votaAddr is provided. If this address is not provided, the Submit event will be emitted without a receiver address. This would result reference to where they should be minted. in a permanent loss of funds, as tokens would be burned without a",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "2. Missing address validation in the changeAdmin function",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/DoraFactory/2024-09-23 Audit Report - Dora Vota Migration Contract v1.0.pdf",
+        "body": "In contracts/DoraBridge.sol:49-53, the changeAdmin function allows the current admin to transfer its role to another address. However, it does not validate whether the provided _admin address is valid. This omission could result in the admin being set to a nonexistent or incorrect address, potentially causing the protocol to become stuck since the admin would be unable to execute its required operations.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "3. Possible duplicates in txHashes",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/DoraFactory/2024-09-23 Audit Report - Dora Vota Migration Contract v1.0.pdf",
+        "body": "In contracts/DoraBridge.sol:119-129, the process function is called by the admin after the tokens are bridged on the Dora Vota chain. This function serves as a verication mechanism for the user by recording the txHash of the mint transaction on the Dora Vota chain. However, the process function lacks validation to check if the _txHash provided is already present in the _txHashes array. Although txHash values are expected to be unique for each transaction under normal circumstances, the absence of this validation allows admins to inadvertently or maliciously add duplicate entries to the _txHashes array.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "4. Missing address validation in the constructor",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/DoraFactory/2024-09-23 Audit Report - Dora Vota Migration Contract v1.0.pdf",
+        "body": "In contracts/DoraBridge.sol:25-29, whether the provided _admin and _token addresses are valid. the contracts constructor does not check This lack of validation could lead to unintended behavior and miscongurations, as it could allow the instantiation of the contract without having references to the token contract or the administrator.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "5. Potential out-of-gas error in the recordOf function",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/DoraFactory/2024-09-23 Audit Report - Dora Vota Migration Contract v1.0.pdf",
+        "body": "In contracts/DoraBridge.sol:66-77, the recordOf view function iterates through all the _usersRecords of the provided address and returns for each of them a Record. However, the iteration over the _usersRecords array is unbounded and could result in a computationally expensive operation if the user executes the submit function multiple times. Although recordOf is a view function, the gas limit is still enforced by the RPC nodes, potentially leading to out-of-gas errors if the array grows too large.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "6. Functions called externally are dened as public",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/DoraFactory/2024-09-23 Audit Report - Dora Vota Migration Contract v1.0.pdf",
+        "body": "The changeAdmin, recordOf, getUnprocessedRecords, submit, and process functions dened in contracts/DoraBridge.sol are called only externally, but dened as public, which is inecient.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "7. Contracts should implement a two-step ownership transfer",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/DoraFactory/2024-09-23 Audit Report - Dora Vota Migration Contract v1.0.pdf",
+        "body": "The contracts within the scope of this audit allow the current owner to execute a one-step ownership transfer. While this is common practice, it presents a risk for the ownership of the contract to become lost if the owner transfers ownership to the incorrect address. A two-step ownership transfer will allow the current owner to propose a new owner, and then the account that is proposed as the new owner may call a function that will allow them to claim ownership and actually execute the cong update.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "8. The DoraBridge contract is not pausable",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/DoraFactory/2024-09-23 Audit Report - Dora Vota Migration Contract v1.0.pdf",
+        "body": "Bridge contracts typically will exploits that can cause a loss of funds. implement pausable functionality to protect users from In addition, due to the design of the bridge, it may be necessary to halt the execution of the submit function immediately after the o-chain actor responsible for handling events is suspended. This precaution is important to prevent users from burning their tokens.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "9. The Process event is not indexed",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/DoraFactory/2024-09-23 Audit Report - Dora Vota Migration Contract v1.0.pdf",
+        "body": "Indexing event elds signicantly enhances the accessibility of these elds for o-chain tools that parse events. However, indexed keyword for the count and processed elds. in contracts/DoraBridge.sol:47, the Process event is missing the This omission could slow down event processing and make data retrieval less ecient for o-chain tools.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "10. Miscellaneous comments",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/DoraFactory/2024-09-23 Audit Report - Dora Vota Migration Contract v1.0.pdf",
+        "body": "Miscellaneous recommendations can be found below.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "1. Attackers providing incorrect or malicious price feed can buy tokens at an arbitrary price",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Out/2024-09-24 Audit Report - Out GCC.pdf",
+        "body": "feed_account, The programs/gcx/src/instructions/buy_offer.rs:179 programs/gcx/src/instructions/initial_buy.rs:137, the SOL/USD price feed from the Pyth oracle. dened in and is intended to provide the current However, the provided feed_account is an account owned by the Pyth oracle, nor does it conrm that the account reports the correct price feed. implementation does not validate whether Consequently, attackers can exploit this vulnerability by providing a dierent Pyth price feed they can account or an entirely fake account with incorrect price data. By doing so, manipulate the price feed to purchase tokens at an articially deated price, leading to potential nancial losses for the platform and its users. For example, a buyer could present a manipulated price feed that proposes a much lower SOL/USD price, allowing them to acquire tokens for far less than their true market value.",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "2. Market can be initialized without seller authorization and before all tokens have been sold",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Out/2024-09-24 Audit Report - Out GCC.pdf",
+        "body": "InitializeMarket The in programs/gcx/src/instructions/create_token.rs is intended to enable Stage 2 of token distribution by allowing the token owner to initiate a market for token exchange after all tokens have been sold during Stage 1. instruction handler However, there is no verication to ensure all tokens have been sold in Stage 1 before enabling Stage 2 and the instruction does not implement any authorization mechanism, permitting anyone to execute it. the market can be initialized before the completion of Stage 1, disrupting the Consequently, token distribution process. Additionally, the lack of authorization allows anyone to start a marketplace for tokens without the owners consent, potentially leading to unauthorized market creation and disruption of token economics.",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "3. Incorrect math leads to underpriced tokens when buying an oer",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Out/2024-09-24 Audit Report - Out GCC.pdf",
+        "body": "programs/gcx/src/instructions/buy_offer.rs:40-53 the In computation when buying an oer from the marketplace is incorrect. token price Specically, the amount is divided two times by LAMPORTS_PER_SOL which leads to an incorrect price due to unit mismatch in the computation. Consequently, the price denominated in SOL required to buy the oer is incorrect and not predictable by users leading to failed transactions and severely underpriced tokens.",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "4. Token transfers will always fail due to incorrect account seed",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Out/2024-09-24 Audit Report - Out GCC.pdf",
+        "body": "holder_state The in programs/gcx/src/instructions/transfer_tokens.rs:70-71 is derived via the b\"token_holder\" seed string. instruction account dened context the in However, since it is derived and initialized via the b\"holder_state\" seed string in all other instances throughout the protocol, the transfer_token instruction will always fail since the required holder_state PDA does not exist for this specic seed. Consequently, it is not possible to transfer tokens.",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "5. Inconsistent accounting of token decimals throughout the protocol",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Out/2024-09-24 Audit Report - Out GCC.pdf",
+        "body": "The decimals of token_amount are inconsistently accounted for throughout the whole protocol. BuyMarketPlaceOffer in The handler, programs/gcx/src/instructions/buy_offer.rs:16-141, the token_amount has 0 decimals according to the price calculations in lines 40-54, which is based on the price per whole token. However, within the same function, the check in line 77 and the token transfer in lines 134-137 require the token_amount to have 9 decimals. instruction suggests dened that the instruction InitialBuy in handler, Similarly, programs/gcx/src/instructions/initial_buy.rs:16-104, that token_amount has 0 decimals according to the price calculations in lines 30-42, which is based on the price per whole token, and the token transfer in lines 101-104, which explicitly upscales the amount from 0 to 9 decimals. However, within the same function, the check in line 50 requires the token_amount to have 9 decimals in the rst place. dened suggests of instances Further programs/gcx/src/instructions/transfer_tokens.rs, programs/gcx/src/instructions/create_offer.rs, programs/gcx/src/instructions/create_token.rs. inconsistent decimals token also exist within and Consequently, this mismatch between decimals could lead to transaction failure, invalid price computation, and wrong token amounts being transferred.",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "6. Users can buy tokens from sellers with the Stage 1 mechanism after the market is initialized",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Out/2024-09-24 Audit Report - Out GCC.pdf",
+        "body": "handle_initial_buy The in programs/gcx/src/instructions/initial_buy.rs:16, allows users to buy tokens from sellers at a xed price during Stage 1. instruction handler, dened However, this instruction is still executable by users to buy tokens from the seller in Stage 2 after the market initialization. Consequently, this enables a behavior that diverges from the specication and, if the seller rebuys the tokens in the marketplace, could lead to market manipulations.",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "7. Token holders can create an innite number of unbacked oers",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Out/2024-09-24 Audit Report - Out GCC.pdf",
+        "body": "In the handle_create_or_modify_marketplace_offer instruction, dened in the execution checks if the programs/gcx/src/instructions/create_offer.rs, seller_mint_ata account holds at least the amount_offered tokens. However, these tokens are not recorded or transferred to any escrow account after the validation. As a result, the seller can create an innite number of oers without actually having the required tokens to back them leading to spamming the marketplace with oers that cannot be fullled.",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "8. Marketplace oers can be reinitialized",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Out/2024-09-24 Audit Report - Out GCC.pdf",
+        "body": "CreateOrModifyMarketplaceOffer in The programs/gcx/src/instructions/create_offer.rs species the oer account as init_if_needed which instructs Anchor framework to create an account if it did not exist previously or use the currently existing one during execution. instruction dened handler As a consequence, any seller can modify their oer at any point in time without restrictions, which includes, but is not limited to changing its price. The particularly malicious scenario is as follows: First, a malicious user sets up an oer. Once a legitimate user wants to accept the oer using BuyMarketPlaceOffer instruction, the malicious user can frontrun the legitimate users transaction and re-initialize the oer with a dierent price, causing nancial loss to the legitimate user. It is worth noting that currently, frontrunning in Solana requires running a malicious validator, however, a MEV infrastructure project may be available in the future that will facilitate frontrunning attacks. Additionally, a malicious user might still try to modify the oer in hopes of deceiving legitimate users who would see previous prices in the frontend components.",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "9. Invalid boolean arithmetic leads to a verication bypass",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Out/2024-09-24 Audit Report - Out GCC.pdf",
+        "body": "programs/gcx/src/instructions/create_offer.rs, the In CreateOrModifyMarketplaceOffer instruction handler implements a verication mechanism in line 21 that is intended to allow oer creation only when the marketplace is initialized and the program is congured to enable market oers. Specically, the following boolean arithmetic is responsible for checking for a failing condition and failing the execution if they are not met: _. __  ___. _ However, this boolean arithmetic is not correct as the logic AND makes the program fail execution only if both boolean values are set to false. Considering that anyone can set a market as initialized because Market can be initialized without seller authorization and before all tokens have been sold, the scenario where the market is initialized (mint_owner_token_state.market_initialized is set to true) and the program does not allow market oers (program_state.allow_market_offers is set to false) appears to be easily achieved. Consequently, marketplace oers can be created at any time by anyone, even if program's global settings disable it. the",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "10. Assuming negative sign of Pyth price feed exponent can lead to incorrect token pricing",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Out/2024-09-24 Audit Report - Out GCC.pdf",
+        "body": "token in The and programs/gcx/src/instructions/initial_buy.rs:37-41 programs/gcx/src/instructions/buy_offer.rs:45-49 are performed on a Pyth price feed which is given by price and expo, i.e. price*10^expo. computations price However, both instances assume the expo to be always negative and therefore reconstruct the price via price/10^abs(expo). Still, according to the rst example in the pyth_sdk_solana::Price documentation, the expo can also be positive. Consequently, returned expo is not negative. the current implementation can lead to wrong token pricing in case the",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "11. Multiple minting is allowed in the CreateToken instruction",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Out/2024-09-24 Audit Report - Out GCC.pdf",
+        "body": "CreateToken in The programs/gcx/src/instructions/create_token.rs:7:38 is responsible for minting initial tokens to an authority account and setting the market associated with them as not initialized. instruction handler However, since mint, mint_ata, and token_state accounts are marked with init_if_needed the Anchor framework will not fail the execution if those accounts are already created allowing the program owner to execute the mint of tokens to the same authority multiple times. This behavior diverges from the specication since it would inate the amount of the designated initial tokens per user. We are reporting this issue with minor severity since only the program owner can execute the mint.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "12. Lack of input validation for the initialize_program_state instruction",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Out/2024-09-24 Audit Report - Out GCC.pdf",
+        "body": "the init In in programs/gcx/src/states/program_state.rs:15:33 there is no validation on the provided data. ProgramState, implementation function dened for the Specically, market_program_fee, initial_fee, and allow_market_offers should be within the range of (0, 100) as they represent a percentage. market_owner_fee, parameters Similarly, initial_token_price should be enforced to be greater than 0 to make the subsequent transfer succeed. Consequently, underows or division by zero errors. this can lead to incorrect or undesirable behavior, potentially leading to",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "13. Possible precision loss due to incorrect calculations",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Out/2024-09-24 Audit Report - Out GCC.pdf",
+        "body": "The programs/gcx/src/instructions/buy_offer.rs:40:54 calculates token prices. BuyMarketPlaceOffer instruction handler in Currently, divisions are intertwined with multiplications. Furthermore, all calculations are done on the u64 type. Such an approach to the calculation is inherently subject to higher precision losses which may result in an inaccurate price. the same instruction Furthermore, in programs/gcx/src/instructions/buy_offer.rs:56:70 is calculating the values to be transferred - the actual amount of tokens for sale along with fees for project and market owner. Each value is calculated independently using arithmetic operations which include division. Due to the inherent precision loss associated with integer division it is possible that the sum of all calculated values would not add up to the initial total value. If this scenario occurs, some of the lamports would be stuck in the program account. handler",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "14. Missing check allows to set any account as token authority",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Out/2024-09-24 Audit Report - Out GCC.pdf",
+        "body": "accounts The in the programs/gcx/src/instructions/create_token.rs:41:71 contains a member called authority that is used to set the authority eld in the TokenState account. CreateToken instruction struct for the CreateToken instructions accounts struct species this member to be However, AccountInfo causing the instruction to accept any account provided, making it possible to use an incorrect one. We are reporting this issue with minor severity since only the program owner can execute the mint.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "15. Program state initialization is fully permissionless",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Out/2024-09-24 Audit Report - Out GCC.pdf",
+        "body": "InitializeState in The programs/gcx/src/instructions/program_state.rs, to permissionlessly create their own program_state PDA. This allows users to own and operate their instance of the protocol, while an indenite number of such instances can coexist, all using the same program ID. instruction, dened anyone allows into interacting (e.g. it also enables scammers to trick Although this permissionless nature might be intended, users initial buy or marketplace buy/sell) with a malicious program_state without any suspicion, due to interacting with a known & trusted program ID.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "16. Holder status is not used",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Out/2024-09-24 Audit Report - Out GCC.pdf",
+        "body": "HolderState The in programs/gcx/src/states/holder_state.rs, species a member of boolean type called active. account, dened However, it has been observed that this value is not used in the program and it is always set to true when the account is initialized and there are no paths in the code to update it.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "17. Miscellaneous comments",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Out/2024-09-24 Audit Report - Out GCC.pdf",
+        "body": "Miscellaneous recommendations can be found below.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
     }
 ]
