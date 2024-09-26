@@ -17908,5 +17908,140 @@
             "Oak Security",
             "Severity: Informational"
         ]
+    },
+    {
+        "title": "1. Liquidation queue contract receives fewer collaterals than expected when liquidating more than one asset",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/SendIt/2024-09-25 Audit Report - SendIt Contracts v1.0.pdf",
+        "body": "In contracts/bl-market/src/execute.rs:1211-1286, the liquidate function implements logic to execute a liquidation on unhealthy positions. Based on the the LiquidationAmountResponse queried from the liquidation queue contract, process_ptoken_transfer_to_liquidation_contract function will be called for each collateral to transfer pTokens from the borrower to the liquidation queue contract. These messages are intended to be collected within the Response created in line 1209. However, the Response variable will be reinitialized in lines 1264-1271 when there is more than one collateral to liquidate, causing the previous collaterals TransferOnLiquidation message not the collaterals must be transferred to the liquidation queue contract as part of the liquidation logic. to be dispatched. This is incorrect because all Consequently, the liquidation queue contract will only receive one out of all the expected collaterals, causing a loss of funds for bidders as there are insucient collaterals to be claimed. Please see the test_liquidate_double_asset_poc test case in the appendix to reproduce this issue.",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "2. Users can steal funds by receiving more liquidation fees, causing a loss of funds for bidders",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/SendIt/2024-09-25 Audit Report - SendIt Contracts v1.0.pdf",
+        "body": "contracts/liquidation-queue/src/contract.rs:1074, the In the execute_dynamic_liquidation collateral_amount parameter, representing the amount of collateral tokens to liquidate. the repayment amount based on the In return, receive a portion of the caller will function specify allows caller the to config.liquidator_fee contracts/liquidation-queue/src/contract.rs:1197-1205. percentage, as seen in the LiquidateDirect When in the contracts/liquidation-queue/src/contract.rs:1172-1184, calculate_liquidation_amounts function computes the required repayment amount based on the borrowers debt position. If any excess debt token is sent, the tokens will be refunded in contracts/bl-market/src/liquidate.rs:203-211. message called is However, the liquidation-queue contract does not account for this scenario, allowing users to receive more liquidation fees than intended because the provided collateral amount is not fully consumed during liquidation. The contract will receive a lower collateral amount than expected, the ClaimLiquidations message. resulting in an insucient funds error when bidders call Consequently, malicious users can receive more liquidation fees by specifying the collateral_amount parameter to a value higher than the borrowers collateral balance, causing refunded tokens to be stuck and risking the protocols solvency.",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "3. Utilization rate can be exploited to surpass 100% for new markets",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/SendIt/2024-09-25 Audit Report - SendIt Contracts v1.0.pdf",
+        "body": "In contracts/bl-market/src/interest_rate.rs:279-281, the utilization rate of a market is determined by the ratio of total debt divided by total collateral. If a new market is instantiated with zero deposits, an attacker can inate the utilization rate to steal funds from the contract. An exemplary step-by-step attack follows: 1. ATOM market is instantiated. 2. The attacker creates two accounts: account1 and account2. 3. account1 becomes the rst depositor and deposits 1 uatom, increasing the markets total collateral",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "8. account1 receives around 84000 ATOM after 10 seconds due to the inated utilization rate. For more information on this type of attack, please refer to the Silo Finance Vulnerability Disclosure. Recommendation We recommend limiting the utilization rate to a maximum value of 100% with the min function. Status: Resolved 4. Incorrect price mechanism used during liquidation",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/SendIt/2024-09-25 Audit Report - SendIt Contracts v1.0.pdf",
+        "body": "",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "9. Refund amount is not excluded when computing the utilization ratio",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/SendIt/2024-09-25 Audit Report - SendIt Contracts v1.0.pdf",
+        "body": "contracts/bl-market/src/execute.rs:967, In calls update_interest_rates with the liquidity_taken argument set to zero. This is incorrect because the liquidity_taken argument should be set to the refund amount in contracts/bl-market/src/execute.rs:938-946. function repay the debt The update_interest_rates function computes the utilization ratio based on the ratio of in total contracts/bl-market/src/interest_rate.rs:267-284. Since a refund will be performed, the total collateral must be decreased by the refund amount to correctly compute in the contracts/bl-market/src/interest_rate.rs:304-315. collateral markets liquidity borrow seen rate, total rate and as to Consequently, lenders to receive fewer rewards and borrowers to pay lesser interest. the utilization ratio will be computed to be lower than intended, causing",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "10. Deactivated markets can be liquidated and repaid",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/SendIt/2024-09-25 Audit Report - SendIt Contracts v1.0.pdf",
+        "body": "In contracts/bl-market/src/contract.rs:193, the LiquidateDirect message does not return an error if the debt or collateral market is inactive. This violates the comment in packages/bl-core/src/bl_market/mod.rs:104-105, which indicates that a deactivated market cannot perform any actions, including debt repayment and liquidation.",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "11. Risk of withdrawing funds within the liquidation threshold limit",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/SendIt/2024-09-25 Audit Report - SendIt Contracts v1.0.pdf",
+        "body": "In contracts/bl-market/src/execute.rs:638-644, the withdraw function allows users to withdraw assets as long the liquidation threshold is not exceeded. This is incorrect because the function should instead check the users maximum Loan-to-Value (LTV) restriction. The LTV is meant to be a safe buer before the liquidation threshold is triggered so that users are not being liquidated after withdrawing their funds. For comparison, the borrow function enforces the users position to not exceed the max LTV restriction, as seen in contracts/bl-market/src/execute.rs:784-789. they are at Consequently, a borrower may borrow collaterals at the max LTV and withdraw the collateral until the liquidation threshold, exposing them to liquidation risks and circumventing the risk management buer of the protocol. In a strongly downward trending market, aggravated limited liquidity or block space for liquidations, this issue could lead to a steep increase in unhealthy positions, risking the protocols solvency.",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "12. Liquidation may fail due to out-of-gas errors",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/SendIt/2024-09-25 Audit Report - SendIt Contracts v1.0.pdf",
+        "body": "In contracts/bl-market/src/execute.rs:1123-1179, multiple iterations occur over the user_asset_position vector, which may cause the transaction to fail due to an out-of-gas error. Specically, the assets in the users position are iterated in lines 1123, 1143, and 1156. this by opening many asset positions to force Consequently, borrowers could exploit liquidations to fail due to gas limits, causing a loss of funds for lenders and risking the protocols solvency. We classify this issue as major because the maximum number of positions that can be opened depends on the number of assets supported by the contract owner, which is a privileged account.",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "13. Market deposit limits may be surpassed",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/SendIt/2024-09-25 Audit Report - SendIt Contracts v1.0.pdf",
+        "body": "contracts/bl-market/src/execute.rs:510-519, In function implements an incorrect method of validating that the total deposits do not exceed a markets deposit cap. Specically, line 514 enforces the following condition: deposit the market.deposit_cap_scaled <= market.ptoken_address.total_supply + deposit_amount * SCALING_FACTOR This is problematic because the get_scaled_liquidity_amount function in lines 527-528 computes the mint amount based on the markets liquidity index. If the index increases, in amount contracts/bl-market/src/interest_rate.rs:226-230. pTokens minted lesser, seen the will be as Consequently, the same amount of collateral deposited will result in dierent amounts of pTokens minted when the liquidity index exceeds Decimal::one(), resulting in the pToken's total supply to grow at a slower pace than the collateral deposits, ultimately causing the maximum deposit limit to be surpassed. Please see the test_deposit_limit_is_broken_poc test case in the appendix to reproduce this issue.",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "14. Premium slot validation is voided",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/SendIt/2024-09-25 Audit Report - SendIt Contracts v1.0.pdf",
+        "body": "In contracts/liquidation-queue/src/contract.rs:546-548, the submit_bid function does not return an error if the provided premium slot is invalid. This is because StdError is simply instantiated but not returned. Consequently, users can submit bids with the premium slot greater than the maximum slot, causing their bids not to be utilized for liquidation in line 980, ultimately risking the protocols solvency as the liquidation-queue contract fails to liquidate undercollateralized positions from the bl-market contract.",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "15. Free and instant bid retractions create risk-free prot vectors for well-funded attackers",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/SendIt/2024-09-25 Audit Report - SendIt Contracts v1.0.pdf",
+        "body": "users in retract Allowing contracts/liquidation-queue/src/contract.rs:836 generates the possibility for well-capitalized actors to place spoof bids to ll up the 0% discount slot to discourage other users from depositing into any bid pool. instantly bids to This may allow attackers with big capital to front-run liquidations by lowering their bids from a 0% discount to the lowest possible slot in which their capital will be utilized, eectively increasing the price discount received for minimal operational gas cost. Consequently, users with small capital will be disincentivized from depositing funds to the liquidation-queue contract as they will receive zero prot, allowing the attacker to receive most of the liquidation prots. This risks the protocols solvency as the attacker has the majority control over the liquidation bidding mechanism. For example, if the attacker decides to retract all their bids during a market crash, borrowers with undercollateralized positions will not be liquidated on time, causing a loss of funds for lenders.",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "16. Linear premium slots might lead to suboptimal risk of liquidator incentives",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/SendIt/2024-09-25 Audit Report - SendIt Contracts v1.0.pdf",
+        "body": "The premium slots of the liquidation queue contract that discount the price of the collateral of limits the liquidatable positions are congured linearly. This is problematic because it customizability of the protocol and liquidation queue  particularly for larger positions of downward-trending collateral. Typically, one would assume that for relatively stable assets/collateral, very small steps would already incentivize participation from liquidators. In contrast, larger steps may be needed to incentivize participation for more volatile collaterals. However, when collateral depegs or the overall market sentiment changes, it transitions from a stable to an unstable market. A linear premium slot design is insucient for such scenarios and assets because it would require smaller and larger steps. The rst slots may contain small discounts, while those closer to the maximum could contain larger discounts for collateral under heavy distress.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "17. Missing validation when updating congurations",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/SendIt/2024-09-25 Audit Report - SendIt Contracts v1.0.pdf",
+        "body": "The following instances illustrate missing validation in the codebase:  The liquidation_bonus in contracts/bl-market/src/execute.rs:276 is not validated as in line 396 to ensure the values are within the logical cause the LiquidateDirect message to fail. range, which may parameter  The CONFIG in contracts/liquidation-queue/src/contract.rs:53 is not validated as in line 483, which may cause invalid market and oracle timeframes to be congured.  The target_health_factor parameter is not validated to be greater than or equal to 100% in packages/bl-core/src/bl_market/mod.rs:118, which may cause the borrower to be liquidated more than once. struct  The protocol_liquidation_fee parameter is not validated to be lower than 100% in packages/bl-core/src/bl_market/mod.rs:118, which may cause the LiquidateDirect message to fail. We classify this issue as minor because it can only be caused by a misconguration from the contract owner, which is a privileged address.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "18. Non-existing price sources can be removed",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/SendIt/2024-09-25 Audit Report - SendIt Contracts v1.0.pdf",
+        "body": "In contracts/oracle/src/contract.rs:150, the remove_price_source function does not ensure the provided denom exists in the PRICE_SOURCES state before removing it. This would result in a no-op operation instead of returning an error because the remove function does not check whether the key exists in the storage, potentially confusing users as they believe the denom is a valid key inside the PRICE_SOURCES map.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "19. Lack of a secondary fallback price feed oracle",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/SendIt/2024-09-25 Audit Report - SendIt Contracts v1.0.pdf",
+        "body": "The codebase depends on a single oracle contract with no backup oracles implemented. If the oracle's price is stale, the protocol operations will be incorrect and eventually suspended. It is best practice to congure a backup oracle.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
     }
 ]
