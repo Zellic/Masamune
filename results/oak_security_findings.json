@@ -18043,5 +18043,167 @@
             "Oak Security",
             "Severity: Informational"
         ]
+    },
+    {
+        "title": "1. Excess reward distribution due to incorrect reserve shares calculation",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Amulet/2024-01-08 Audit Report - Amulet v1.0.pdf",
+        "body": "In crates/core/hub/position.rs:286, the reserve_shares_payment value is calculated by subtracting amo_shares_allocation from total_issued_shares. This is problematic because total_issued_shares denotes the total shares within the protocol, not the excess shares intended to be distributed to depositors. Since the contract does not hold the actual reward amounts, users will unknowingly withdraw from other depositors balances once the accrued rewards have been exhausted. Consequently, late-withdrawal users will be unable to withdraw due to insucient funds, ultimately risking the protocols solvency.",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "2. Repaying and redeeming synthetic tokens does not normalize decimals to primary deposit asset",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Amulet/2024-01-08 Audit Report - Amulet v1.0.pdf",
+        "body": "the amount In crates/core/hub/position.rs:1221 and lines 1617-1634, parameter denominated in synthetic tokens is used to repay debt and redeem underlying assets. This is problematic because the users debt and reserve redeemable are denominated in the primary deposit asset, not the synthetic token asset. Since the synthetic token and primary deposit asset might have dierent decimal values, the sent amount should be normalized to the correct decimal before decreasing the users debt the mint_synthetic function in or crates/core/hub/position.rs:968-985 normalizes the primary deposit asset decimals to synthetic token decimals before minting them to the user. redeeming the underlying assets. For example, Due to this misalignment, users will repay more debt with fewer funds and redeem more underlying assets if the number of synthetic token decimals is higher than that of the primary deposit asset. Conversely, if the synthetic token decimals are fewer than the primary deposit asset, users will still have outstanding debt even after repaying in full and redeeming fewer underlying assets.",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "3. Unimplemented oracle querying feature",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Amulet/2024-01-08 Audit Report - Amulet v1.0.pdf",
+        "body": "The advance_fee_rate function is expected to query the fee rate through the congured oracle address the function seems to be pending development as it only contains an unimplemented exception. in crates/cosmwasm/vanilla/hub.rs:153-159. However, Oracle features are usually error-prone and should be reviewed with care. Although not a security issue, this nding has been raised as a minor risk to highlight the dangers of this functionality not undergoing thorough auditing.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "4. Potential bypass of access control in the hub contract",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Amulet/2024-01-08 Audit Report - Amulet v1.0.pdf",
+        "body": "The hub contract has implemented several access controls that the contract admin can manage. These controls are designed to limit certain actions within the contract. However, these restrictions may be bypassed through alternative entry points, thus circumventing the defenses. Specically, the ConvertCredit message allows users to convert their credit into collateral, subsequently increasing their collateralized debt position. This function might bypass the intended restrictions set by the VAULT_DEPOSITS_ENABLED storage state and deposit proxy. For instance, this could occur if the intended function of disabling a deposit is to prevent users from increasing their collateral or if the deposit proxy is specically designed to limit collateral increases. Similarly, the SelfLiquidate message allows users to fully liquidate their positions, receiving funds in synthetic tokens or primary deposit assets. This function might bypass the if the redeem proxys intended restrictions for the redeem and mint proxy. For example, purpose is to ensure that only the proxy can redeem underlying assets or if the mint proxys purpose is to ensure that only the proxy can mint new synthetic tokens. Consequently, restrictions set by the contract admin may be circumvented, potentially leading to unintended consequences.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "5. Potential out-of-gas in AllVaults query",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Amulet/2024-01-08 Audit Report - Amulet v1.0.pdf",
+        "body": "In crates/core/hub/query.rs:75-79, the AllVaults query message iterates through and returns all vaults registered in the hub contract. If many vaults are registered, the query might fail due to an out-of-gas error.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "6. Smart queries expose insucient contract storage states",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Amulet/2024-01-08 Audit Report - Amulet v1.0.pdf",
+        "body": "The hub and vault contracts query messages expose minimal contract storage states. reserve reserve shares, Important redeemable, total deposits, and total shares are not exposed through smart queries. information such as the contract admin address, Consequently, users and other smart contracts must perform raw queries to fetch these values, decreasing user experience and tying queries to the underlying storage implementation, which is error-prone.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "7. Duplicated authorization code",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Amulet/2024-01-08 Audit Report - Amulet v1.0.pdf",
+        "body": "The set_admin function includes duplicated code in crates/core/admin.rs:40-47, which is the same code as the authorize function. We classify this issue as an informational maintainability, which could be error-prone. issue because duplicated code impacts",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "8. Repeated validation on callback handling",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Amulet/2024-01-08 Audit Report - Amulet v1.0.pdf",
+        "body": "The deposit_callback and sync_callback functions validate that the vault contract has the strategy and share asset contracts congured in storage at the beginning of their execution in crates/core/vault/holdings.rs:495-501 and lines 581-583. These same checks are already performed at the beginning of the deposit and synchronization execution ows. However, it is not possible to have them unset before the reply is handled by the mentioned functions, therefore making them redundant. A similar instance was found in crates/core/hub/position.rs:1129, aecting the validation of the advance feature being enabled. We classify this issue as an informational increases gas costs. issue because repeated code unnecessarily",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "9. Unoptimized deposit asset validation",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Amulet/2024-01-08 Audit Report - Amulet v1.0.pdf",
+        "body": "Validation on the received collateral asset is not done in the hub or vault contracts. Therefore, it will cause an error in a later stage of the execution ow, unnecessarily wasting gas. if an incorrect asset is submitted, The following Core messages of the hub contract are aected:  CoreMsgKind::MintOnBehalf  CoreMsgKind::Mint  CoreMsgKind::Repay  CoreMsgKind::DepositOnBehalf  CoreMsgKind::Deposit",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "10. Contracts should implement a two-step ownership transfer",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Amulet/2024-01-08 Audit Report - Amulet v1.0.pdf",
+        "body": "The contracts within the scope of this audit allow the current owner to execute a one-step ownership transfer. While this is common practice, it presents a risk for the ownership of the contract to become lost if the owner transfers ownership to the incorrect address. A two-step ownership transfer will allow the current owner to propose a new owner, and then the account that is proposed as the new owner may call a function that will allow them to claim ownership and actually execute the cong update.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "11. Overow checks are not enabled for the release prole",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Amulet/2024-01-08 Audit Report - Amulet v1.0.pdf",
+        "body": "The following packages and contracts do not enable overflow-checks for the release prole:  contracts/vanilla-cw/amulet-hub/Cargo.toml  contracts/vanilla-cw/amulet-mock-strategy/Cargo.toml  contracts/vanilla-cw/amulet-vault/Cargo.toml  crates/core/Cargo.toml  crates/cosmwasm/api/Cargo.toml  crates/cosmwasm/iface/Cargo.toml  crates/cosmwasm/parse/Cargo.toml  crates/cosmwasm/vanilla/Cargo.toml  crates/storage/Cargo.toml  xtask/Cargo.toml While enabled implicitly through the workspace manifest, future refactoring might break this assumption.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "12. Misleading comments in the codebase",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Amulet/2024-01-08 Audit Report - Amulet v1.0.pdf",
+        "body": "The hub contract included detailed comments on the user who is expected to interact with some of the functions. Several of them detailed that the function should return an error if The sender is not the vault creator or admin. Although not a security issue, this is misleading for the current implementation because both the vault creator and the admin are the same address. Therefore, referencing the same role twice. The aected comments can be found in lines crates/core/hub/config.rs:336, 362, 395, 423, 451, 479, 507, 535, 581, 609, 637, 665, and 693. the allocate_dormant_state_surplus function includes the following Similarly, the in crates/core/hub/position.rs:743: Returns the total value of comment Reserves payment, if any. This is incorrect as the function only allocated surplus to the treasury contract. Therefore, it only returns Ok(None), and it is not possible to perform any reserve payment.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "1. Unusable Reconcile and ReceiveUnbonded messages break the reconciliation process",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Amulet/2024-02-07 Audit Report - Amulet Neutron PoS Strategy v1.0.pdf",
+        "body": "In contracts/strategy/neutron-pos/msg.rs:69-74, the strategy contract allows calling the Reconcile and ReceiveUnbonded messages. However, both messages in the cannot contracts/strategy/neutron-pos/contract.rs:225-227. validation currently permits only the Deposit and Donate messages to attach funds and triggers an error if funds are attached to other messages. validation The properly called due be to to funds require This becomes problematic because both the Reconcile and ReceiveUnbonded in be messages receiving the contracts/strategy/neutron-pos/execute.rs:430 unbonding in function line contracts/strategy/neutron-pos/msg.rs:106 does not consider Reconcile and in leading ReceiveUnbonded contracts/strategy/neutron-pos/contract.rs:226 if funds are attached to these messages. to or when is_payable Furthermore, messages, \"payable\" attached amount cover error 457. fees the an as to in Consequently, the reconciliation process cannot be triggered because Neutron IBC fees cannot be sent, and the unbonded funds cannot be sent back to the contract, preventing the contract from working as expected.",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "2. Pending deposits are incorrectly deducted twice and stuck in contract",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Amulet/2024-02-07 Audit Report - Amulet Neutron PoS Strategy v1.0.pdf",
+        "body": "In contracts/strategy/neutron-pos/reconcile/state_machine.rs:156, the the function restart_delegate_tx ReducePendingDepositByInflightDeposit command with the in-ight deposit for amount when is StrategyState::NoDeposits. This is problematic because the pending deposit DelegateTx::Failed reconciliation retrying phase calls the already contracts/strategy/neutron-pos/reconcile/state_machine.rs:125. TransferTx::Pending reduced phase, during the as seen in Consequently, DelegateTx::Pending keeps failing, causing users' deposits to be stuck in the contract. deposits will repeatedly deducted pending the be if the",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "3. The delegation slot is not decreased when losses are detected",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Amulet/2024-02-07 Audit Report - Amulet Neutron PoS Strategy v1.0.pdf",
+        "body": "In contracts/strategy/neutron-pos/reconcile/state_machine.rs:371-381, the start_reconcile_process function determines whether a loss has occurred (i.e., slashing penalty applied to the validator) by checking the dierence between queried delegation balance and expected delegation balance. The expected delegation balance comes in contracts/strategy/neutron-pos/reconcile.rs:470, which records the amount of funds delegated. slot_delegated function from the The problem occurs when a slashing penalty occurs, and the delegation amount is not deducted from the detected_loss amount. The IncreaseDetectedLosses command does not handle this, as it only increases the slot_detected_losses for the total deposits to be synced later. Assume a scenario where there is a delegation of 100 funds. In the rst reconciliation, a slashing penalty of 10 is applied, and the remaining funds delegated on-chain is 90 (100-90). However, the slot_delegated amount remains at 100. In the second reconciliation, no slashing action occurred, so the ICQ result returns 90. This is problematic because the reconciliation process will compute the detected loss to be 10 in (100-90) The contracts/strategy/neutron-pos/reconcile/state_machine.rs:376. correct detected loss value should be 0 because no slashing penalty is actually applied. Consequently, the detected loss will be incorrect, causing a loss of funds for the users.",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "4. Reconciliation height is not updated after completion",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Amulet/2024-02-07 Audit Report - Amulet Neutron PoS Strategy v1.0.pdf",
+        "body": "after_withdraw_tx In contracts/strategy/neutron-pos/reconcile/state_machine.rs:469-473, the function the the SetLastReconcileHeightToCurrentHeight ActiveDepositsPhase to Idle. This is problematic because when the reconciliation process is called again, the start_reconcile_process function in line 343 will use the outdated last_reconcile_height value, causing the fees computation, loss detection, and unbonded requests to be triggered again. does command call setting not when Consequently, triggering reconciliation with the outdated reconciled height will cause larger fees to be computed, excess deduction of slashing penalty, and unnecessary unbonded requests to be issued, resulting in a loss of funds.",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "5. Excess funds consumed due to storage not being cleared",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Amulet/2024-02-07 Audit Report - Amulet Neutron PoS Strategy v1.0.pdf",
+        "body": "In contracts/strategy/neutron-pos/reconcile/state_machine.rs:623-627, the restart_delegate_tx function sets the in-ight deposit to include the fees if the fee recipient is not specied. This happens during the DelegateTx::Failed phase with pending in-ight deposits and fees. The issue is that the fee is not cleared after adding to the in-ight deposit. Assume the rst reconciliation is called with an invalid fee recipient on the remote chain, so it fails. In the second reconciliation call, the reconciler does not provide the fee recipient. This causes the in-ight deposit amount to be updated to include the fees, as seen in line 626. The second reconciliation fails, and a third reconciliation is required. Since the in-ight fees are not removed from the storage, and the in-ight deposit includes it, excess funds will be sent to the remote chain in line 632 if the reconciler provides a fee recipient or line 627 if not. Consequently, the sent funds will unknowingly consume excess ICA balance instead of the delegation rewards, potentially causing the TransferInflightUnbonded command to fail due to insucient funds.",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "6. Interchain accounts cannot be accessed if the channel closes",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Amulet/2024-02-07 Audit Report - Amulet Neutron PoS Strategy v1.0.pdf",
+        "body": "The strategy contract creates interchain accounts on the remote chain for each validator to perform staking operations. The interchain messages will be processed in the same order ow due to the ordered channel and close if an error occurs in the sudo handler or a timeout occurs. since there are no entry points The issue arises the RegisterInterchainAccount message to recover access to the interchain account in case the channel closes. This can happen when the SudoMsg::Timeout message gets entered or when the reconcile function called by the handle_response function fails, see contracts/strategy/neutron-pos/sudo.rs:116. the admin to call for Consequently, the admin cannot recover access to the interchain account, preventing the protocol from working as expected.",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
     }
 ]
