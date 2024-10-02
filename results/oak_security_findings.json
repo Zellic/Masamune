@@ -18205,5 +18205,50 @@
             "Oak Security",
             "Severity: High"
         ]
+    },
+    {
+        "title": "1. ASTRO pools can be voted for emissions",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Astroport/2024-08-20 Audit Report - Astroport vxASTRO Updates v1.0.pdf",
+        "body": "In the contracts/emissions_controller/src/execute.rs:211-221, whitelist_pool function returns an error if the pool is one of the outposts ASTRO pools. This means that if an ASTRO pool is congured in the outposts, the pool cannot be voted on because they already receive at emissions, as indicated by the comment in line 211. However, this validation can be bypassed if a user whitelists the pool before the contract owner updates the pool via the update_outpost function. This causes the pool to remain whitelisted, and users can vote on it to receive emissions. Consequently, in contracts/emissions_controller/src/execute.rs:211-221 is not enforced, allowing the pool to receive voted and at emissions, which is not the protocols intended behavior. validation the",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "2. The QueryWhitelist query might run out of gas",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Astroport/2024-08-20 Audit Report - Astroport vxASTRO Updates v1.0.pdf",
+        "body": "In contracts/emissions_controller/src/query.rs:101 the QueryWhiteList returns all whitelisted pools. Since pool creation is permissionless, there is no limit to the number of existing pools. Therefore, the whitelist may become very long, either due to a malicious actor or due to organic growth. In such a case, the query may not be able to complete due to exceeding the gas limit. Although this does not impact any other existing protocol logic, aside from this query itself, it can have security implications for other protocols using this query.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "3. Previous owner retains contract migration privileges",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Astroport/2024-08-20 Audit Report - Astroport vxASTRO Updates v1.0.pdf",
+        "body": "contracts/emissions_controller/src/instantiate.rs:98 and In contracts/emissions_controller_outpost/src/instantiate.rs:57, the voting escrows contract migration admin is set to the emission controllers contract owner. This is problematic because the emission controllers contract owner may be transferred via the ProposeNewOwner and ClaimOwnership messages, but the previous owner retains contract migration permission. If the previous owner is compromised or malicious, the voting escrow contract can be migrated into a malicious code ID to steal users' funds. We classify this issue as minor because it can only be caused by the contract owner, which is a privileged account.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "4. Multiple storage states are not exposed through smart queries",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Astroport/2024-08-20 Audit Report - Astroport vxASTRO Updates v1.0.pdf",
+        "body": "In multiple contracts, the query entry points do not expose some storage state values through smart queries. This forces third-party contracts and nodes to perform a raw query to read the stored value, which is error-prone and decreases user experience. Occurrences:  OWNERSHIP_PROPOSAL in contracts/emissions_controller/src/state.rs  OWNERSHIP_PROPOSAL, REGISTERED_PROPOSALS and PROPOSAL_VOTERS in contracts/emissions_controller_outpost/src/state.rs",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "5. Inconsistent documentation",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Astroport/2024-08-20 Audit Report - Astroport vxASTRO Updates v1.0.pdf",
+        "body": "contracts/assembly/src/contract.rs:86 a In Cw20ReceiveMsg should be processed. However, the contract code does not contain any logic to support such operation. comment states that a Additionally, CastVoteOutpost ExecuteMsg is not present in the comments between lines 82 and 104, describing all available functionalities.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
     }
 ]

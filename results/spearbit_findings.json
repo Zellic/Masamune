@@ -30918,5 +30918,125 @@
             "LooksRare",
             "Severity: Informational"
         ]
+    },
+    {
+        "title": "Permissions can drain approvals given to certain paymasters",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Session-Keys-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The Smart Wallet Permissions system requires all user operations utilize an allowlisted paymaster. This is because without this requirement, a permission could arbitrarily use the Smart Wallets ETH for gas fees, which would increase the trust needed for each permission. Currently, paymaster allowlisting is enforced via the isPaymasterEnabled mapping, which is checked in the be- foreCalls() function: function beforeCalls(Permission calldata permission, address paymaster, address userOpCosigner) external whenNotPaused { } //... if (!isPaymasterEnabled[paymaster]) revert DisabledPaymaster(paymaster); // ... Note that the beforeCalls() function is invoked during the execution phase of the user operation, which implies a non-allowlisted paymaster can successfully pass the validateUserOp() step of the ERC-4337 transaction. This poses a problem, because some paymasters are authorized to debit the account as long as the validation phase succeeds. For example, some ERC20 paymasters are designed to withdraw ERC20 tokens from the account in exchange for covering transaction fees. These paymasters will always charge the account if the validation phase succeeds, regardless of whether the execution phase is successful. As a result, if an account has pre-approved a paymaster outside of the Smart Wallet Permissions system, any of its permissions could potentially drain the pre-approved balance. This would be achieved by using the paymaster during the validation phase, even though it will fail the beforeCalls() step later. Since the paymaster would still charge the user, and since the permission could set excessively high gas costs, the accounts balance that it has pre-approved could be drained quickly. Note that this behavior is not preventable by the cosigner, since the cosigner check is also in the execution phase.",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Session-Keys",
+            "Severity: High Risk"
+        ]
+    },
+    {
+        "title": "No user-control on what selector is called on an external contract allowed under a session key",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Session-Keys-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The validatePermission() function only checks that the primary selector is permissionedCall() (as the overall call is wrapped with this selector before sending the userOp), but there are no user-level controls on what selector is actually going to be called on the allowedContract. The external contract having permissionedCall is a system-wide requirement (for the current permission contract) but the user has no say in what function gets called inside the permissionedCall() [ie. the self-delegatecall part]. So, a session key might convince a smart account to sign a permission to call allowedContract by telling them that they are going to call only function A, but there can be a problem if there are multiple functions in the allowed- Contract that have different capabilities. For example, if the user believes the session key will only be allowed to stake ETH, but it actually sends a trans- action encoding a call to lend ETH, the call will go through. If the user is not aware of this behavior, they may be surprised by this. This is possible if the allowedContract supports multiple selectors under permissionedCall().",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Session-Keys",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "MagicSpend.withdraw() calls are exposed to frontrun attacks",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Session-Keys-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The protocol supports the magicSpend.withdraw() permission call. } else if (selector == MagicSpend.withdraw.selector) { // check call target is MagicSpend if (call.target != magicSpend) revert CallErrors.TargetNotAllowed(call.target); // parse MagicSpend withdraw request MagicSpend.WithdrawRequest memory withdraw = abi.decode(BytesLib.trimSelector(calls[i].data), (MagicSpend.WithdrawRequest)); // check withdraw is native token if (withdraw.asset != address(0)) revert InvalidWithdrawAsset(withdraw.asset); magicSpend.withdraw() call needs to include signature in the WithdrawRequest param and the signature will be consumed. For a given signature, as long as the call is sent from the same smart wallet, the call is valid. 5 function withdraw(WithdrawRequest memory withdrawRequest) external { if (block.timestamp > withdrawRequest.expiry) { revert Expired(); } if (!isValidWithdrawSignature(msg.sender, withdrawRequest)) { revert InvalidSignature(); } _validateRequest(msg.sender, withdrawRequest); // ... function _validateRequest(address account, WithdrawRequest memory withdrawRequest) internal { if (_nonceUsed[withdrawRequest.nonce][account]) { revert InvalidNonce(withdrawRequest.nonce); } uint256 maxAllowed = address(this).balance / maxWithdrawDenominator; if (withdrawRequest.asset == address(0) && withdrawRequest.amount > maxAllowed) { revert WithdrawTooLarge(withdrawRequest.amount, maxAllowed); } _nonceUsed[withdrawRequest.nonce][account] = true; When the user approves Apps, App's permission calls are sent from that user's smart wallet, and when one App's permission calls include MagicSpend.withdraw(), the signature in the WithdrawRequest param is public, which give other App's permission calls the opportunity to include that MagicSpend.withdraw() call. Consider the following case: 1. The user approves App1 and App2, App2 does not spend any funds, App1 needs some funds initially, so the user provides a MagicSpend signature to allow App1 to withdraw the funds. 2. App1 constructs the user operation A, which wants to call magicSpend.withdraw() to withdraw funds and perform subsequent spend calls. 3. The misbehaving App2 constructs the user operation B, which includes the magicSpend.withdraw() call with the signature from user operation A. 4. User operation B is packaged by the Bundlers earlier, so that user operation A fails and the withdrawn funds remain in the smart wallet instead of being spent. 5. And worse, if App2 is approved to spend funds but has no funds in the smart wallet, App2 may spend those withdrawn funds instead of App1.",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Session-Keys",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "bytes4 casting can be unsafe",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Session-Keys-Spearbit-Security-Review-September-2024.pdf",
+        "body": "There are three locations in the codebase where bytes values representing calldata are typecast to bytes4 to determine the function selector of a call. These locations are: 1. The isValidSignature() function within the PermissionManager contract: if (bytes4(data.userOp.callData) != CoinbaseSmartWallet.executeBatch.selector) { revert CallErrors.SelectorNotAllowed(bytes4(data.userOp.callData)); } 2. The validatePermission() function within the PermissionCallableAllowedContractNativeTokenRecur- ringAllowance contract: bytes4 selector = bytes4(call.data); if (selector == IPermissionCallable.permissionedCall.selector) { // ... } else if (selector == MagicSpend.withdraw.selector) { // ... } else { revert CallErrors.SelectorNotAllowed(selector); } 3. The permissionedCall() function within the PermissionCallable contract: if (call.length < 4) revert InvalidCallLength(); if (!supportsPermissionedCallSelector(bytes4(call))) revert NotPermissionCallable(bytes4(call)); In general, note that the conversion of a bytes value shorter than 4 bytes into a bytes4 value will not revert, and will instead add extra zero bytes as padding. For example, consider the following test case: // SPDX-License-Identifier: MIT pragma solidity ^0.8.23; import {Test} from \"forge-std/Test.sol\"; contract Bytes4Casting is Test { function test_bytes4_casting() public pure { bytes memory data = hex\"112233\"; bytes4 sig = 0x11223300; assertEq(data.length, 3); assertEq(bytes4(data), sig); } } This behavior is not a concern in location (3) above, due to the explicit length check. In location (1), the bytes are later decoded in a way that will revert if shorter than 4 bytes, which also mitigates any risk. However, in location (2), there is technically nothing preventing the bytes value from being less than 4 bytes in length. If either IPermissionCallable.permissionedCall.selector or MagicSpend.withdraw.selector had trailing zero bytes, it's possible that a shortened bytes value could be implicitly padded and would match the overall selector. This would introduce other concerns since when the call executes later on, it would reach the contract's fallback function instead of the function that was expected. Fortunately, Magic- Spend.withdraw.selector is 0xd833cae, so there are no trailing zeroes and this is not an issue. However, to be safer, this behavior could be eliminated entirely IPermissionCallable.permissionedCall.selector 0x2bd1b86d and is 7",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Session-Keys",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Cosigner signatures are not revocable",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Session-Keys-Spearbit-Security-Review-September-2024.pdf",
+        "body": "Cosigner signatures are not revocable. In the event of a delay before a transaction is included in a block, and new information surfaces such as a contract upgrade, a revocation may be desirable.",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Session-Keys",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Cosigner event exclusions are limited",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Session-Keys-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The cosigner signing is handed by a backend service monitoring for unintended transactions that may move value away from a Smart Wallet account. In the project briefing and documentation, Coinbase notes that simulations will look for logs matching ERC20/ERC721/ERC1155 transfer logs where the from argument is the user s address (userOp.sender); similarly for approvals.  There may be value transfer events not covered with the cosigner relying on Transfer/Approve events for its veto. Examples include an orderbook already approved by the Smart Wallet, session keys can create unfavorable orders. Other admin functions like Ownable2Step won't emit Transfer/Approve events but are not likely to be desirable calls from a permissioned signer.",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Session-Keys",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "lastCycleExists can be simplified",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Session-Keys-Spearbit-Security-Review-September-2024.pdf",
+        "body": "Checking that start != 0 is enough to determine if the last cycle existed. In case that start > 0, the end will automatically be initialized as a non-zero value(using start value) as seen in the else branch here. If spend == 0 or spend > 0 also does not impact the logic of determining if a last cycle existed. This is because the cycle is only cached in storage if the spend value is non-zero.",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Session-Keys",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Documentation errors",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Session-Keys-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The code comments are wrong at some places: 1. Wrong comment for event RecurringAllowanceInitialized(). Should be ) Register native token al- lowance for a permission. 2. Wrong comment for _getCurrentCycleUsage() function. Should be ) n*recurringAllowance.period - 1. 3. Wrong comment for validatePermission() function. Should be ) Offchain userOp construction should append useRecurringAllowance call to calls array. 4. Wrong comment for revokePermission() function. Remove it. 5. Confusing comment for setPaymasterEnabled() function. Remove it as the intention is to ban no-paymaster ops at the manager level. For more consistency, also add a check that address(0) can't be enabled as a paymaster here. 6. Wrong comment for isValidSignature() function. Should be ) Verifies that userOp.calldata calls CoinbaseSmartWallet.executeBatch.",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Session-Keys",
+            "Severity: Informational NativeTokenRecurringAllowance.sol#L181,"
+        ]
+    },
+    {
+        "title": "getRequiredPrefund() can be removed",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Session-Keys-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The UserOperationLib implements the getRequiredPrefund() function, however this function is not used in the current version of the codebase.",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Session-Keys",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "beforeCalls() and useRecurringAllowance() payable considerations",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Session-Keys-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The beforeCalls() and useRecurringAllowance() functions must be called in a specific manner during the execution phase, which is enforced by checks in the validation phase. The beforeCalls() check is implemented as follows: // check first call is valid if (calls[0].target != address(this) || !BytesLib.eq(calls[0].data, beforeCallsData)) { self.beforeCalls   revert InvalidBeforeCallsCall(); } The useRecurringAllowance() check is implemented similarly: 10 // check last call is valid CoinbaseSmartWallet.Call memory lastCall = calls[callsLen - 1]; if (lastCall.target != address(this) || !BytesLib.eq(lastCall.data, useRecurringAllowanceData)) { this.useRecurringAllowance   revert InvalidUseRecurringAllowanceCall(); } Notice that neither check enforces that the ETH value of the call is 0. This makes it crucial that neither before- Calls() nor useRecurringAllowance() are defined as payable functions. Otherwise, ETH could be transferred by permissions in an untracked manner. Fortunately, both beforeCalls() and useRecurringAllowance() are indeed not defined as payable, so there is no issue.",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Session-Keys",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Permissions cannot be un-revoked and must be recreated with modified Permission",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Session-Keys-Spearbit-Security-Review-September-2024.pdf",
+        "body": "Permission revocation cannot be undone. Not a problem for currently supported permissions as the start time can be changed to re-enable. For future permissions, users attempting to re-enable an identical permission to a previously revoked one will need to select a new expiry timestamp to produce a unique permissionHash.",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Session-Keys",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "CoinbaseSmartWallet and similar contract accounts cannot be a permission signer",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Session-Keys-Spearbit-Security-Review-September-2024.pdf",
+        "body": "permission.signer cannot be a standard CoinbaseSmartWallet as its own storage is not keyed by the user address. No issue identified as simulation will fail and the transaction would be dropped by the bundler.",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Session-Keys",
+            "Severity: Informational"
+        ]
     }
 ]
