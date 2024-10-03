@@ -31038,5 +31038,225 @@
             "Coinbase-Session-Keys",
             "Severity: Informational"
         ]
+    },
+    {
+        "title": "Malicious Restoration Servers can replay RestoreData messages and drain accounts",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Overprotocol-Spearbit-vCISO-May-2024.pdf",
+        "body": "The RestoreData struct does not have a nonce and is not rooted to the first RestorationTX that uses it in any way. There is also nothing in the EVM that prevents successfully processing a RestorationTX for a non-dormant account. These factors contribute to a situation that allows for malicious restoration servers to make as many RestorationTX transactions as is needed to drain the account of any user that makes a requestRestora- tion API call.",
+        "labels": [
+            "Spearbit",
+            "Overprotocol",
+            "Severity: Critical Risk"
+        ]
+    },
+    {
+        "title": "Prefunded contracts can permanently lose funds if account becomes dormant before code is de- ployed",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Overprotocol-Spearbit-vCISO-May-2024.pdf",
+        "body": "Contracts that receive funds before they are deployed can permanently lose the funds if the account goes dormant before the contract is deployed. It is not an uncommon pattern for people to prefund contracts whose addresses are known ahead of time (via CREATE2). The issue is that once the contract is deployed there is no way for a restorationTX to restore the account because of the common.BytesToHash(account.CodeHash) != types.EmptyCodeHash check in (evm *EVM) verifyRestorationProof(). If a restorationTX is made on behalf of the contract's address before it is deployed then the funds will be saved. If any funds are dormant and are not restored prior to the contract deployment then they will be forever lost.",
+        "labels": [
+            "Spearbit",
+            "Overprotocol",
+            "Severity: Critical Risk"
+        ]
+    },
+    {
+        "title": "Malicious request could burn restoration server gas fees",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Overprotocol-Spearbit-vCISO-May-2024.pdf",
+        "body": "The GetRestorationProof function does not check if it is creating a proof for a contract address, while the Restore transaction will fail to verifyRestorationProof if Target is a contract address. Without this check, a malicious actor could request restorations for a contract address that the restoration server recognizes as valid, since GetRestorationProof would return a valid restoration proof without checking if it's a contract. The restoration server would then send Restore transactions to the EVM which would inevitably fail due to the Target being a contract. This would result in the restoration server losing its gas fees without any reprecussions to the original requester. This would result in a scenario where a malicious actor could forcibly burn the entire balance on any restoration server.",
+        "labels": [
+            "Spearbit",
+            "Overprotocol",
+            "Severity: Critical Risk"
+        ]
+    },
+    {
+        "title": "Malicious request can crash the restoration server",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Overprotocol-Spearbit-vCISO-May-2024.pdf",
+        "body": "An attacker can send a request to a restoration server with a nil Fee which causes it to panic via nil dereference. We believe the authors were working under the assumption that the gencodec:\"required\" struct tags would ensure required fields are non-nil, but this does not apply to JSON deserialization. Here's a simple proof of concept: package main import ( \"fmt\" \"github.com/gofiber/fiber/v2\" \"math/big\" ) type Foo struct { Fee *big.Int }  json:\"fee\" gencodec:\"required\"  func main() { app := fiber.New() app.Post(\"/foo\", func(ctx *fiber.Ctx) error { foo := new(Foo) if err := ctx.BodyParser(foo); err != nil { return ctx.Status(400).SendString(err.Error()) } ret := fmt.Sprintf(\"foo.Fee is %v\", foo.Fee) return ctx.Status(200).SendString(ret) }) fmt.Println(app.Listen(\":3001\")) } A request with a null fee shows that the value can be nil: $ curl -X POST \\ http://localhost:3001/foo \\ -H -d Content-Type: application/json {\"fee\": null}     \\ foo.Fee is <nil>% This matters because when you pass Fee to Cmp, it will panic if Fee is nil. func TestCmpWithNil(t *testing.T) { big.NewInt(64).Cmp(nil) } This test will panic with the following output: TestCmpWithNil === RUN --- FAIL: TestCmpWithNil (0.00s) panic: runtime error: invalid memory address or nil pointer dereference [recovered] panic: runtime error: invalid memory address or nil pointer dereference [signal SIGSEGV: segmentation violation code=0x2 addr=0x0 pc=0x1044cf52c]",
+        "labels": [
+            "Spearbit",
+            "Overprotocol",
+            "Severity: Critical Risk"
+        ]
+    },
+    {
+        "title": "EVM.Restore() gas not consumed on invalid signature",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Overprotocol-Spearbit-vCISO-May-2024.pdf",
+        "body": "(evm *EVM) Restore() does not consume all gas on RestoreData signatures. An attacker can generate incredibly large restorationTXs that will consume the nodes resources validating the restoration server's signature on a large data buffer (eg input/proof). If the RestoreData signature fails then the cost of this large verification will only be the intrinsic gas as the memory cost calculation will never be hit. This will allow for a chain-wide DOS vector that costs almost no gas to implement.",
+        "labels": [
+            "Spearbit",
+            "Overprotocol",
+            "Severity: High Risk"
+        ]
+    },
+    {
+        "title": "Restoration Server result.RestoredBalance nil pointer dereference DoS",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Overprotocol-Spearbit-vCISO-May-2024.pdf",
+        "body": "The restoration server is vulnerable to a nil pointer dereference panic (panic: runtime er- ror: invalid memory address or nil pointer dereference) if its gethclient returns a null json for restora- tionProofResult.RestoredBalance. This will cause a DOS in the restoration server. While the ideal situation is that every restoration server also runs its own gethclient the restoration server does allow remote connections for this service.",
+        "labels": [
+            "Spearbit",
+            "Overprotocol",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "eth_getRestorationProof API exposure possible DoS vector",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Overprotocol-Spearbit-vCISO-May-2024.pdf",
+        "body": "The eth_getRestorationProof API can be computationally intensive. There is no way to prevent queries that set the TargetEpoch to 0 as this may be valid in some settings. The longer the chain is around the more work responding to a query like this will take. This introduces a DoS vector for public RPC servers as long as they cannot turn of this API when providing regular eth APIs.",
+        "labels": [
+            "Spearbit",
+            "Overprotocol",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "ChainID should not be 1",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Overprotocol-Spearbit-vCISO-May-2024.pdf",
+        "body": "There are references in the codebase to Ethereum related bootnode ENRs as well as chainID defaults that are equal to Ethereum mainnet and various testnets.",
+        "labels": [
+            "Spearbit",
+            "Overprotocol",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Enforce EpochLimit value minimum size of 3 on chain creation",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Overprotocol-Spearbit-vCISO-May-2024.pdf",
+        "body": "Each checkpoint block, the chain does through and deletes epochs based on the configured EpochLimit. Any value lower than 3 could delete required data.",
+        "labels": [
+            "Spearbit",
+            "Overprotocol",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Mistake in ENR key for discovery",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Overprotocol-Spearbit-vCISO-May-2024.pdf",
+        "body": "This function will return \"over1\" when it should return \"over\".",
+        "labels": [
+            "Spearbit",
+            "Overprotocol",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Gas checks in Restore should be performed as soon as possible",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Overprotocol-Spearbit-vCISO-May-2024.pdf",
+        "body": "Gas checks should be done as soon as possible to avoid unnecessary work. There are some operations, like a signature validation, prior to the gas checks. Additionally, if there were an error in these prior checks, it wouldn't cost the caller anything.",
+        "labels": [
+            "Spearbit",
+            "Overprotocol",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "eth_getRestorationProof will return empty proof",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Overprotocol-Spearbit-vCISO-May-2024.pdf",
+        "body": "If a TargetEpoch is provided to the eth_getRestorationProof that is above the previous Restore- dEpcoh then the API will return an empty proof instead of erroring. This is not be caught in the restoration server logic or in the EVM processing of the RestorationTX. This will result in a waste of gas for the restoration server and the user requesting restoration.",
+        "labels": [
+            "Spearbit",
+            "Overprotocol",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Wrong values are logged if ckptRoot != ckptDiskRoot",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Overprotocol-Spearbit-vCISO-May-2024.pdf",
+        "body": "This checks if ckptRoot matches ckptDiskRoot. If they don't match it logs root and diskRoot.",
+        "labels": [
+            "Spearbit",
+            "Overprotocol",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Value checks in journal should happen after each read",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Overprotocol-Spearbit-vCISO-May-2024.pdf",
+        "body": "In the loadJournal function, there are consecutive Decode's from the rlp Stream followed by con- secutive checks that the values are correct. While the rlp Stream likely has the data buffered from disk, it is good practice to check those values after each read. This will catch failures quickly and prevent any more reads than necessary.",
+        "labels": [
+            "Spearbit",
+            "Overprotocol",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Namespace overriding of keystore package",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Overprotocol-Spearbit-vCISO-May-2024.pdf",
+        "body": "The keystore.NewKeyStore value is assigned to variable keystore. This assignment overrides the keystore package namespace in the main function. This will result in being unable to use the keystore package in the future and may result in unexpected behavior if attempting to do so.",
+        "labels": [
+            "Spearbit",
+            "Overprotocol",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Nil value on initialization needs comment",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Overprotocol-Spearbit-vCISO-May-2024.pdf",
+        "body": "On initialization in the New function, if currentEpoch == 0, then the ckptTrie value will remain nil. This value is correctly checked for nil values everywhere it is used, but there is nothing indicating that this value could be nil.",
+        "labels": [
+            "Spearbit",
+            "Overprotocol",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Unused function isStale can be removed",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Overprotocol-Spearbit-vCISO-May-2024.pdf",
+        "body": "The function isStale for ckptDiskLayer is never used, and it isn't required for implementing the layer interface.",
+        "labels": [
+            "Spearbit",
+            "Overprotocol",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Slightly misleading documentation for SafeSub32",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Overprotocol-Spearbit-vCISO-May-2024.pdf",
+        "body": "The comment above the function says that it checks for an \"overflow\" when it should say \"underflow\".",
+        "labels": [
+            "Spearbit",
+            "Overprotocol",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "EpochLength could be confused with SweepEpoch",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Overprotocol-Spearbit-vCISO-May-2024.pdf",
+        "body": "EpochLength (size of an epoch value, uint32) could be confused with SweepEpoch (number of blocks in an epoch).",
+        "labels": [
+            "Spearbit",
+            "Overprotocol",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Unused parameters in checkProfitable",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Overprotocol-Spearbit-vCISO-May-2024.pdf",
+        "body": "The checkProfitable helper function does not use ctx or ethclient.",
+        "labels": [
+            "Spearbit",
+            "Overprotocol",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Function unnecessarily returns an error",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Overprotocol-Spearbit-vCISO-May-2024.pdf",
+        "body": "The ProofDB::Put function returns an error, but it will always be nil.",
+        "labels": [
+            "Spearbit",
+            "Overprotocol",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Exported function with an unexported return type",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Overprotocol-Spearbit-vCISO-May-2024.pdf",
+        "body": "NewAlpacaRestoreDataSigner returns an instance of the alpacaRestoreDataSigner struct, which is not exported.",
+        "labels": [
+            "Spearbit",
+            "Overprotocol",
+            "Severity: Informational"
+        ]
     }
 ]
