@@ -31258,5 +31258,665 @@
             "Overprotocol",
             "Severity: Informational"
         ]
+    },
+    {
+        "title": "AxiomV2GnosisHashiAmbHeaderVerifier does not whitelist yaru.adapters()",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-January-2024.pdf",
+        "body": "The _checkL1Broadcaster() function within the onlyFromL1Broadcaster() modifier intends to check that the cross-chain call to updateLatestPmmr() originated from the L1 broadcaster. It does so by throwing the NotBroadcaster() error in the following scenarios:  msg.sender != address(yaru)  yaru.chainId() != SOURCE_CHAIN_ID  yaru.sender() != L1_BROADCASTER While these existing checks are indeed necessary, there's an essential check missing for yaru.adapters(). This function returns the list of oracles that are confirming the legitimacy of the cross-chain message, and without verifying this value, any oracle can be used. As a result, an attacker can validate fake cross-chain messages using their own malicious contracts, which allows them to store arbitrary PMMRs in the system.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Critical Risk"
+        ]
+    },
+    {
+        "title": "Excess ETH sent to AxiomV2Broadcaster won't be refunded to users",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-January-2024.pdf",
+        "body": "If the sum of all bridgePayment values is strictly less than msg.value, the excess ETH won't be returned to the user after the call. Instead, it will be kept in the contract and will sponsor the following users' calls, which results in an unnecessarily expensive call for the naive user.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "State variable visibility can be further restricted",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-January-2024.pdf",
+        "body": "State variables declared with public visibility enforce the creation of corresponding getter functions by the Solidity compiler. In certain cases however, this may be unnecessary and the visibility can be further restricted to internal or private, resulting in a smaller contract bytecode. For instance:  AxiomV2PolygonHeaderVerifier.sol#L14: The constant L2_STATE_SENDER state variable is solely used for internal operations and it does not seem to require public visibility.  RemoteHeaderVerifier.sol#L18: The SOURCE_CHAIN_ID state variable already has a custom getter, namely getSourceChainId. Thus, it is unnecessary for it to have public visibility, as it would generate an additional redundant getter.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Magic number would lead to RetryableData error in Arbitrum's module",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-January-2024.pdf",
+        "body": "The current implementation in BroadcastModule does not include checks for maxGas and gasPrice- Bid being non-set to 1. As per Arbitrum's natspec in createRetryableTicket, setting these values to 1 would lead to a revert with error RetryableData. This behavior might not be immediately apparent to the users, leading to confusion as this function does not include any mention of this magic number. 1 (magic value used to trigger the RetryableData error) * @param gasLimit Max gas deducted from user ,! * @param maxFeePerGas price bid for L2 execution. Should not be set to 1 (magic value used to trigger ,! s L2 balance to cover L2 execution. Should not be set to the RetryableData error) ",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Missing event emission in critical TIMELOCK_ROLE actions within AxiomV2Broadcaster",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-January-2024.pdf",
+        "body": "addChannel() and removeChannel(), critical functions restricted to Axiom's multisig address with TIMELOCK_ROLE, are responsible for adding and removing channels for message passing. To enhance transparency for users, it is advisable to emit corresponding events for these changes. This allows off-chain components to monitor the available channels for message passing.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Unnecessary chainId check on broadcast module constructors",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-January-2024.pdf",
+        "body": "The constructors of various broadcast modules currently include a check to verify that the chainId passed as a constructor argument matches either the mainnet chain id or the testnet chain id. This design allows the same broadcast module to be used for both mainnets and testnets. However, this check can be circumvented by hardcoding chainId and creating distinct contracts for each chain and test chains. For instance, let's consider the OptimismBroadcastModule. It could be refactored into two separate contracts: OptimismMainnetBroadcastModule and OptimismSepoliaBroadcastModule. The constructor for OptimismMain- netBroadcastModule would look like this: constructor(uint64 chainId, address _axiomV2OptimismHeaderVerifier, address l1Messenger) OpStackBroadcastModule(OPTIMISM_CHAIN_ID, _axiomV2OptimismHeaderVerifier, l1Messenger) { } Similarly, a OptimismSepoliaBroadcastModule contract would be defined with the hardcoded chainId as OPTI- MISM_SEPOLIA_CHAIN_ID. Since two contracts need to be deployed in any case (i.e. one for mainnet and the other for the testnet), this approach would save gas on deployment by eliminating the need for the check: if (chainId != OPTIMISM_CHAIN_ID && chainId != OPTIMISM_SEPOLIA_CHAIN_ID) { /*...*/ } This modification comes with the trade-off of having two separate contracts, but it provides gas savings during deployment.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Unnecessary declaration of local variables in _broadcast function",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-January-2024.pdf",
+        "body": "The _broadcast function of a BroadCastModule is responsible for broadcasting a PMMR update to the remote chain. To achieve this, it accepts various parameters, which are handled by each specific module for their corresponding bridge. In certain instances, the locally generated variables during this handling are unnec- essary. The data can be passed directly to function calls in a more readable manner by utilizing named function parameters. Additionally, in some cases, these variables can be passed directly to struct definitions, resulting in a reduced contract size for specific scenarios. Each case is detailed below:  Applying the following change in GnosisHashiAmbBroadcastModule.sol: - bytes memory data = abi.encodeWithSelector(IRemoteHeaderVerifier.updateLatestPmmr.selector, ,! pmmrSize, pmmrHash); Message[] memory messages = new Message[](1); - messages[0] = Message({ to: axiomV2GnosisHashiAmbHeaderVerifier, toChainId: CHAIN_ID, data: ,! data }); to: axiomV2GnosisHashiAmbHeaderVerifier, toChainId: CHAIN_ID, data: /* data */ abi.encodeWithSelector( IRemoteHeaderVerifier.updateLatestPmmr.selector, pmmrSize, pmmrHash + messages[0] = Message({ + + + + + + + + }); ) address[] memory relays = new address[](1); yields the following change of contract size:  Before: Contract Size (kB) Margin (kB) GnosisHashiAmbBroadcastModule 3.119 21.457  After: Contract Size (kB) Margin (kB) GnosisHashiAmbBroadcastModule 3.113 21.463  Applying the following change to PolygonBroadcastModule.sol: - bytes memory data = abi.encode(pmmrSize, pmmrSnapshot); - L1_STATE_SENDER.syncState(axiomV2PolygonHeaderVerifier, data); + L1_STATE_SENDER.syncState({ + + + }); receiver: axiomV2PolygonHeaderVerifier, data: /* data */ abi.encode(pmmrSize, pmmrSnapshot) yields the following change of contract size:  Before: 8  After: Contract Size (kB) Margin (kB) PolygonBroadcastModule 1.586 22.99 Contract Size (kB) Margin (kB) PolygonBroadcastModule 1.526 23.05  Applying the following change ScrollBroadcastModule.sol: - uint256 gasLimit = abi.decode(bridgeMetadata, (uint256)); - bytes memory data = - abi.encodeWithSelector(IRemoteHeaderVerifier.updateLatestPmmr.selector, pmmrSize, ,! pmmrSnapshot); - L1_MESSENGER.sendMessage{ value: bridgePayment }(axiomV2ScrollHeaderVerifier, 0, data, ,! gasLimit, msg.sender); target: axiomV2ScrollHeaderVerifier, value: 0, message: /* data */ abi.encodeWithSelector( + L1_MESSENGER.sendMessage{ value: bridgePayment }({ + + + + + + + + + + }); IRemoteHeaderVerifier.updateLatestPmmr.selector, pmmrSize, pmmrSnapshot ), gasLimit: /* gasLimit */ abi.decode(bridgeMetadata, (uint256)), refundAddress: msg.sender yields the following change of contract size:  Before:  After: Contract Size (kB) Margin (kB) ScrollBroadcastModule 1.867 22.709 Contract Size (kB) Margin (kB) ScrollBroadcastModule 1.829 22.747",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Alternative implementation of Polygon broadcasting",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-January-2024.pdf",
+        "body": "There is an alternative implementation of Polygon cross-chain messaging that allows bypassing the step of being manually registered in Polygon's stateSender system. This alternative implementation is known as \"fx-portal\", and specifically includes the FxRoot contract on Ethereum mainnet and the FxChild contract on Polygon. These contracts have been mapped in the same way the AxiomV2Broadcaster and Ax- iomV2PolygonHeaderVerifier contracts are intended to be mapped (see this transaction). The implementations of both contracts are shown below: that  FxRoot (on Ethereum mainnet): contract FxRoot is IFxStateSender { IStateSender public stateSender; address public fxChild; constructor(address _stateSender) { stateSender = IStateSender(_stateSender); } function setFxChild(address _fxChild) public { require(fxChild == address(0x0)); fxChild = _fxChild; } function sendMessageToChild(address _receiver, bytes calldata _data) public override { bytes memory data = abi.encode(msg.sender, _receiver, _data); stateSender.syncState(fxChild, data); } }  FxChild (on Polygon): contract FxChild is IStateReceiver { address public fxRoot; event NewFxMessage(address rootMessageSender, address receiver, bytes data); function setFxRoot(address _fxRoot) public { require(fxRoot == address(0x0)); fxRoot = _fxRoot; } function onStateReceive(uint256 stateId, bytes calldata _data) external override { require(msg.sender == address(0x0000000000000000000000000000000000001001), \"Invalid ,! sender\"); (address rootMessageSender, address receiver, bytes memory data) = abi.decode(_data, ,! (address, address, bytes)); emit NewFxMessage(rootMessageSender, receiver, data); IFxMessageProcessor(receiver).processMessageFromRoot(stateId, rootMessageSender, data); } } The contracts are essentially wrappers around the stateSender contract. Notably, these contracts are not behind proxies and the state variables can't be changed, introducing no additional trust assumptions compared to using the stateSender directly (note that the stateSender mappings are centralized, posing a potential risk if the bridge changes the mapping; however, this risk is inherent in the current implementation as well). 10 A notable example of a protocol adopting the fx-portal is Uniswap. They've set their V3 factory owner to be this contract that's compatible with the system. And here is a governance call to sendMessageToChild() on the FxRoot (this is what the PolygonBroadcastModule would need to do).",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Trust assumptions regarding broadcastModule",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-January-2024.pdf",
+        "body": "To send the PMMR, AxiomV2Broadcaster._sendPmmr() performs a delegatecall to the broad- castModule defined by the channel. As a general note, using delegatecall has a few more trust assumptions than using call. In a worst case scenario, a rogue broadcastModule could do the following: 1. Include a selfdestruct, which technically returns success == true and would delete the AxiomV2Broadcaster. However EIP-6780 will make this a non-issue in the next hardfork. 2. Modify critical storage variables in AxiomV2Broadcaster. For instance, a malicious broadcastModule might alter access controls by updating storage during the delegatecall. Although it's reassuring that addChannel() is protected by the same permissions as _authorizeUpgrade() (which shares similar capabilities), it's crucial to emphasize that broadcastModule must be trusted.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Extend unchecked blocks",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-December-2023.pdf",
+        "body": "Certain unchecked blocks can be safely extended to cover more areas beyond their initial coverage. This results in an improvement in code readability and in some scenarios, even gas savings.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Boolean expression optimizations",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-December-2023.pdf",
+        "body": "Some boolean expressions can be simplified into shorter versions, resulting in gas savings as less boolean operation opcodes are invoked during the computation.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Unnecessary function arguments in _sendQuery()",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-December-2023.pdf",
+        "body": "The _sendQuery() function contains address caller and uint256 depositAmount as arguments. However, on all its callsites, namely AxiomV2Query.sol#L265-L272 and AxiomV2Query.sol#L295-L302, msg.sender is passed as caller and msg.value as depositAmount. if It is therefore worth considering dropping these arguments and re-factor the function in such a way that msg.sender and msg.value are directly used instead.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Replace zeroing-out variables for the delete keyword",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-December-2023.pdf",
+        "body": "Deleting a variable es equivalent to setting it to the default value, which is usually the underlying bytes32 0x0 value. Although zeroing-out manually is possible, it is recommended to use Solidity's built-in delete keyword for instead, especially when treating with complex data types (such as structs) as it is slightly more efficient.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Set axiomCoreAddress as immutable",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-December-2023.pdf",
+        "body": "The axiomCoreAddress is currently a public state variable that is only set on construction. Further- more, when set, it emits an UpdateAxiomCoreAddress(address) event. Given this scenario, it would be better to declare it as immutable and redeploy the contract if needed. The benefits of this change would be:  2100 gas savings in fulfillQuery() because a cold key SLOAD is avoided (349280 ! 347180).  The UpdateAxiomCoreAddress() event becomes obsolete, and its removal slightly reduces the contract size.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Caching storage variables to save SLOADs",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-December-2023.pdf",
+        "body": "When a storage variable is used several times within the same scope, it is more efficient caching it for the subsequent reads rather than directly reading from storage, as this implies unnecessary executions of the SLOAD instruction.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Gas Optimization AxiomV2Query.sol#L745-L747,"
+        ]
+    },
+    {
+        "title": "Move variable declaration outside of for loop",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-December-2023.pdf",
+        "body": "The commitment variable is declared and constantly re-assigned within the for loop. Furthermore, it is re-declared at AxiomV2Core.sol#L289, causing the solidity compiler to throw a compiler warning due to variable shadowing and costing more gas than necessary.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Simplify excessivelySafeCall() for efficiency",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-December-2023.pdf",
+        "body": "All callsites of excessivelySafeCall() pass 0 as _value parameter, and also do not make use of the call's return. Therefore, excessivelySafeCall() admits some simplifications that result in major gas savings.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Missing Natspec comments",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-December-2023.pdf",
+        "body": "Most of the functions include proper Natspec comments. However, supportsInterface() lacks Natspec comments.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Change wording for overrideAxiomQueryFee documentation",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-December-2023.pdf",
+        "body": "Throughout the code/README documentation, the new overrideAxiomQueryFee argument is de- scribed in the following ways:   /// @param overrideAxiomQueryFee If non-zero, a different query fee to send to Axiom. - - ,! ): If non-zero, a higher ) -- if non-zero, higher overrideAxiomQueryFee overrideAxiomQueryFee used for this query axiomQueryFee axiomQueryFee uint256 uint256   ( (         to use for this query. than the default to be This wording is slightly incorrect, and the actual behavior would be better described by \"If larger than axiom- QueryFee, the value to be used for the query fee\".",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "dataQuery argument can be commented",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-December-2023.pdf",
+        "body": "dataQuery argument in sendQuery() is taken just for onchain DA. Compiler throws a warning for this.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Redundant import",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-December-2023.pdf",
+        "body": "MAX_MMR_PEAKS is imported but unused.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Typos",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-December-2023.pdf",
+        "body": "Below is a list with some typos and their corresponding fixes.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Replace manual hours to seconds conversion by hours keyword",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-December-2023.pdf",
+        "body": "Solidity version 0.8.19 (used in this project) implements time unit keywords which ease time con- versions into seconds. Therefore, manual time conversions are unnecessary and bloat the codebase.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Document theoretical overflow",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-December-2023.pdf",
+        "body": "The unchecked logic within updatePaddedLeaf() can technically overflow with large enough this scenario would occur once block.number hits paddingSize and leafSize arguments. 232 = 4294967296 (~4.29 billion), which would take around 1.6 millennia on mainnet. Thus, it will not overflow in practice. For Axiom, Nonetheless, since PaddedMerkleMountainRange is a library that might be used in other ways by third parties, or even Axiom in the future, perhaps it would be good to add a @dev Warning: comment to updatePaddedLeaf() stating this theoretical overflow.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Variable renaming",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-December-2023.pdf",
+        "body": "The deposit variable shadows an existing declaration, and should be renamed.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Revert behavior in _recordDeposit() when depositAmount > MAX_DEPOSIT_SIZE has been lost",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-December-2023.pdf",
+        "body": "The code prior to the PR of this security review reverted in _recordDeposit() when depositAmount > MAX_DEPOSIT_SIZE. In the current implementation, it is possible to get around the check when depositAmount == maxQueryPri. See the diff of the _sendQuery function below: function _sendQuery( uint256 queryId, uint64 maxFeePerGas, uint32 callbackGasLimit, uint256 overrideAxiomQueryFee, address caller, uint256 depositAmount + ) internal { if (queries[queryId].state != AXIOM_QUERY_STATE_INACTIVE) { revert QueryIsNotInactive(); } if (maxFeePerGas < minMaxFeePerGas) { revert MaxFeePerGasIsTooLow(); } + uint256 _axiomQueryFee = axiomQueryFee; 15 + + + - + + + + + + if (overrideAxiomQueryFee > _axiomQueryFee) { _axiomQueryFee = overrideAxiomQueryFee; } uint256 maxQueryPri = _getMaxQueryPri(maxFeePerGas, callbackGasLimit); uint256 maxQueryPri = _getMaxQueryPri(maxFeePerGas, callbackGasLimit, _axiomQueryFee); if (depositAmount != maxQueryPri) { if (depositAmount > 0) { _recordDeposit(caller, depositAmount); } if (maxQueryPri > balances[caller]) { revert EscrowAmountExceedsBalance(); } unchecked { // in this branch, we know that maxQueryPri <= balances[caller] balances[caller] -= maxQueryPri; } } queries[queryId] = AxiomQueryMetadata({ state: AXIOM_QUERY_STATE_ACTIVE, deadlineBlockNumber: uint32(block.number) + queryDeadlineInterval, callbackGasLimit: callbackGasLimit, payee: address(0), payment: maxQueryPri }); emit QueryFeeInfoRecorded( queryId, caller, uint32(block.number) + queryDeadlineInterval, maxFeePerGas, ,! callbackGasLimit, maxQueryPri ); } Clearly, _recordDeposit() is never reached as _recordDeposit() itself is never called. depositAmount == maxQueryPri, when the depositAmount > MAX_DEPOSIT_SIZE within",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Lack of upper bounds in queryDeadlineInterval may lead to locked funds and/or DoS",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "The lack of upper bounds in queryDeadlineInterval may lead to two different harmful scenarios. 1. Ether included within a query is expected to be returned to the query creator in case the query is not fulfilled after a certain amount of blocks, through a call to refundQuery. This mechanism is created to protect users from scenarios in which provers can't/won't fulfill their queries. However, the amount of time someone might need to wait until getting their funds back is in the interval [0,type(uint32).max - block.number), which is stored in the queries mapping. Taking into account the following facts:  The current block.number (at the time of writing) in mainnet is 18_383_880.  In mainnet, every 12s approximately, a block is produced.  type(uint32).max is the maximum value to be stored, i.e. 4_294_967_295.  The time to reach type(uint32).max goes beyond human scales, i.e. approximately 1626 years from the current block.number. Even in the case of setting the deadline to 1 or 2 years, the user would have frozen funds and no other option but waiting for the deadline or query fulfillment. This shouldn't be so harmful in case the query can be fufilled quickly, or in case of a zero-day bug appearance and the query can't be filled, or in the case all the provers are down, the user may have to wait that amount of time. 2. In the case an initial huge (valid) value for queryDeadlineInterval is set, which makes as uint32(block.number) + queryDeadlineInterval > type(uint32).max deadlineBlockNumber's type is uint32), all calls to _sendQuery methods will revert. This may pass unalerted initially as it is valid for queryDeadlineInterval. The reason for this are that the solidity compiler version lies above 0.8.0 (i.e. automatic overflow/underflow checks) and the following lines within _sendQuery functions: overflow, (i.e. queries[queryId] = AxiomQueryMetadata({ state: AxiomQueryState.Active, deadlineBlockNumber: uint32(block.number) + queryDeadlineInterval, //@audit can overflow and revert payee: address(0), payment: maxQueryPri }); This scenario results in a bad user experience, as they would be wasting gas for transactions until the Axiom multisig with TIMELOCK_ROLE changes queryDeadlineInterval to a smaller value that doesn't make uint32(block.number) + queryDeadlineInterval > type(uint32).max.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Missing non-zero checks allow event emission spamming",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "Functions withdraw() and deposit() are meant to facilitate deposits and withdrawals. However, they do not check if non-zero ether is deposited or withdrawn. Given their permissionless nature, this allows anyone to grief the system with zero ether deposits causing emission of events which may hinder indexing/monitoring systems.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Lack of zero address check in withdraw and deposit can burn ether",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "AxiomV2Query contract has functions that send value to an address specified by the user. If the user accidentally uses the default value in the destination address, it will be address(0) and this will effectively burn the funds.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "No enforcement of callback gas limit for on-chain queries",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "For on-chain queries, sendQuery() and sendQueryWithIpfsData() take in a uint32 callback- GasLimit input, which is the gasLimit the payee wishes the callback to be called with. However, there isn't an enforcement of the callback gas limit passed to the callback. The gas remaining for the callback could be less than the requested callbackGasLimit amount (eg. prover sends enough gas for proof verification but not the callback), and the query would still be fulfilled. A prover has incentive to pass in as little gas as required since he can receive the max payment of maxQueryPri regardless of outcome.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Allow refundQuery to a custom to address",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "In the current implementation, the refundee field (which is a user input parameter) of the query- Witness struct is not enforced to be msg.sender at sendQuery functions. In fact, it can even be address(0), and under that scenario remaining assets from the query can be locked by error.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Add code length check for callback.target",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "The current implementation performs the callback.target != address(0) check to decide on whether performing the callback or not. Nonetheless, callback.target may not be address(0) but an address without code (for example, an EOA), which passes the check and gets the callback executed without purpose. If the address' code length was verified instead, neither address(0) nor addresses without code would be used for the callback. An example of this check is shown below: address callbackTarget = callback.target; assembly { + uint256 size; + { // Wrapped this to avoid stack too deep + + + + + } + if (size > 0) { - if (callback.target != address(0)) { size := extcodesize(callbackTarget) } // ... In other cases such as AxiomV2Core.sol#L321, AxiomV2Core.sol#L326 and AxiomV2Query.sol#L505 checks aren't present at all.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "increaseQueryGas can be called even if the contracts are in a frozen state",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "The increaseQueryGas function in the AxiomV2Query contract allows users to increase the gas allocation for their queries by paying an additional fee. However, this function can currently be called even when the contracts are in a frozen state. When the system is frozen (usually due to an unforeseen vulnerability), it is not reasonable to allow users to increase their query gas since this operation is expected to be ineffective.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Missing sanity zero-address checks may lead to undesired behavior",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "Certain logic should implement zero-address checks to avoid undesired behavior.  verifierAddress, axiomHeaderVerifierAddress and axiomProverAddress implement these checks at the initializer. Nonetheless, these checks are absent at their updater functions, which leaves an open door to setting by mistake default value address(0) by the TIMELOCK_ROLE Axiom multisig. This scenario would create a temporal DoS until the value is changed back to a valid one.  For immutable variables such as axiomV2QueryAddress this is recommended to be included too.  For the timelock controller, a zero minDelay effectively negates the purpose of having a delay, which is con- trary to the expected outcome. With a value of 0 or a very low number, concerns arise about administrative actions being executed without providing users sufficient time to make an informed decision about whether to continue using the system. Examples of critical actions that could be affected include upgradeTo() and updatingFees(), among others.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Missing input validation on fee parameters",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "without enforcing any bound checks on them. Therefore, the updated values can be as extreme as 0 or type(uint256).max. This may affect user experience if malicious/compromised TIMELOCK_ROLE user executes a fee change that front-runs some query, resulting in the user spending much more ether to fulfill said query, or in extreme cases (if the user has not enough funds to backup the query) a DoS.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Use ExcessivelySafeCall for external calls where return value isn't checked",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "fulfillQuery() and fulfillOffchainQuery() makes external calls to user specified callback address through the low-level .call. If it returns a huge amount of data, the current call can run out of gas when copying it to memory. Since data copying isn't required here, we can skip it through ExcessivelySafeCall library. You can specify the number of bytes from return data to be copied to memory, which in this case can be 0.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Excess ETH sent for increaseQueryGas() isn't accounted for",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "Any excess ETH sent, where msg.value > newMaxQueryPri resulting in ETH permanently stuck in the contract. - oldAmount, isn't accounted for,",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Boundary equality case can be moved to do proofMmrPeaks extension",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "proofMmrSize - mmrWitness.snapshotPmmrSize == IAx- iomV2State(axiomCoreAddress).blockhashPmmrSize() - proofMmrSize, instead of extending pmmrSnapshots to proofMmrPeaks which requires decommitting the PMMR, it would probably be cheaper to do the other case of extending proofMmrPeaks to blockhashPmmr. where case the",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Minimise external calls",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "In the first reference, there is a possible repeated call to blockhashPmmrSize(). The result can be cached and invoked before the if and else-if cases since they utilise its value. In the second reference, there are mmrWitness.proofMmrPeaks.length - BLOCK_BATCH_DEPTH external calls to fetch the PMMR peaks for comparison against the proofMMr peaks. It would be a lot cheaper if there was a method to batch these calls into a single one (eg. take in a start index and length).",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Intentional appendCompleteLeaves() no-op can be removed",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "In one specific case in verifyQueryHeaders(), it is possible that the proofMmrSize is exactly one batch smaller than mmrWitness.snapshotPmmrSize. In this scenario, the code will call appendCompleteLeaves() on the PMMR with an empty list, which is a no-op. It could save some gas if appendCompleteLeaves() is not invoked in the first place.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "bool costs more gas than uint",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "In Solidity, using bool for storage variables can be more expensive in terms of gas than using uint256 or other full-word types. This is due to the Solidity compiler's defense mechanisms against contract upgrades and pointer aliasing, each write operation to a bool storage variable results in an additional SLOAD operation. This extra operation is required to first read the slot's contents, replace the bits taken up by the boolean, and then write back the result. The overall gas change was: Overall gas change: -2288250 (-0.000%)",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Arithmetic operations can be optimized for gas savings",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "There are some arithmetic operations that can save gas:  Prefix operator costs less gas than postfix operator: AxiomV2Query.sol#L93, MerkleTree.sol#L16, Merkle- Tree.sol#L21 are cases where i++ can be ++i safely.  Increments can be unchecked increments in for and while loops: AxiomV2Query.sol#L93, AxiomV2HeaderVerifier.sol#L92, AxiomV2HeaderVerifier.sol#L239, AxiomV2HeaderVerifier.sol#L229, AxiomV2HeaderVerifier.sol#L254, AxiomV2HeaderVerifier.sol#L264, AxiomV2HeaderVerifier.sol#L275, Ax- iomV2HeaderVerifier.sol#L315, MerkleTree.sol#L16, MerkleTree.sol#L21, MerkleMountainRange.sol#L35, MerkleMountainRange.sol#L73, MerkleMountainRange.sol#L58, MerkleMountainRange.sol#L47, MerkleMountainRange.sol#L181, MerkleMountainRange.sol#L104, MerkleMountainRange.sol#L146, AxiomV2Core.sol#L204, AxiomV2Core.sol#L120, PaddedMerkleMountainRange.sol#L63, AxiomV2Core.sol#L207, AxiomV2Core.sol#L235, AxiomV2Core.sol#L308.  Bit shifts cost less gas than multiplying/dividing by 2:  AxiomV2Configuration.sol#L54-L55: << 6 can be used instead of * 64 .  AxiomV2Query.sol#L544-L566 and AxiomV2Prover.sol#L93-L97: << 5 can be used instead of * 32.  MerkleTree.sol#L15-L16: >> 1 can be used instead of / 2.  MerkleTree.sol#L19: >> 2 can be used instead of / 4.  MerkleMountainRange.sol#L108-L114: j << 1 can be used instead of 2 * j.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Gas Optimization AxiomV2Query.sol#L93, AxiomV2HeaderVerifier.sol#L92, AxiomV2HeaderVerifier.sol#L229,"
+        ]
+    },
+    {
+        "title": "Usage of custom errors and revert strings inconsistency",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "Starting from Solidity version 0.8.4, the introduction of custom errors has provided a more gas- efficient way to handle errors compared to the traditional require and revert with string messages. When a require statement fails or a revert is called with a string argument, the EVM needs to store the string in memory, which consumes a significant amount of gas (due to the usage of MSTORE opcodes). In contrast, custom errors, defined using the error keyword, allow developers to define specific error types with associated parameters, which can significantly reduce the gas cost when an error occurs. In some parts of the code, custom errors are declared and later used, while in other parts, classic revert strings are used in require or revert statements. These could be replaced by custom errors, which would reduce deployment and runtime costs while contributing to codebase consistency. It also avoids wasting gas with long revert strings (each extra memory word of bytes past the initial 32 incurs in an additional MSTORE, which costs 3 units of gas).",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Multiple peakLength typecasting to uint32",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "peaksLength can be defined as uint32 instead of uint256 to avoid subsequent castings later on in the function.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "start initialization can be optimized",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "start is defined, calculated and casted to uint32 every iteration. This can be made more optimal.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Iterators can be optimized",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "endHashProofs from the back. These subtractions can be avoided if iteration is performed from the start. In the first reference, a couple of subtractions are required for index calculation when iterating In the second reference, an addition operation can be removed by offsetting the iterator by BLOCK_BATCH_DEPTH.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "CHAIN_ID can be set to internal due to the existence of a custom getter",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "CHAIN_ID is declared as a public variable, which leads to the solidity compiler to create for it a default getter function called CHAIN_ID(). Nevertheless, within AxiomV2HeaderVerifier there is already a manual implementation of a more readable getter function called getSourceChainId(). Having two different getter functions defined for the same variable contributes to an unnecessary increase in contract code size (and consequently deployment gas costs), and the added redundancy may add obscurity to the codebase.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "User input validation should have preference over other actions",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "User input validation on a function should precede any other action within the function scope. Oth- erwise, under the scenario in which execution arrives to a revert due to a wrong user input, gas is wasted on all the computation that has occurred prior to the check that yielded the revert.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Naive provers may spend more funds to compute than the amount awarded to them",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "In the current implementation, the maxFeePerGas within a query can be set to values close to zero. In the case of a naive prover fulfilling the query without checking for these low values, the prover may earn less funds than what costed them to perform the computations (for example if the query has set up a malicious callback that does expensive computation, as sometimes there are actual ways to profit from this, such as having the callback mint the XEN token).",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Remove redundant code to compute queryId",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "The queryId variable is computed manually several times within AxiomV2Query, although there exists an internal function called _computeQueryId that performs a similar computation.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Passing ETH to callback target is unsupported",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "The current implementation does not allow to send ETH in the callback, because the fulfillQuery and fulfillOffchainQuery functions aren't payable and the call forwards 0 ETH by default. Some applications that may be called via this callback could work with WETH tokens, but others might specifically need ETH.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Callback call success is not monitored",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "Within fulfillQuery and fulfillOffchainQuery, Axiom allows calling a callback target at the end of execution. The return of the low-level call is never checked nor emitted.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "frozen state in withdraw introduces a centralization risk",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "The system currently has an onlyNotFrozen mechanism implemented for both asset inflows (de- posits) and outflows (withdrawals), as well as for payable mechanisms. While this serves as a protective measure against unforeseen bugs and malicious activities, it also introduces a centralization risk. The ability to freeze with- drawals means that assets could become locked within the system, reducing user trust and potentially harming the credibility of the platform.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Missing indexed event parameters",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "Axiom contracts make extensive use of events to log changes in state and facilitate off-chain integra- tions. However, multiple events across the code don't have any parameter indexed. Indexing fields within events allows off-chain tools to filter and access these fields more quickly, improving the efficiency of data retrieval. Notice that, while indexing is beneficial for data retrieval, it comes with a cost for each one. Each indexed field in an event costs additional gas when the event is emitted, therefore, looking for a balance where the most significant parameters are the ones indexed it's really important.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Use named imports to improve clarity and efficiency",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "IAxiomV2Query contract currently imports the entire IAxiomV2Oracle and IAxiomV2Client inter- faces, even though it may not be utilizing all the functions or variables defined within these interfaces. This ap- proach can lead to unnecessary bloating of the contract's bytecode, potentially increasing deployment costs and making the codebase harder to read and maintain. Another relevant case is regarding AxiomV2Configuration, used multiple times in the code to retrieve different constant values but not using most of them.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Usage of axiomProverAddress can be simplified",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "For an address to fulfill a query in the AxiomV2Query contract, it needs to have the PROVER_ROLE. At initialization, this role is granted to the axiomProverAddress, which is an entirely separate contract that has its own access control management. So, there are technically two different ways that a query can be fulfilled by an address: 1. If the address is granted the PROVER_ROLE in the AxiomV2Query contract directly. 2. If the address has sufficient permission in the AxiomV2Prover (this is based on a combination of its own PROVER_ROLE and the allowedProvers mapping).",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Open up access to addAllowedProver and removeAllowedProver",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "Permission management of provers to callback targets is restricted to the TIMELOCK_ROLE, which could be too restrictive. This is because the callback target is a user-specified param, so it might be better to allow the callback target to add & remove provers by themselves.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "PMMR size initialization can be more accurate",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "divisible by BLOCK_BATCH_SIZE, despite the paddedLeaf always being initialized to bytes32(0). So, the size can initially be too large for what the PMMR represents. Fortunately, this is always resolved in a follow-up call to updatePaddedLeaf(), but it may be easier to understand the code if the size is initialized correctly.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Idempotent checks may be performed to avoid emitting events with no changes",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "TIMELOCK_ROLE may call some important functions as updateAxiomProverAddress, updateAxiom- HeaderVerifierAddress or updateVerifierAddress with the actual value or call twice the same script that set these values. This can confuse people listening for important event emissions such as the change of the different actors ad- dresses, that in fact, didn't changed.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Favor Yul switch-case statements over multiple if statements",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "MerkleTree has a function called getEmptyHash() that returns the hash image of the Merkle root of a tree of a user specified depth idx that has all zeroes as leaves. For the sake of optimization, these hashes are pre-computed and returned by checking the user input idx on a series of if statements. The aforementioned logic can be easily implemented in Yul through the switch-case statement, which is cheaper gas-wise and makes the cases more readable, at the cost of adding some obscurity to the revert case (which occurs when idx >= BLOCK_BATCH_DEPTH). An example implementation would look as follows: function getEmptyHash(uint256 depth) internal pure returns (bytes32 emptyHash) { assembly { switch depth case 0 { emptyHash := 0x0 } case 1 { emptyHash := 0xad3228b676f7d3cd4284a5443f17f1962b36e491b30a40b2405849e597ba5fb5 } case 2 { emptyHash := 0xb4c11951957c6f8f642c4af61cd6b24640fec6dc7fc607ee8206a99e92410d30 } case 3 { emptyHash := 0x21ddb9a356815c3fac1026b6dec5df3124afbadb485c9ba5a3e3398a04b7ba85 } case 4 { emptyHash := 0xe58769b32a1beaf1ea27375a44095a0d1fb664ce2dd358e7fcbfb78c26a19344 } case 5 { emptyHash := 0x0eb01ebfc9ed27500cd4dfc979272d1f0913cc9f66540d7e8005811109e1cf2d } case 6 { emptyHash := 0x887c22bd8750d34016ac3c66b5ff102dacdd73f6b014e710b51e8022af9a1968 } case 7 { emptyHash := 0xffd70157e48063fc33c97a050f7f640233bf646cc98d9524c6b92bcf3ab56f83 } case 8 { emptyHash := 0x9867cc5f7f196b93bae1e27e6320742445d290f2263827498b54fec539f756af } case 9 { emptyHash := 0xcefad4e508c098b9a7e1d8feb19955fb02ba9675585078710969d3440f5054e0 } default { // This could be further optimized if needed let ptr := mload(0x40) mstore( ptr, // bytes4(keccak256(Error(string))) << 224 0x08c379a000000000000000000000000000000000000000000000000000000000 ) mstore(add(ptr, 0x04), 0x20) mstore(add(ptr, 0x24), 30) mstore(add(ptr, 0x44), \"depth must be in range [0, 10)\") revert(ptr, 0x64) } } }",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Goerli testnet will stop working in 2024",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "The Goerli testnet is scheduled to be deprecated and will stop working in 2024. As this testnet is the only environment for testing and development purposes in the project, it is important to start planning a change to ensure a smooth transition and continuous operation of our applications and smart contracts.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Variable naming improvements",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "The following variables can be renamed to avoid shadowing, or for greater clarity: - uint256 deposit + uint256 depositAmount - uint256 appendLeft + uint256 appendRemaining",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Incorrect peaksLength value set for MMRs",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "proofBatchMmr and the MMR used for the snapshotLeaf generation has their sizes incorrectly set to BLOCK_BATCH_SIZE instead of BLOCK_BATCH_DEPTH. There aren't any repercussions in the current implementation because getComplementMerkleRoot(BLOCK_- BATCH_DEPTH, ...) / getZeroPaddedMerkleRoot(BLOCK_BATCH_DEPTH) is called respectively after, which only utilises BLOCK_BATCH_DEPTH peaks, with no further usage of these structures.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "virtual is redundant in interfaces and it can be removed",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "The functions axiomV2Callback() and axiomV2OffchainCallback() in the IAxiomV2Client inter- face are both declared with the virtual keyword. This is no longer necessary as of Solidity version 0.8.0, as functions in interfaces are implicitly virtual.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Unused logic and statements",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "The affected files contain unused logic or statements. This may be a leftover from either the devel- opment or testing stages of the protocol. See below for the detailed list:  Unused imports: AxiomV2HeaderVerifier.sol#L4, AxiomV2HeaderVerifier.sol#L12, AxiomV2Prover.sol#L4, IAxiomV2Verifier.sol#L4, IAxiomV2HeaderVerifier.sol#L4, IAxiomV2Query.sol#L4, PaddedMerkleMountain- Range.sol#L4.  Unused errors: IAxiomV2Query.sol#L156. IAxiomV2Query.sol#L144, IAxiomV2Query.sol#L150, IAxiomV2Query.sol#L152,  Unused modifiers: AxiomAccess.sol#L58-L63.  Unused functions: AxiomAccess.sol#L73-L75.  Redundant logic: AxiomV2HeaderVerifier.sol#L275-L277.",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational AxiomV2HeaderVerifier.sol#L4,"
+        ]
+    },
+    {
+        "title": "Absent/incomplete natspec affects readability and maintenance",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-October-2023.pdf",
+        "body": "Comments are key to understanding the codebase logic. In particular, Natspec comments provide rich documentation for functions, return variables and more. This documentation aids users, developers and auditors in understanding what the functions within the contract are meant to do. However, some functions within the codebase contain issues with respect to their comments with either no Natspec or incomplete Natspec annotations, leading to partial descriptions of the functions. In particular, Natspec comments",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational IAxiomV2Client.sol#L4-L32, AxiomTimelock.sol#L24-L29, IAxiomV2Query.sol#L115, IAxiomV2State.sol#L17, PaddedMerkleMountainRange.sol#L76, AxiomTimelock.sol#L19-L22,"
+        ]
     }
 ]

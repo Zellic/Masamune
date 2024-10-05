@@ -6873,5 +6873,16 @@
             "Type: Authority Control Vulnerability Audit",
             "Severity: Medium"
         ]
+    },
+    {
+        "title": "Code x situation",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/Penpie Contracts Exploit Fixes - SlowMist Audit Report_en-us.pdf",
+        "body": "In the x, the project team used OpenZeppelin's ReentrancyGuard library to modify the harvestMarketReward and batchHarvestMarketRewards functions in the PendleStaking contract to address the issue of reentering depositMarket. Additionally, they restricted the registerPool function in the PendleStaking contract to be callable only by the owner role to ensure that newly registered pools are reviewed. ",
+        "labels": [
+            "SlowMist",
+            "Penpie Contracts Exploit Fixes - SlowMist Audit Report",
+            "Type: Others",
+            "Severity: Information"
+        ]
     }
 ]
