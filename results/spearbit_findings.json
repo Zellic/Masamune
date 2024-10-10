@@ -31938,5 +31938,215 @@
             "Axiom-contracts",
             "Severity: Informational"
         ]
+    },
+    {
+        "title": "execGasPrice and dataGasPrice might be 0 due to division errors",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Solidity-Spearbit-Security-Review-September-2024.pdf",
+        "body": "execGasPrice and dataGasPrice might be 0 due to division errors.",
+        "labels": [
+            "Spearbit",
+            "Omni-Solidity",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "PortalRegistry contract has payable function without any withdraw mechanism",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Solidity-Spearbit-Security-Review-September-2024.pdf",
+        "body": "PortalRegistry.sol#L93 contains function bulkRegister that is payable. However, the contract has no mechanism to move those funds anywhere and does not provide info about the utility of maintaining a balance (for gas fees, proof of value, etc..). If this function is called with value, that value will be stuck on the contract forever. This function is only callable by the owner, so the risk is low.",
+        "labels": [
+            "Spearbit",
+            "Omni-Solidity",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Current system lacks the ability to retry failed cross chain messages",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Solidity-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The OmniPortal contract facilitates cross-chain messaging for various supported networks, enabling a wide range of applications. While some of these applications can tolerate non-atomic behavior (e.g., where the transaction on the receiving chain can fail without affecting the originating chain's success), otherssuch as token bridgingrequire atomicity to prevent potential loss of user funds. Failures in the receiving chain can occur due to out-of-gas exceptions or subtle code errors that may not surface until after deployment. For example, OmniBridgeNative handles such failures gracefully by using a claimable mapping to store uncredited amounts in the event of a failure within the withdraw function. This allows users to claim funds later. However, third-party applications built on OmniPortal may not always implement similar fail-safes to ensure cross-chain atomicity.",
+        "labels": [
+            "Spearbit",
+            "Omni-Solidity",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Upcast and only use multiplication to avoid overflows and imprecision",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Solidity-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The current formula used could overflow during the multiplication and also due to division the _- isQuorum check is not quite precise since it is rounded down.",
+        "labels": [
+            "Spearbit",
+            "Omni-Solidity",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "_feeParams[key].chainId is redundant",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Solidity-Spearbit-Security-Review-September-2024.pdf",
+        "body": "_feeParams[key].chainId. It seems redundant that the key for the mapping _feeParams is always the same as",
+        "labels": [
+            "Spearbit",
+            "Omni-Solidity",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "OmniBridgeL1._bridge: abi.encodeCall is called redundantly during the \"happy path\"",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Solidity-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The following line is being called twice during the execution of OmniBridgeL1._bridge: abi.encodeCall(OmniBridgeNative.withdraw, (payor, to, amount, token.balanceOf(address(this)))), The calculated value can be cached instead.",
+        "labels": [
+            "Spearbit",
+            "Omni-Solidity",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "_exec can read parameter xheader directly from calldata",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Solidity-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The xheader parameter is only ever read in the _exec function. This can be read from calldata instead of copying to memory.",
+        "labels": [
+            "Spearbit",
+            "Omni-Solidity",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "The return formula for FeeOracleV1.feeFor can be simplified to use one less multiplication",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Solidity-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The formula for can be simplified to use one less multiplication.",
+        "labels": [
+            "Spearbit",
+            "Omni-Solidity",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "The previous signature tuple can be read from calldata directly",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Solidity-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The previous signature tuple can be read from calldata directly.",
+        "labels": [
+            "Spearbit",
+            "Omni-Solidity",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Redundant require statement in Quorum.verify",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Solidity-Spearbit-Security-Review-September-2024.pdf",
+        "body": "In this context the first require statement is redundant since the second one checks for the mono- tonicity of the sig.validatorAddr.",
+        "labels": [
+            "Spearbit",
+            "Omni-Solidity",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Each name space size is 1024",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Solidity-Spearbit-Security-Review-September-2024.pdf",
+        "body": "Each name space size is 1024 or 210. So when determine whether an address is a predeploy only shifting 10 bits would be enough.",
+        "labels": [
+            "Spearbit",
+            "Omni-Solidity",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Missing events",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Solidity-Spearbit-Security-Review-September-2024.pdf",
+        "body": "When the following storage parameters are changed no events are emitted:  Staking.{isAllowlistEnabled, isAllowedValidator}.  OmniBridgeNative.{l1ChainId, omni, l1Bridge}.  In OmniBridgeNative.withdraw when the call to to fails and claimable is updated it might be useful to emit a custom event to indicate that.  PausableUpgradeable.PauseableStorage.",
+        "labels": [
+            "Spearbit",
+            "Omni-Solidity",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Storage slots are allocated during genesis and initialize would not be callable",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Solidity-Spearbit-Security-Review-September-2024.pdf",
+        "body": "Sine the storage slots are allocated during genesis according to the NatSpec: /** Genesis storage slots must: * @dev This contract is predeployed, and requires storage slots to be set in genesis. * * * * * - set _owner on proxy - set _initialized on proxy to 1, to disable the initializer - set _initialized on implementation to type(uint64).max, to disabled all initializers ... 10 Then the function initialize would not be able to be called.",
+        "labels": [
+            "Spearbit",
+            "Omni-Solidity",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "claim function can be invoked on ConfLevel.Latest",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Solidity-Spearbit-Security-Review-September-2024.pdf",
+        "body": "OmniBridgeNative.claim is callable through an xcall of level ConfLevel.Latest. This function can be called zero, or multiple times upon xcall invocation. This isn't inherently vulnerable even if the function gets called multiple times - the value is only claimed the first time. But it may be a surprise when submitting an xcall that the claim never goes through.",
+        "labels": [
+            "Spearbit",
+            "Omni-Solidity",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "OmniPortal.sol: Lower than expected number of available valsets",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Solidity-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The _minValSet function in the OmniPortal contract specifies a limit such that only XSubValsetCut- off number of accepted valsets are available at any point of time. However, fewer than that can be available due to the nature of the _addValidatorSet function. In the _addValidatorSet function, the consensus can pass in any valSetId and the only requirement is that the passed in valSetId has not been used up before. However, there is no constraint that the consensus uses consecutive valSetId values, and can effectively skip over certain valSetId values, leaving them unset. Say the latestValSetId is 10 and xsubValsetCutoff is 5. Then according to _minValSet, only the values in index 6 through 10 (5 values) are acceptable. However, now an update can set a list of validators for valSetId=14. Now, only indices 10 through 14 are available according to _minValSet, and since 11,12,13 were never set, effectively there are only 2 available validator sets available now (index 10 and index 15). So there can be lower than XSubValsetCutoff number of usable validator sets available at any given point.",
+        "labels": [
+            "Spearbit",
+            "Omni-Solidity",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "OmniBridgeL1._bridge: Inconsistency in the checks against msg.value",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Solidity-Spearbit-Security-Review-September-2024.pdf",
+        "body": "OmniBridgeL1._bridge: During the flow of OmniBridgeL1._bridge msg.value is checked twice, once inside require(msg.value == bridgeFee(payor, to, amount), \"OmniBridge: incorrect fee\"); and the other inside OmniPortal.xcall: uint256 fee = feeFor(destChainId, data, gasLimit); require(msg.value >= fee, \"OmniPortal: insufficient fee\"); As we can see the first check uses == while the second uses >=.",
+        "labels": [
+            "Spearbit",
+            "Omni-Solidity",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "OmniPortal.initialize: Inconsistency of event emissions for inXMsgOffset and inXBlockOffset",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Solidity-Spearbit-Security-Review-September-2024.pdf",
+        "body": "Both inXMsgOffset and inXBlockOffset are being set in the initialize function without any event emissions unlike in setInXMsgOffset and setInXBlockOffset respectively.",
+        "labels": [
+            "Spearbit",
+            "Omni-Solidity",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "OmniBridgeNative: setup might be redundant adding additional unnecessary trust assumptions",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Solidity-Spearbit-Security-Review-September-2024.pdf",
+        "body": "OmniBridgeNative is supposed to be deployed as an upgradeable contract which will be initialize by calling initialize and then setup. initialize can be called only once as it should but it is not the case with setup which can be called more than once by the owner of the contract. In case there is no need to call setup more than once, having this logic as a separate function might be redundant adding additional unnecessary trust assumptions on the owner of the contract.",
+        "labels": [
+            "Spearbit",
+            "Omni-Solidity",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "The NatSpec comment for OmniBridgeNative regarding the genesis storage slots are not entirely accurate",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Solidity-Spearbit-Security-Review-September-2024.pdf",
+        "body": "Disabling all initialisers are missing in OmniBridgeNative deployed implementation contract. Since there is also no explicit constructor function. The following would not be needed in the NatSpec @dev comment is true: constructor() { _disableInitializers(); } but then if the storage slots are set in genesis, then the included initialize function is not necessary: function initialize(address owner_) external initializer { __Ownable_init(owner_); } In ./contracts/allocs/mainnet.json (the genesis's allocation file) we have: \"0x121e240000000000000000000000000000000002\": { \"balance\": \"0x52b7d2dcc80cd2e4000000\", \"code\": \"0x608060405261000c61000e565b005b7f...\", \"nonce\": \"0x0\", \"storage\": { \"0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc\": ,! \"0x000000000000000000000000ede1dbfffffffffffffffffffffffffffffffffd\", \"0x9016d09d72d40fdae2fd8ceac6b6234c7706214fd39c1cd1e609a0528c199300\": ,! \"0x000000000000000000000000000000000000000000000000000000000000dead\", \"0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103\": ,! \"0x0000000000000000000000004ca2f0e23e0d0a5b325e0511bc9adf36f0c743c5\", \"0xf0c57e16840df040f15088dc2f81fe391c3923bec73e23a9662efc9c229c6a00\": ,! \"0x0000000000000000000000000000000000000000000000000000000000000001\" } }, // ... \"0xede1dbfffffffffffffffffffffffffffffffffd\": { \"balance\": \"0x0\", \"code\": \"0x6080604052600436106101405760003560e...\", \"nonce\": \"0x0\", \"storage\": { \"0xf0c57e16840df040f15088dc2f81fe391c3923bec73e23a9662efc9c229c6a00\": ,! \"0x000000000000000000000000000000000000000000000000ffffffffffffffff\" } }, \"0x4ca2f0e23e0d0a5b325e0511bc9adf36f0c743c5\": { \"balance\": \"0x0\", \"code\": \"0x60806040526004361061004a5760003560e01...\", \"nonce\": \"0x1\", \"storage\": { \"0x0000000000000000000000000000000000000000000000000000000000000000\": ,! \"0x000000000000000000000000000000000000000000000000000000000000dead\" } }, or: 13 OmniBridgeNative (proxy) IMPLEMENTATION_SLOT OwnableStorageLocation ERC1967Utils.ADMIN_SLOT INITIALIZABLE_STORAGE : 0x121e240000000000000000000000000000000002 : 0xede1dbfffffffffffffffffffffffffffffffffd : 0x000000000000000000000000000000000000dead << here : 0x4ca2f0e23e0d0a5b325e0511bc9adf36f0c743c5 : 0x01 ({_initialized: 1, _initializing: 0}) Native Token Balance: 10e26 OmniBridgeNative (implementation): 0xede1dbfffffffffffffffffffffffffffffffffd INITIALIZABLE_STORAGE ,! : 0xffffffffffffffff ({_initialized: 0xffffffffffffffff, _initializing: 0}) Proxy Admin SLOT_0x0 : 0x4ca2f0e23e0d0a5b325e0511bc9adf36f0c743c5 : 0x000000000000000000000000000000000000dead << Note that with the current allocation JSON files for different network, the initialize would not be callable on the TUP proxy since the value of _initialized is already 1 on genesis.",
+        "labels": [
+            "Spearbit",
+            "Omni-Solidity",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Redundant override keyword",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Solidity-Spearbit-Security-Review-September-2024.pdf",
+        "body": "When overriding an interface function, the override keyword is not necessary.",
+        "labels": [
+            "Spearbit",
+            "Omni-Solidity",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Variable name shadowing",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Solidity-Spearbit-Security-Review-September-2024.pdf",
+        "body": " OmniPortal.sol#L369: valSet has been shadowed here.",
+        "labels": [
+            "Spearbit",
+            "Omni-Solidity",
+            "Severity: Informational"
+        ]
     }
 ]
