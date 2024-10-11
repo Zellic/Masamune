@@ -6884,5 +6884,313 @@
             "Type: Others",
             "Severity: Information"
         ]
+    },
+    {
+        "title": "Potential denial of service risk due to gulp operations",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/DeSyn Phase5 - SlowMist Audit Report_en-us.pdf",
+        "body": "In the Actions contract, when the user performs the autoJoinSmartPool operation, the number of shares the user can obtain will be calculated through the _calculateShare function, and minPoolAmountOut will be checked at the end. The _calculateShare function obtains the number of tokens recorded in the pool through bPool's getBalance when calculating the share, but unfortunately any user can update this parameter through bPool's gulp function. Therefore, when an ordinary user performs an autoJoinSmartPool operation, a malicious user directly transfers funds to bPool and calls the gulp function to update the token balance recorded in the pool. At this time, ordinary users will not be able to successfully add liquidity due to the minPoolAmountOut check. If the minPoolAmountOut value passed in by an ordinary user is 0, it may cause an interest rate ination attack. ",
+        "labels": [
+            "SlowMist",
+            "DeSyn Phase5 - SlowMist Audit Report",
+            "Type: Denial of Service Vulnerability",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "Incorrect event logging",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/DeSyn Phase5 - SlowMist Audit Report_en-us.pdf",
+        "body": "In the CRP contract, the createPool function adds the creator parameter as the real creator of the pool. However, the corresponding events were not modied accordingly. ",
+        "labels": [
+            "SlowMist",
+            "DeSyn Phase5 - SlowMist Audit Report",
+            "Type: Others",
+            "Severity: Suggestion"
+        ]
+    },
+    {
+        "title": "Incorrect WETH address",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/DeSyn Phase5 - SlowMist Audit Report_en-us.pdf",
+        "body": "The WETH address constant is hard-coded in the Actions contract, but this address is an EOA address on the Ethereum mainnet and is not the correct WETH address. ",
+        "labels": [
+            "SlowMist",
+            "DeSyn Phase5 - SlowMist Audit Report",
+            "Type: Others",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "Incorrect poolTokens check",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/DeSyn Phase5 - SlowMist Audit Report_en-us.pdf",
+        "body": "In the autoJoinSmartPool function of the Actions contract, it checks the tokens deposited by the user through poolTokens[i] == handleToken , but handleToken has been replaced by the issueToken parameter during the native token checking phase. Therefore, the poolTokens[i] == handleToken check is not accurate. If handleToken is WETH, it will cause an error in the _makeSwap operation. ",
+        "labels": [
+            "SlowMist",
+            "DeSyn Phase5 - SlowMist Audit Report",
+            "Type: Design Logic Audit",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "Redundant STBT token check",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/DeSyn Phase5 - SlowMist Audit Report_en-us.pdf",
+        "body": "In the autoJoinSmartPool and _exit functions of the Actions contract, when making a token transfer, it will be checked whether the transferred token is an STBT token. But in fact, the protocol does not allow deposits of STBT tokens, and STBT tokens will also be converted into stablecoins after the ETF expires. Therefore, theoretically, there will be no STBT tokens in the contract, so the STBT token check is redundant. . ",
+        "labels": [
+            "SlowMist",
+            "DeSyn Phase5 - SlowMist Audit Report",
+            "Type: Others",
+            "Severity: Suggestion"
+        ]
+    },
+    {
+        "title": "Potential risk of slot conict",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/DeSyn Phase5 - SlowMist Audit Report_en-us.pdf",
+        "body": "In this protocol iteration, both SmartPoolManager and Actions contracts have changed their storage structures. If these contracts use an upgradeable model, and upgrading the contract directly on the original basis may lead to contract storage slot conicts. In fact, the Actions contract is an upgradeable contract, so special attention should be paid to such risks.",
+        "labels": [
+            "SlowMist",
+            "DeSyn Phase5 - SlowMist Audit Report",
+            "Type: Variable Coverage Vulnerability",
+            "Severity: Suggestion"
+        ]
+    },
+    {
+        "title": "Risk of event forgery",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/DeSyn Phase5 - SlowMist Audit Report_en-us.pdf",
+        "body": "In the CRP contract, the exitPool function adds a user parameter to record the real caller when the user exits through the Actions contract. However, users can also exit by calling the exitPool function of the CRP contract. They can pass in any user parameter to make the LogExit event record an incorrect value. ",
+        "labels": [
+            "SlowMist",
+            "DeSyn Phase5 - SlowMist Audit Report",
+            "Type: Malicious Event Log Audit",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "Potential risk of denial of service due to large CRPFactory array",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/DeSyn Phase5 - SlowMist Audit Report_en-us.pdf",
+        "body": "In the CRPFactory contract, when the Blabs role performs addCRPFactory and removeCRPFactory operations, it will use a for loop to traverse the entire CRPFactorys array. If the array length is too large, it will lead to DoS risks. ",
+        "labels": [
+            "SlowMist",
+            "DeSyn Phase5 - SlowMist Audit Report",
+            "Type: Denial of Service Vulnerability",
+            "Severity: Suggestion"
+        ]
+    },
+    {
+        "title": "Potential risk of endless loop",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/DeSyn Phase5 - SlowMist Audit Report_en-us.pdf",
+        "body": "In the CRPFactory contract, the isCrp function is used to check whether the address passed by the user is a CRP contract. If not, the CRPFactorys array will be circulated and the isCrp function of other CRPFactory will be called to check. However, it should be noted that if the Blabs role adds this contract address to the CRPFactorys array, the user will fall into an innite loop error when querying a CRP address that is not recorded in this contract through the isCrp function. ",
+        "labels": [
+            "SlowMist",
+            "DeSyn Phase5 - SlowMist Audit Report",
+            "Type: Denial of Service Vulnerability",
+            "Severity: Suggestion"
+        ]
+    },
+    {
+        "title": "Redundant collectEndTime check",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/Desyn Phase3 - SlowMist Audit Report_en-us.pdf",
+        "body": "In the CongurableRightsPool contract, users can redeem underlying assets through the exitPool function. When the pool is a closed ETF, it will check isCompletedCollect and collectEndTime to decide whether to perform _claimManagerFee operation. But when isCompletedCollect is true, the collectEndTime check will be performed in snapshotEndAssets, and when isCompletedCollect is false, the collectEndTime check will be performed in exitPoolHandleB. Hence the collectEndTime check before the _claimManagerFee operation is redundant. ",
+        "labels": [
+            "SlowMist",
+            "Desyn Phase3 - SlowMist Audit Report",
+            "Type: Others",
+            "Severity: Suggestion"
+        ]
+    },
+    {
+        "title": "Redundant closureEndTime check on exitPool",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/Desyn Phase3 - SlowMist Audit Report_en-us.pdf",
+        "body": "In the CongurableRightsPool contract, users can redeem underlying assets through the exitPool function. When the pool is a closed ETF and isCloseEtfCollectEndWithFailure is false, it will check that the current time must be greater than closureEndTime + 5 minutes before allowing the user to exit. However, it should be noted that the snapshotEndAssets operation will be performed before this. The snapshotEndAssets function will also check whether the current time is greater than closureEndTime + 5 minutes . Only the admin and owner can execute snapshotEndAssets within 5 minutes after the closure period ends. Otherwise, the transaction will be reverted. Therefore, the closureEndTime check in the exitPool function is redundant. When snapshotEndAssets cannot be performed, the entire transaction will be reverted, and subsequent closureEndTime checks will not be performed. ",
+        "labels": [
+            "SlowMist",
+            "Desyn Phase3 - SlowMist Audit Report",
+            "Type: Others",
+            "Severity: Suggestion"
+        ]
+    },
+    {
+        "title": "Redundant performance fee calculation",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/Desyn Phase3 - SlowMist Audit Report_en-us.pdf",
+        "body": "In the exitPool function of the CongurableRightsPool contract, redeemAndPerformanceFeeReceived, nalAmountOut and redeemFeeReceived are calculated through exitPoolHandleA. However, since the performance fee will be calculated uniformly in the snapshotEndAssets operation, there is no need to process the performance fee in the exitPool function. ",
+        "labels": [
+            "SlowMist",
+            "Desyn Phase3 - SlowMist Audit Report",
+            "Type: Others",
+            "Severity: Suggestion"
+        ]
+    },
+    {
+        "title": "The time allowed for snapshots is too short",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/Desyn Phase3 - SlowMist Audit Report_en-us.pdf",
+        "body": "In the CongurableRightsPool contract when the closed ETF completes collect and the collection period has ended, the current total value of the ETF can be recorded through the snapshotBeginAssets function. However, users can only call the snapshotBeginAssets function within 15 minutes after the end of the collection period. If there is congestion on the chain, it may not be possible to call the snapshot in time within 15 minutes. ",
+        "labels": [
+            "SlowMist",
+            "Desyn Phase3 - SlowMist Audit Report",
+            "Type: Design Logic Audit",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "Duplicate decimal processing issue",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/Desyn Phase3 - SlowMist Audit Report_en-us.pdf",
+        "body": "In the DesynChainlinkOracle contract, the getPrice function is used to obtain the corresponding token price from prices, getChainlinkPrice, and getUniswapPrice, and perform decimal processing. However, decimal has been processed in getChainlinkPrice and getUniswapPrice, and theoretically, the returned decimal will be 1e18. Therefore, processing decimals through decimalDelta will cause decimals to be enlarged. Note that the amountIn passed in for the consult in the getUniswapPrice function is 1e18, which needs to be ensured that the token decimal in twapOracle matches it in practice ",
+        "labels": [
+            "SlowMist",
+            "Desyn Phase3 - SlowMist Audit Report",
+            "Type: Design Logic Audit",
+            "Severity: Critical"
+        ]
+    },
+    {
+        "title": "Decimal processing issue in AllPrice calculation",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/Desyn Phase3 - SlowMist Audit Report_en-us.pdf",
+        "body": "In the DesynChainlinkOracle contract, the getAllPrice function is used to calculate the total value of the specied amount of tokens. It is calculated by badd(fundAll, bmul(getPrice(t), tokenAmountOut)) , theoretically the decimal returned by getPrice is 1e18, and the decimal of tokenAmountOut is consistent with the decimal of the token itself. Therefore, multiplying these two values will result in a very large decimal in the nal result. The getNormalizedWeight function is also aected by this, but this is not harmful to normal business. Note: ",
+        "labels": [
+            "SlowMist",
+            "Desyn Phase3 - SlowMist Audit Report",
+            "Type: Design Logic Audit",
+            "Severity: Critical"
+        ]
+    },
+    {
+        "title": "Redundant code issue",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/Desyn Phase3 - SlowMist Audit Report_en-us.pdf",
+        "body": "In the SmartPoolManager library, the exitPoolHandle function has been deprecated since closed ETF prots are calculated in snapshotEndAssets. ",
+        "labels": [
+            "SlowMist",
+            "Desyn Phase3 - SlowMist Audit Report",
+            "Type: Others",
+            "Severity: Suggestion"
+        ]
+    },
+    {
+        "title": "Token list conict in recordTokenInfo",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/Desyn Phase3 - SlowMist Audit Report_en-us.pdf",
+        "body": "When the user performs createPool and joinPool, if the Pool is a closed ETF and the current time is within the collection period, the KOL invitation amount will be recorded through UserVault's recordTokenInfo interface. But unfortunately, the tokens in the Pool can be Bind/unBind at any time, which will cause the list of tokens supported by the Pool to change. If the recordTokenInfo operation is performed when the Pool token list changes, the amount recorded by variables such as poolInviteTotal, kolTotalAmountList, and kolUserInfo may be disturbed. ",
+        "labels": [
+            "SlowMist",
+            "Desyn Phase3 - SlowMist Audit Report",
+            "Type: Design Logic Audit",
+            "Severity: Critical"
+        ]
+    },
+    {
+        "title": "couldManagerClaim not checked when managerClaim",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/Desyn Phase3 - SlowMist Audit Report_en-us.pdf",
+        "body": "In the UserVault contract, the Manager role can claim management fees through the managerClaim function, but it does not check whether the couldManagerClaim parameter is true. ",
+        "labels": [
+            "SlowMist",
+            "Desyn Phase3 - SlowMist Audit Report",
+            "Type: Design Logic Audit",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "Some redundant invoke functions",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/Desyn Phase3 - SlowMist Audit Report_en-us.pdf",
+        "body": "In the Invoke library, the strictInvokeTransfer, invokeUnwrapWETH, invokeWrapWETH, and invokeMint functions are not used. ",
+        "labels": [
+            "SlowMist",
+            "Desyn Phase3 - SlowMist Audit Report",
+            "Type: Others",
+            "Severity: Suggestion"
+        ]
+    },
+    {
+        "title": "Risk of ETF falsication",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/Desyn Phase3 - SlowMist Audit Report_en-us.pdf",
+        "body": "In the RebalanceAdapter contract, the Manager role can adjust the position of the pool through the rebalance function. But the address of the ETF is obtained from the rebalanceInfo passed in by the user. If a malicious user passes in a fake ETF, the check in the onlyManager decorator will be bypassed, and the _verifyWhiteToken check of token1 and the isCompletedCollect and collectEndTime checks will be useless. Malicious users can steal bPool funds through _makeSwap and bind malicious tokens. The approve function also has this risk, but it doesn't break the protocol too much ",
+        "labels": [
+            "SlowMist",
+            "Desyn Phase3 - SlowMist Audit Report",
+            "Type: Design Logic Audit",
+            "Severity: Critical"
+        ]
+    },
+    {
+        "title": "Risk of the Manager role potentially disrupting the protocol",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/Desyn Phase3 - SlowMist Audit Report_en-us.pdf",
+        "body": "In the RebalanceAdapter contract, the Manager role can adjust the position of the ETF through the rebalance function. It will use the _makeSwap function to call Uniswap, 1inch and other DEXs for token swaps to adjust token positions. But unfortunately, the swap path of the token is not checked during the token swap process, which will cause the Manager role to pass in a carefully constructed malicious swap path to steal the middle token0 of the ETF. ",
+        "labels": [
+            "SlowMist",
+            "Desyn Phase3 - SlowMist Audit Report",
+            "Type: Design Logic Audit",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "Double slippage check",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/Desyn Phase3 - SlowMist Audit Report_en-us.pdf",
+        "body": "In the RebalanceAdapter contract, the Manager role can adjust the position of the ETF through the rebalance function. It will use the _makeSwap function to call Uniswap, 1inch and other DEXs for token swaps to adjust token positions. During the swap process, the slippage will be checked by passing minReturn to the external DEXs, but the implementation of the slippage check of the external DEXs is uncontrollable. If the slippage protection of the external DEXs fails, it will aect the funds of users in the protocol. (1inch users encountered invalid slippage check before) ",
+        "labels": [
+            "SlowMist",
+            "Desyn Phase3 - SlowMist Audit Report",
+            "Type: Design Logic Audit",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "Does not follow the Checks-Eects-Interactions specication",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/Desyn Phase3 - SlowMist Audit Report_en-us.pdf",
+        "body": "In the RebalanceAdapter contract, the _makeSwap function is used for token swap. When the swap type is not UNISWAPV3 and UNISWAPV2, the parameters passed in by the user will be checked through _validateData . However, the execute operation is performed rst, and the _validateData operation is performed after the token exchange is completed. This is not in line with the follow the Checks-Effects-Interactions principle. ",
+        "labels": [
+            "SlowMist",
+            "Desyn Phase3 - SlowMist Audit Report",
+            "Type: Others",
+            "Severity: Suggestion"
+        ]
+    },
+    {
+        "title": "Perform strict parameter checking",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/Desyn Phase3 - SlowMist Audit Report_en-us.pdf",
+        "body": "In the RebalanceAdapter contract, the _validateData function is used to check the exchange parameters, but it only parses the recipient and amountIn for checking, but does not check whether other key parameters such as srcToken, dstToken, clipperExchange, makerAsset, takerAsset are in line with expectations. ",
+        "labels": [
+            "SlowMist",
+            "Desyn Phase3 - SlowMist Audit Report",
+            "Type: Others",
+            "Severity: Suggestion"
+        ]
+    },
+    {
+        "title": "Redundant aggregator parameter",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/Desyn Phase3 - SlowMist Audit Report_en-us.pdf",
+        "body": "In the RebalanceAdapter contract, the _validateData function is used to check the conversion parameters, but the aggregator parameter it receives is not used. ",
+        "labels": [
+            "SlowMist",
+            "Desyn Phase3 - SlowMist Audit Report",
+            "Type: Others",
+            "Severity: Suggestion"
+        ]
+    },
+    {
+        "title": "Incorrect approval operation",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/Desyn Phase3 - SlowMist Audit Report_en-us.pdf",
+        "body": "In the RebalanceAdapter contract, the Manager role can adjust the position of the ETF through the rebalance function. If token1 has not been bound in bPool, it will be approved rst. However, the subsidy of this contract was wrongly approved to bPool, which will cause bPool to be unable to transfer tokens from CRP in the future. ",
+        "labels": [
+            "SlowMist",
+            "Desyn Phase3 - SlowMist Audit Report",
+            "Type: Design Logic Audit",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "Risk of excessive authority",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/Desyn Phase3 - SlowMist Audit Report_en-us.pdf",
+        "body": "There is an execute function in the CRP and bPool contracts so that the Manager can manage the ETF. In bFactory, the Blabs role can arbitrarily register modules to gain control over CRP. The registered modules can use the execute function in CRP to call the execute function in bPool to perform any operations. This would pose a huge risk to users' funds. And the Manager can approve the tokens in the bPool through the approve function of the RebalanceAdapter contract, which will also bring huge risks to the user's funds. The above problems lead to the risk of excessive permissions of the Blabs role and the Manager role. ",
+        "labels": [
+            "SlowMist",
+            "Desyn Phase3 - SlowMist Audit Report",
+            "Type: Authority Control Vulnerability Audit",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "Enforce strict permission controls",
+        "html_url": "https://github.com/slowmist/Knowledge-Base/tree/master/open-report-V2/smart-contract/Desyn Phase3 - SlowMist Audit Report_en-us.pdf",
+        "body": "In the LiquidityPool contract, any user can call the joinPool, exitPool, and gulp functions to add/remove liquidity/record token balances, which will make it impossible to charge various fees to users in CRP. ",
+        "labels": [
+            "SlowMist",
+            "Desyn Phase3 - SlowMist Audit Report",
+            "Type: Design Logic Audit",
+            "Severity: Medium"
+        ]
     }
 ]
