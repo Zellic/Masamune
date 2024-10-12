@@ -32148,5 +32148,325 @@
             "Omni-Solidity",
             "Severity: Informational"
         ]
+    },
+    {
+        "title": "CoinGecko API sanitization exposes DoS risks",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "(c Client) getPrice() and its calling functions do not account for issues or inconsistencies in Coingecko's token price API making the fee oracle process vulnerable to multiple forms of unsafe API data handling. This data source is used downstream as the canonical data source for omni's token price oracle contracts which exposes the Omni network to the external centralization risks of which Coingecko is subject to.  A divide-by-zero panic in lib/contracts/feeoraclev1/feeparams.go#L109 if the to price returned by Coingecko is 0. This panic is not caught by any recover() function in the call stack and will bring the fee oracle process down.  A custom panic in lib/tokens/coingecko/coingecko.go#L65) if Coingecko returns anything other than \"omni-network\" or \"ethereum\", including an empty string. This panic will also cause a DoS of the fee oracle process.  If Coingecko returns a valid but empty json there will be no error in this function and multiple levels of calling functions will also not catch the error. This can result in stale prices without there being any indication of error and potentially an nil price on initialization.",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "guageBuffered() contains unsafe read of b.buffer",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "b.buffer is passed to guageBuffered() which references the buffer as prices. Access of this buffer should be protected by a mutex, in this case a read lock. This is called periodically in the (b *Buffer) stream ticker cadence. This opens up Omni's fee oracle to memory corruption.",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "cache::Get() unsafely returns a reference to c.network without a lock",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "(c *cache) Get() returns a pointer to c.network and releases its lock upon the function return. This function is called periodically by (k Keeper) getLatestPortals() which will deference the pointer when it calls network.GetPortals(). This makes the node vulnerable to race conditions and thus memory corruption.",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Potential double-vote if validator runs out of storage",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "In Voter::Vote(), if v.saveUnsafe() (which saves the voting state to disk) returns an error because the node is out of storage, the changes to v.latest and v.available will still persist. Since the vote was created, we believe it will still be propagated, but the updated state will not be saved to disk. In this situation, there is potential for a double-vote when the node restarts. When the node starts back up, it will load the outdated state. It calls getFromHeightAndOffset() to get skipBeforeOffset. Because the state on disk is expected to be out-of-date, skipBeforeOffset will come from the latest \"approved\" attestation. We believe there is an opportunity for the latest propagated at- testation to be newer than the latest approved on-chain attestation; otherwise, why would it compare against the value from the local state? // WriteFileAtomic creates a temporary file with data and provided perm and // swaps it atomically with filename if successful. func WriteFileAtomic(filename string, data []byte, perm os.FileMode) (err error) { The v.safeUnsafe() function uses WriteFileAtomic() to save the state to disk. WriteFileAtomic() will attempt to create a temporary le. Since there is no available storage space, the write operation will fail when trying to write to the temporary le. This failure will result in an error being returned by the function and the original le will remain unchanged.",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "insertValidatorSet() can insert an invalid validator into valTable",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "sync::Keeper::insertValidatorSet() will insert a validator with an invalid power (negative) or invalid public key, then return an error without removing the validator. This could theoretically happen if maybeStoreValidatorUpdates were given a bad update entry. Proof of Concept: For example, I made this test to show that validators with negative powers will still exist in the table after returning an error. 5 func TestInsertValidatorWithNegativePower(t *testing.T) { keeper, sdkCtx := setupKeeper(t, defaultExpectation()) var set []*Validator for pubkey := 1; pubkey <= 3; pubkey++ { var pk [32]byte pk[0] = byte(pubkey) priv, err := crypto.ToECDSA(pk[:]) require.NoError(t, err) set = append(set, &Validator{ PubKey: crypto.CompressPubkey(&priv.PublicKey), Power: -1, }) } sdkCtx = sdkCtx.WithBlockHeight(0) _, err := keeper.insertValidatorSet(sdkCtx, clone(set), true) require.Error(t, err, \"negative power\") setIter, err := keeper.valsetTable.List(sdkCtx, ValidatorSetPrimaryKey{}) require.NoError(t, err) for setIter.Next() { valset, err := setIter.Value() require.NoError(t, err) valIter, err := keeper.valTable.List(sdkCtx, ValidatorValsetIdIndexKey{}.WithValsetId(valset.GetId())) require.NoError(t, err) for valIter.Next() { val, err := valIter.Value() require.NoError(t, err) require.Positive(t, val.GetPower()) } valIter.Close() } setIter.Close() } Error Trace: Error: Test: /Users/user/omni/halo/valsync/keeper/query_internal_test.go:172 \"-1\" is not positive%!(EXTRA int64=0) TestInsertValidatorWithNegativePower",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Attestation::Verify() contains insucient signature verication",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "Attestation.Verify() does not verify an attestation Signature is cryptographically associ- ated with their ValidatorAddress or that the signature is made over the attestation root. This allows for any valid signature to bypass this verication method without having a relationship to the data or the validator set. This does not currently pose a signicant risk to Omni since the the signatures are checked during the vote aggregation phase in AggVote.Verify(). However, future uses of this function could in- troduce a signature verication bypass issue if developers make the assumption that the function is safe.",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Multiple unsafe type conversions",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "Omni currently uses multiple unsafe type conversions that can cause the error panic: runtime error: cannot convert slice with length X  sigTuple.ToXChain()  Attestation.AttestationRoot()  Vote.ToXChain()  SigFromProto()  BlockHeaderFromProto() These issues can occur when casting slices into byte arrays with xed lengths. Currently, there does not appear to be a way to trigger these panics from attacker controlled buffers but this could change in the future.",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "p.instance accessed outside of mutex protected region",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "(p *proxy).getInstance() returns a reference p.instance without a lock. This getter called in getInstance() and the pointer will be immediately dereferenced to call .String() without a lock. This allows for accesses outside of the protected region and introduces the possibility of a race condition.",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "In getConsXBlock(), accessing xblock.Msgs[0] could panic",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "If the length of xblock.Msgs is zero, accessing the rst element will cause a panic. After chatting with the team about this, we have deemed it an impossible situation. Omni consensus xblocks cannot be empty, only true EVM xblocks can be empty. The Omni consensus portal module only create xblocks if it has messages, or rather, when some other module wants to create a message, only then is a xblock created.",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "PrepareVotes() suppresses error from ValidateVoteExtensions()",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "If ValidateVoteExtensions() errors, the error is not returned; nil is returned. This does not appear to be intentional.",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "AttestationRoot() does not check if input is nil",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "This applies to AggVote::AttestationRoot() and Attestation::AttestationRoot(). This is not a problem now, but we are making this a nding because they are exposed functions and it could be used improperly in the future. We access elds without ensuring a is not nil. This would cause a panic if a were nil. Currently, every path to this function ensures the input is not nil.",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Mutable payload identier is assigned outside of write lock",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "In PrepareProposal(), the getOptimisticPayload() method returns a pointer to the pay- load identier. When we nally get the payload, we use the pointer to assign the identier. The mutable payload has a lock and we are writing to it without holding a write lock on it. Out of caution, we should avoid this pattern.",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Attestation::Verify() does not check that headers are for the same chain ID",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "In Attestation::Verify, after verifying BlockHeader and AttestHeader, it would be worth- while to check that the headers are for the same chain ID. This quick sanity check will prevent possible issues. This is marked as a low because we believe this is check occurs later.",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "AttestHeader::Verify() accepts invalid conrmation level",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "Here h.GetConfLevel() is truncated to a byte. This function could accept an attestation with an invalid conrmation level. For example, 513 & 0xFF == 1. It is unclear to us how this could be abused.",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Event sorting could be more ecient",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "This section of code could be slightly better. The current implementation will concatenate all topics together then compare the whole byte slices. It would be better to use slices.CompareFunc instead because (1) you avoid two memory allocations and (2) you compare individual elements meaning you can bail on the rst difference, which is faster.",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Call to headerMap() can be made before lock",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "The headerMap() method does not need to be executed with a lock. We can move it above the lock.",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Read/write locks can be converted read-only locks",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": " halo/attest/voter/voter.go#L124-L131 -- minWindow only reads v.minsByChain.  halo/attest/voter/voter.go#L134-L139 -- isValidator only reads v.isVal.  halo/attest/voter/voter.go#L391-L396 -- AvailableCount only reads v.available.  halo/attest/voter/voter.go#L399-L404 -- GetAvailable only reads v.available.  halo/attest/voter/voter.go#L486-L493 -- latestByChain only reads v.latest.  octane/evmengine/keeper/keeper.go#L206-L211 -- getOptimisticPayload only reads mutablePay- load.",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "PrepareProposal() does not prevent overlling a block with bytes",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "In CometBFT, the PrepareProposal() function sets a limit on the maximum number of bytes that are allowed to t in a proposed block octane/evmengine/keeper/abci.go#L41. However, Halo is not allowed to remove any transactions from the proposed block if this limit is exceeded. If a Halo block were to exceed this limit, the chain would simply halt. In practice, this can never happen. The maximum amount of gas in an EVM block is 30,000,000. The largest block possible when constrained by gas is a block lled with 0's. This results in a maximum block of 7,500,000 bytes, or 15,000,000 bytes when hex encoded in the EngineAPI. Since cmttypes.MaxBlockSizeBytes*9/10 evaluates to roughly 94 MB, it is impossible for a 15 MB maxi- mum block size to ever exceed this.",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Private keys stored in memory for duration of process",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "The private key for a validator in Halo is loaded into memory at the start of the program and remains there for the duration. The current best practices allow support for external key signers and potentially even hardware signers.",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "In searchOffsetInHistory(), latency function is not executed",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "In searchOffsetInHistory(), the function returned by latency(endpoint) is not executed. This will prevent the latency from being logged.",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "ExtendVote() should log ltered votes",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "In ExtendVote(), after ltering votes, we log unltered votes when we should log ltered votes.",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Length check in nal return statement can be replaced with true",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "len(resp.Attestations) to be zero. We can replace this with true for slightly better readability. There is a chance that this was supposed to check len(atts) instead, but we think that is unlikely.",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "uintSub() can be replaced with umath.SubtractOrZero()",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "There is another version of this method with (in our opinion) a better name. We suggest using it instead.",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Unused statistics in insertValidatorSet() can be deleted",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "The code and variables associated with totalUpdated, totalLen, and totalRemoved are un- used. This appears to have been moved to setStats and should be removed from insertValidatorSet().",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Signature checks can be replaced with SigTuple::Verify()",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "SigTuple::Verify().",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Unnecessary nil check can be removed",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "The nil check for l.Address is unnecessary. The length check below is sucient because len(nil) is zero.",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Validator power warning can happen with less than 1/3 power",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "This could alarm if a validator has less than 1/3 of the total power. This is because the fractional part of totalPower/3 is truncated. If totalPower is 10 and power is 3, power >= totalPower/3 will evaluate to 3 >= 3 (true).",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Protobuf message identiers should start with one",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": " halo/portal/keeper/portal.proto#L10-L15 -- the query index id should be 1.  halo/registry/keeper/registry.proto#L10-L14 -- the option id should be 1.  halo/valsync/keeper/valsync.proto#L13-L17 -- the query index id should be 1.  halo/valsync/keeper/valsync.proto#L27-L32 -- the query index id should be 1.",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Attestation structure eld order does not match protobuf denition",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "The order of elds in this type does not match the order in the protobuf type.",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Misleading comments",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "keeper.go#L70-L74, portal.proto#L9-L19, tx.proto#L55,  halo/evmupgrade/evmupgrade.go#L59 -- \"omni stake contract\" should be \"omni upgrade contract\".  halo/portal/keeper/portal.proto#L9-L19 -- Block does not contain an offset eld, and comment about BlockHeight/AttestOffset being auto-incremented are wrong.  halo/registry/keeper/keeper.go#L70-L74 -- getOrCreateEpoch should be getOrCreateNetwork.  halo/attest/types/tx.proto#L55 -- should use singular signature and public key.",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Typographical issues",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": " halo/attest/keeper/keeper.go#L644 -- limited exceeded should be limit exceeded.  halo/attest/keeper/keeper.go#L667 -- no should be not.  halo/attest/types/tx.proto#L68 -- belangs should be belongs.  halo/attest/voter/voter.go#L476 -- availableAndProposed should be availableAndProposedUnsafe.  halo/attest/voter/voter.go#L497 -- atts should be votes.  halo/attest/voter/voter.go#L532 -- atts should be votes.  halo/attest/voter/voter.go#L633 -- atts should be votes.  halo/registry/keeper/keeper.go#L26 -- portalRegAdress should be portalRegAddress. 14  halo/registry/keeper/keeper.go#L54 -- protalReg should be portalReg.  halo/registry/keeper/logeventproc.go#L128 -- shads should be shards.  halo/valsync/keeper/keeper.go#L41 -- emilPortal should be emitPortal.  halo/valsync/keeper/keeper.go#L45 -- portalRegAdress should be portalRegAddress.  halo/valsync/keeper/keeper.go#L72 -- protalReg should be portalReg.  halo/valsync/keeper/query.go#L90 -- vatset should be valset.  lib/cchain/provider/abci.go#L136 -- activedHeight should be activatedHeight.  lib/cchain/provider/xblock.go#L111 -- pack validators should be pack networks.  lib/xchain/connect/connect.go#L24 -- provider should be provides.  lib/xchain/connect/connect.go#L41 -- confired should be configured.  octane/evmengine/types/tx.proto#L22 -- the  halo/evmupgrade/evmupgrade.go#L48 -- new staking should be new upgrade.  halo/evmslashing/evmslashing.go#L47 -- new staking should be new slashing.  halo/evmslashing/evmslashing.go#L58 -- stake contract should be unjail contract.  lib/xchain/provider/fetch.go#L109 -- OutXMgsOffset should be OutXMsgOffset.  halo/cong/cong.go#L37 -- Cosmsos should be Cosmos. next should be the next.",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "*valAddrCache.SetAll() mutex use can be optimized",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Omni-Halo-Spearbit-Security-Review-August-2024.pdf",
+        "body": "valAddrCache contains a RWMutex to guard concurrent use of the ethAddrs map: type valAddrCache struct { sync.RWMutex ethAddrs map[[crypto.AddressSize]byte]common.Address } valAddrCache.SetAll() is a method used to create the map and requires a write lock to do so. Currently the lock is held while the new map is being created which is not optimal. Since the new map is created in a separate map object and then copied at the end of the function, the write lock can be moved down to the end of the function where c.ethAddrs is assigned.",
+        "labels": [
+            "Spearbit",
+            "Omni-Halo",
+            "Severity: Informational"
+        ]
     }
 ]
