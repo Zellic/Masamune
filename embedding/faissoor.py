@@ -1,24 +1,31 @@
+from dotenv import load_dotenv
 import os
-from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.text_splitter import CharacterTextSplitter
-from langchain.vectorstores import FAISS
+# from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
+# from langchain.text_splitter import CharacterTextSplitter
+from langchain_text_splitters import CharacterTextSplitter
+# from langchain.vectorstores import FAISS
+from langchain_community.vectorstores import FAISS
 import json
 import ijson
-from langchain.document_loaders import JSONLoader
-
+# from langchain.document_loaders import JSONLoader
+from langchain_community.document_loaders import JSONLoader
 
 def faiss_embed_with_metadata_openai(file_name):
-
-
     print("ATTEMPTING TO EMBED: " + file_name)
 
     # List all the files in the `json_results` folder
 
     resulting_docs = []
     resulting_metadata = []
+    
+    load_dotenv()
 
     # define the embeddings
-    embeddings = OpenAIEmbeddings()     
+    embeddings = OpenAIEmbeddings(
+        model = "text-embedding-3-large",
+        openai_api_key=os.getenv("OPENAI_API_KEY")
+    )     
     
     to_be_schema = ""
 
@@ -89,7 +96,7 @@ def faiss_embed_with_metadata_openai(file_name):
     try:
 
     # check if folder "file_name + _openai" exists
-        if not os.path.exists("nov20_openai"):
+        if not os.path.exists("oct13_2024_openai"):
             print("DOESN'T EXIST on: " + file_name)
             # add the file to the index
             vectorstore = FAISS.from_documents(
@@ -97,13 +104,13 @@ def faiss_embed_with_metadata_openai(file_name):
                 embedding = embeddings,
                 )
             
-            vectorstore.save_local("nov20_openai")
+            vectorstore.save_local("oct13_2024_openai")
 
         # else, we want to append to an already existing index
         else:
 
             # load the index
-            vectorstore_existing = FAISS.load_local("nov20_openai", embeddings)
+            vectorstore_existing = FAISS.load_local("oct13_2024_openai", embeddings, allow_dangerous_deserialization=True)
             # add the file to the index
             vectorstore_new = FAISS.from_documents(
                 documents = docs,
@@ -114,7 +121,7 @@ def faiss_embed_with_metadata_openai(file_name):
             vectorstore_existing.merge_from(vectorstore_new)
 
             # save the index
-            vectorstore_existing.save_local("nov20_openai")
+            vectorstore_existing.save_local("oct13_2024_openai")
     except Exception as e:
         print(e)
         print("ERROR ON: " + file_name)
@@ -123,14 +130,23 @@ def faiss_embed_with_metadata_openai(file_name):
     
 def query_with_openai(query):
 
-    # embeddings
-    embeddings = OpenAIEmbeddings()
+    load_dotenv()
+
+    # define the embeddings
+    embeddings = OpenAIEmbeddings(
+        model = "text-embedding-3-large",
+        openai_api_key=os.getenv("OPENAI_API_KEY")
+    )     
     
     # load the index
-    vectorstore = FAISS.load_local("nov20_openai", embeddings)
+    vectorstore = FAISS.load_local("oct13_2024_openai", embeddings, allow_dangerous_deserialization=True)
 
     # query the index
-    results = vectorstore.similarity_search_with_score(query, score_threshold=0.35, k = 10) # the lower the score, the "better" results we get
+    results = vectorstore.similarity_search_with_score(
+        query, 
+        score_threshold=1, 
+        k = 10
+    ) # the lower the score, the "better" results we get
     # NOTE so basically the more issues we have in the repo the better we can match them;
     # before, the 0.8 threshold was needed for most findings, now 0.4(where lower is better) is needed for most findings;
     # this means that as time passes and we add more findings, we should theoretically lower the threshold to get the best results
@@ -183,12 +199,14 @@ def json_splitter():
 if __name__ == "__main__":
 
     # json_splitter()
-    # List all the files in the `json_results` folder
+    # # List all the files in the `json_results` folder
     # json_results = os.listdir("../results/split_final_results")
 
     # for file in json_results:
     #     faiss_embed_with_metadata_openai(file)
 
-    # print("DONE")
-    results = query_with_openai("routing")
-    print(results, len(results))
+    results = query_with_openai("Cross-chain denial of service")
+
+    print(results)
+    # for result in results:
+    #     print(result[0].metadata["title"], result[0].metadata["html_url"], result[1])

@@ -1,7 +1,9 @@
 .vscode/
 *.log
 __pycache__/
-embedding/faiss_merged_extrametadata/
-embedding/nov20_openai/
-embedding/dec10_openai/
+embedding/
+embedding/*
 .env
+results/split_final_results/*
+
+logs/
