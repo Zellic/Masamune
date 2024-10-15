@@ -1,7 +1,9 @@
 from flask import Flask, request, jsonify, redirect
-from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.vectorstores import FAISS
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import FAISS
 from flask_cors import CORS
+import os
+from dotenv import load_dotenv
 
 # Create the Flask app
 app = Flask(__name__)
@@ -25,8 +27,16 @@ def load_embeddings():
 
     :return: The vectorstore.
     """
-    embeddings = OpenAIEmbeddings()
-    return FAISS.load_local("dec10_openai", embeddings)
+    load_dotenv()
+    embeddings = OpenAIEmbeddings(
+        model = "text-embedding-3-large",
+        openai_api_key=os.getenv("OPENAI_API_KEY")
+    )   
+    return FAISS.load_local(
+        "oct15_2024_openai", 
+        embeddings,
+        allow_dangerous_deserialization=True
+    )
 
 def search(query, vectorstore):
     """
@@ -39,10 +49,9 @@ def search(query, vectorstore):
     """
     results = vectorstore.similarity_search_with_score(
         query, 
+        score_threshold=1, # TODO Update this whenever the embedding is updated, as new weights are used.
         k = 10
     )
-
-    results = [result for result in results if result[1] < 0.4]
 
     return results
 

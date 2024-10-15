@@ -1,8 +1,7 @@
 .vscode/
 *.log
 __pycache__/
-embedding/
-embedding/*
+embedding/*_openai/*
 .env
 results/split_final_results/*
 
