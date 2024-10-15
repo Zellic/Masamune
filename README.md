@@ -1,6 +1,6 @@
 # [Masamune](https://en.wikipedia.org/wiki/Masamune)
 
-![](katana.png) *The smart contract security search utility tool.*
+![](img/katana.png) *The smart contract security search utility tool.*
 
 ## What is Masamune?
 
