@@ -32478,5 +32478,15 @@
             "Axiom-contracts",
             "Severity: Informational"
         ]
+    },
+    {
+        "title": "Change wording for overrideAxiomQueryFee documentation",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Axiom-contracts-Spearbit-Security-Review-December-2023.pdf",
+        "body": "Throughout the code/README documentation, the new overrideAxiomQueryFee argument is de- scribed in the following ways:   /// @param overrideAxiomQueryFee If non-zero, a different query fee to send to Axiom. - - ,! ): If non-zero, a higher ) -- if non-zero, higher overrideAxiomQueryFee overrideAxiomQueryFee used for this query axiomQueryFee axiomQueryFee uint256 uint256         ( (   to use for this query. than the default to be This wording is slightly incorrect, and the actual behavior would be better described by \"If larger than axiom- QueryFee, the value to be used for the query fee\".",
+        "labels": [
+            "Spearbit",
+            "Axiom-contracts",
+            "Severity: Informational"
+        ]
     }
 ]
