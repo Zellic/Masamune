@@ -18250,5 +18250,194 @@
             "Oak Security",
             "Severity: Informational"
         ]
+    },
+    {
+        "title": "1. Migrate handler does not support fee_share migration for all contract versions",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Astroport/2024-10-17 Audit Report - Astroport Fee Sharing v1.0.pdf",
+        "body": "The fee_share storage eld is introduced in contracts/pair/src/state.rs:25, contracts/pair_concentrated/src/state.rs:43, and contracts/pair_stable/src/state.rs:32. This change requires a state migration for existing contracts deployed with an earlier version. However, this migration is not implemented for all contract versions. In contracts/pair/src/contract.rs:1336, the migrate function does not migrate the fee share state for the 1.3.0 and 1.3.1 contract versions. This is problematic because migrating from both versions will cause the Config storage state to be unable to serialize properly due to the required fee_share eld being unimplemented. Likewise, the pair concentrated contract does not implement the required migration for versions 1.2.4, 2.0.3, and 2.0.4, and the pair stable contract does not implement for in versions and and contracts/pair_concentrated/src/contract.rs:954-957 contracts/pair_stable/src/contract.rs:1071. 3.1.0, 3.0.0 seen as We classify this issue as minor because the contract migration admin can recover from this issue by implementing the state migration and initiating another contract upgrade.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "2. Fee share implementation is not reected in the convert_config function",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Astroport/2024-10-17 Audit Report - Astroport Fee Sharing v1.0.pdf",
+        "body": "the contracts/periphery/liquidity_manager/src/utils.rs:273, In convert_config function sets the fee_share to None. This is incorrect because if the pair stable contract implements a fee-sharing mechanism, the fee-sharing status will be incorrectly represented. We classify this issue as minor because future versions may be aected by the incorrect values in the convert_config function.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "3. Errors during the fee sharing transfer revert swaps",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Astroport/2024-10-17 Audit Report - Astroport Fee Sharing v1.0.pdf",
+        "body": "The fee share logic implemented for the pair, pair_concentrated, and pair_stable contracts dispatch a transfer to the fee_share.recipient with the appropriate fee share amount. in a contracts/pair/src/contract.rs:715. If the token transfers to the recipient errors, the entire swap transaction will revert. executed message Cosmos seen This with as is This error state can be introduced either unintentionally or intentionally. For example, if the recipient is in the token factory denom blacklist, it would cause an error to be thrown by the BlockBeforeSend hook. Also, a CW20 contract could be congured to purposefully error to revert all swap transactions. We classify this issue as informational due to its extremely low likelihood of occurrence. The Astroport community is expected to heavily scrutinize fee share recipients and have little incentive to cause such a disruption to the protocol due to potential reputation damage. Additionally, Astroport governance can take immediate action to remediate the situation by removing the fee share from the aected contract.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "4. Edge case scenarios and functional requirements are not covered",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Astroport/2024-10-17 Audit Report - Astroport Fee Sharing v1.0.pdf",
+        "body": "The test cases for the codebase are inconsistent across the contracts despite targeting the same mechanism. Also, they do not cover certain edge cases, for instance:  Edge cases where 0 or MAX_FEE_SHARE_BPS is set as fee-sharing value.  Updating fee-sharing value.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "5. General code improvements",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Astroport/2024-10-17 Audit Report - Astroport Fee Sharing v1.0.pdf",
+        "body": "In several instances of the codebase, the code quality and readability can be improved:  The comments in contracts/pair_concentrated/tests/pair_concentrated_integrati and on.rs:1757 contracts/pair_concentrated/tests/pair_concentrated_simulatio n.rs:101 mention the fee value as 5%, while the implementation sets it to 10%.  contracts/pair/src/contract.rs:703 uses a hardcoded value of 10000, which can be converted into a constant.  The in contracts/pair_concentrated/tests/pair_concentrated_integrati on.rs:1744 mentions setting the fee_share to max+1, but it is set to 0 in the implementation. comment",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "1. Owner loses their NFT if the auction ends without bids",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Archisinal/2024-08-21 Audit Report - Archisinal Marketplace v1.0.pdf",
+        "body": "The claim_nft function in impls/auction/mod.rs:254 is responsible for distributing the NFT and funds when an auction ends. If there are bids, the NFT is sent to the highest bidder, while the tokens are sent to the auction creator. However, causes a loss for the owner, as the NFT should be refunded if the auction fails. if there are no bids for the auction, the NFT is not refunded to the owner. This",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "2. Attackers can back-run allowance to buy NFT at a low price, causing a loss for the owner",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Archisinal/2024-08-21 Audit Report - Archisinal Marketplace v1.0.pdf",
+        "body": "To list an NFT for sale or auction, the owner must perform two transactions. The rst the marketplace contract, and the second transaction approves an allowance for transaction calls the list_nft_for_sale or list_nft_for_auction functions in contracts/marketplace/lib.rs:244 or 283. correctly the NFT in While both functions impls/marketplace/mod.rs:52-54 and impls/auction/mod.rs:59-61, they do not validate that the caller is the owner. This means anyone can list or auction the NFT for sale if the owner approves a valid allowance. the creator owns validate that This opens up an attack vector where an attacker can back-run the allowance transaction to list the NFT with a low price (typically under market value) and purchase it. Back-running means that the attackers transaction is executed immediately after the victims transaction is processed. An example attack scenario is illustrated below: 1. The owner approves an allowance for the marketplace contract. 2. The attacker back-runs the transaction to list the NFT with a low price",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "5. The attacker gains prot after selling the NFT at its market price. Although both the list_nft_for_sale and list_nft_for_auction functions are susceptible to this vulnerability, sophisticated attackers would use list_nft_for_sale, as it allows them to purchase the NFT at a lower price immediately before the owner or admin cancels the trade. Recommendation We recommend modifying the list_nft_for_sale and list_nft_for_auction functions so only the owner can list or auction their NFTs. Status: Acknowledged 3. Native funds are incorrectly transferred to the caller",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Archisinal/2024-08-21 Audit Report - Archisinal Marketplace v1.0.pdf",
+        "body": "",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "6. Incorrect logic condition check in the _admin_or_owner function",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Archisinal/2024-08-21 Audit Report - Archisinal Marketplace v1.0.pdf",
+        "body": "In impls/admin_access/impls.rs:46-49, the _admin_or_owner function validates whether the caller is one of the admins or is the contract owner. However, the logic in line 47 checks that the caller is both the admin and the owner, which diers from the intended functionality. Since there can only be one contract owner, admins who are granted roles from the contract owner cannot call the privileged functions as expected.",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "7. Lack of validation for royalty leads to stuck funds",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Archisinal/2024-08-21 Audit Report - Archisinal Marketplace v1.0.pdf",
+        "body": "arch_nft in The contracts/arch_nft/lib.rs:120. The issue is that the constructor does not validate the royalty value to be less than the max BPS value of 10000 (see lines 96-98). new_default constructor contract denes a This is problematic because a royalty value larger than the max BPS value breaks the marketplaces in impls/shared/utils.rs:22-30 computes the royalty fees when concluding a trade. If the fee value exceeds 10000, the IntegerUnderflow error in line 30 will be triggered. apply_fee functionality. Specically, function the the claim_nft function will error Consequently, in impls/auction/mod.rs:297, reverting the transaction. This will result in the NFT and bidders funds being stuck in the contract, causing a loss of funds for the auction creator and the winning bidder.",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "8. Incorrect creator accounts implementation",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Archisinal/2024-08-21 Audit Report - Archisinal Marketplace v1.0.pdf",
+        "body": "The account_manager contract in contracts/account_manager/lib.rs:105-131 allows users to create User and Creator accounts. Their implementations can be found in the impls/user and impls/creator directories. However, implements same contracts/user/lib.rs, which is incorrect. the Creator account contract dened in contracts/creator/lib.rs in functionalities contract account User the the as Consequently, the create_creator_account function will incorrectly create Creator accounts as User accounts, causing creators to be unable to create collections and breaking the protocols functionality.",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "9. Excess funds sent by users will be stuck",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Archisinal/2024-08-21 Audit Report - Archisinal Marketplace v1.0.pdf",
+        "body": "The marketplace contract allows sellers to decide whether they want to receive native or PSP22 tokens as the medium of exchange. When purchasing or bidding on the NFTs, the assure_transfer function in impls/shared/currency.rs:126-137 implements validation mechanisms to ensure the user sends sucient native funds. However, no logic has been implemented to refund the user if they have sent excess funds. If a user sends more funds than required, those tokens will be stuck in the contract. This can also happen when the traded currency is PSP22 tokens, but the user included native tokens when calling the functions. aected The impls/marketplace/mod.rs:123, respectively. functions are buy_nft, 178, buy_batch, in impls/auction/mod.rs:194, bid_nft and and While blockchains generally do not protect users from sending funds to the wrong accounts, reverting extra funds increases the user experience.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "10. Irrecoverable protocol functionalities due to ownership transfer and renouncement",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Archisinal/2024-08-21 Audit Report - Archisinal Marketplace v1.0.pdf",
+        "body": "The account_manager contract allows users to create accounts as individual contracts in contracts/account_manager/lib.rs:105-131. The contracts are instantiated with a hard-coded salt and then added to the mapping with the key entry as the callers address. This approach limits the caller from creating only one instance of the User and Creator account types, as the AccountAlreadyExists error will be raised if the account already exists. The instantiated contracts implement an Ownable trait, allowing functionalities to transfer and renounce ownership. If the user wants to create a new account type (e.g., because contract ownership was transferred or renounced by mistake), the transaction will fail.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "11. Role-based access control assignment does not follow best practices and centralization issues",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Archisinal/2024-08-21 Audit Report - Archisinal Marketplace v1.0.pdf",
+        "body": "The marketplace contract implements a role-based access control mechanism. It denes two roles: owner and admin. The roles are set function in contracts/marketplace/lib.rs:210-213. in the constructor However, those roles are both assigned to a single AccountId, which is not a valid approach. Role-based access control mechanisms should follow separation of concerns, with each role responsible for a specic aspect of a conguration or certain privileged operations. Assigning multiple roles to the same entity defeats the purpose of implementing a role-based access control scheme. Similar issues can be observed in contracts/account_manager/lib.rs:92-95 and contracts/collection_fabric/lib.rs:116-119. Additionally, the privileged roles should only be responsible for maintaining and conguring the protocol itself. If the privileged roles can bypass the business logic to forcefully change the state of the contract, they introduce centralization concerns. could bypass the ownership check to execute the For example, admin roles cancel_auction function in impls/auction/mod.rs:166-168, the start_auction function in impls/marketplace/mod.rs:95-97. This may be undesired for the auction/listing creator. cancel_listing 133-135, function lines and the in",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "12. Identical token IDs may lead to confusion",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Archisinal/2024-08-21 Audit Report - Archisinal Marketplace v1.0.pdf",
+        "body": "arch_nft The impls/collection/impls.rs:108, allowing the owner to create new NFTs. mint_with_metadata implements contract a function in The issue is that the owner needs to provide an ID when creating an NFT. The ID parameter is an enum that contains many variants, such as U8(u8), U16(u16), U32(u32), U64(u64), U128(u128), and Bytes(Vec<u8>). This means the owner can mint Id::U8(1) and Id::U64(1) as two dierent NFTs but will be represented as token ID 1 on the front end, potentially confusing users.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "13. Redundant validations",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Archisinal/2024-08-21 Audit Report - Archisinal Marketplace v1.0.pdf",
+        "body": "The buy_nft function in the marketplace contract allows a user to purchase a listed NFT. Several validations are implemented to ensure that only a valid transaction can be completed. In particular, the assure_transfer function in impls/marketplace/mod.rs:148 ensures that the native funds sent are sucient to cover the cost of the NFT. However, this validation is redundant because the transfer_from function in line 157 also performs the validation in impls/shared/currency.rs:181. Consequently, consumed for the transaction. the same validation is performed twice, unnecessarily increasing the gas Furthermore, the bid_nft function validates the auctions start time to be larger than the timestamp in impls/auction/mod.rs:210-212. This validation is redundant current because the start_auction function in impls/auction/mod.rs:141-143 already checks it, which must be called before the bidding phase.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "14. NFT can be listed as free",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Archisinal/2024-08-21 Audit Report - Archisinal Marketplace v1.0.pdf",
+        "body": "the list_nft_for_sale function does not In impls/marketplace/mod.rs:42, validate the price parameter, representing the NFT sale price. This means it is possible to list NFTs for free, which may cause creators to lose them if a misconguration occurs.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "15. Unnecessary account_id function",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Archisinal/2024-08-21 Audit Report - Archisinal Marketplace v1.0.pdf",
+        "body": "contract arch_nft The in contracts/arch_nft/lib.rs:152-154, which returns the contract address. This function is not required because the caller needs to know the contracts AccountId to call it, defeating the functions purpose. account_id function denes the",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "16. Code optimizations",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Archisinal/2024-08-21 Audit Report - Archisinal Marketplace v1.0.pdf",
+        "body": "The buy_batch function in impls/marketplace/mod.rs:178 allows users to purchase multiple NFTs. The function accepts a vector of listing IDs, and for each entry, it ensures a listing is associated with it and validates its state in lines 181-199. Subsequently, the function parses the vector again to compute the required native funds to be transferred along with the call in lines 201-213. Those operations are performed in two separate fold executions on two separate iterators, which can be simplied into a single pass over the vector. Additionally, the buy_batch function does not validate the ID vector to contain unique values. If there are duplicate IDs, the whole transaction will be reverted. This could be avoided by ltering unique elements in the vector.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "17. Missing validation on strings may lead to cross-site scripting",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Archisinal/2024-08-21 Audit Report - Archisinal Marketplace v1.0.pdf",
+        "body": "the token_name, token_uri, and In contracts/arch_nft/lib.rs:123-125, additional_info attributes are not validated or sanitized. If these values are displayed in raw format on the dApp front end, they may be parsed as JavaScript or HTML, opening up client-side attack vectors that may target end-users, such as cross-site scripting (XSS). This issue is also present in the collections creation and user object attributes.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "18. Unused errors",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Archisinal/2024-08-21 Audit Report - Archisinal Marketplace v1.0.pdf",
+        "body": "In traits/mod.rs:21, codebase. However, AuctionHasNoBids errors are not used. the ArchisinalError enum lists all errors used across the and the CreatorIsNotCaller, CallerIsAuctionOwner,",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
     }
 ]
