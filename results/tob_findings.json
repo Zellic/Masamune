@@ -15628,5 +15628,25 @@
             "Severity: High",
             "Difficulty: Low"
         ]
+    },
+    {
+        "title": "1. EOAs addresses can be unexpectedly aliased ",
+        "html_url": "https://github.com/trailofbits/publications/tree/master/reviews/2024-10-30-Offchain-NitroContractswithBoLD-securityreview.pdf",
+        "body": "The usage of EIP-7702 when EOAs interact with the Arbitrum contracts in the parent chain can trigger unexpected aliasing. EIP-7702 allows EOAs to set their code. If an EOA has code, the Arbitrum smart contracts in the parent chain will treat the address as a smart contract. In particular, for deposits, this means that the depositEth function will alias its origin address and use it as the destination of the deposit on the L2 side (gure 1.1). function depositEth () public payable whenNotPaused onlyAllowed returns ( uint256 ) { address dest = msg.sender ; // solhint-disable-next-line avoid-tx-origin if (AddressUpgradeable.isContract( msg.sender ) || tx.origin != msg.sender ) { // isContract check fails if this function is called during a contract's constructor. dest = AddressAliasHelper.applyL1ToL2Alias( msg.sender ); } return _deliverMessage( L1MessageType_ethDeposit, msg.sender , abi.encodePacked(dest, msg.value ), msg.value ); } Figure 1.1: The depositEth function ( src/bridge/Inbox.sol#L202-L214 ) While this is not a problem, as users can eventually use the unsafeCreateRetryableTicket function to move funds, it may appear as unexpected behavior. Other instances where an EOA address can be potentially aliased are:   The msg.sender of the depositERC20 function in the ERC20Inbox contract The excessFeeRefundAddress and callValueRefundAddress arguments of the _createRetryableTicket function in the AbsInbox contract Exploit Scenario Alice calls depositEth from her EOA address with code, expecting that the funds will be deposited to the same address on Arbitrum. However, they are sent to its aliased address. Recommendations Short term, consider clearly documenting that behavior in the UI so users are aware of it. Long term, review the implications of EIP-7702 across all the Arbitrum components.",
+        "labels": [
+            "Trail of Bits",
+            "Severity: Informational",
+            "Difficulty: Low"
+        ]
+    },
+    {
+        "title": "2. EIP-7702 can break assumptions on address aliasing ",
+        "html_url": "https://github.com/trailofbits/publications/tree/master/reviews/2024-10-30-Offchain-NitroContractswithBoLD-securityreview.pdf",
+        "body": "The usage of EIP-7702 both in the parent and the child chain can result in new types of interactions regarding address aliasing that were not previously possible in practice, and could impact users if they are not aware. Address aliasing was introduced in the L2 to avoid unexpected or impossible interactions between smart contracts when doing cross-chain transactions. These assumptions still hold in practice (except if someone manages to nd a private key for a smart contract address). However, with the introduction of EIP-7702 in both the parent and child chain, these assumptions are no longer valid in practice. Specically, in some cases, EOAs without code are not aliased in the parent chain; however, they could have code in the child chain, which eectively turns them into smart contracts that require address aliasing. Recommendations Short term, consider enhancing the documentation around the risks associated with cross-chain calls when users call EOAs with code. Long term, review the implications of EIP-7702 across all the Arbitrum components. A. Vulnerability Categories The following tables describe the vulnerability categories, severity levels, and diculty levels used in this document. Vulnerability Categories Category",
+        "labels": [
+            "Trail of Bits",
+            "Severity: Informational",
+            "Difficulty: Low"
+        ]
     }
 ]
