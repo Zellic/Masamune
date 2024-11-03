@@ -32918,5 +32918,365 @@
             "Royco",
             "Severity: Informational"
         ]
+    },
+    {
+        "title": "Lack of chain ID in cosigner signature message",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Uniswapx-Spearbit-Security-Review-July-2024.pdf",
+        "body": "The cosigner signature message in the PriorityOrderLib does not include a domain separator or chain ID. While the orderHash includes the reactor address, the absence of the chain ID in the cosigner's signature message means that this signature could potentially be replayed in a fork scenario. The cosignerDigest function simply concatenates the orderHash with the encoded cosignerData, without incor- porating any chain-specific information: return keccak256(abi.encodePacked(orderHash, abi.encode(order.cosignerData))); This differs from the orderHash itself, which is verified by Permit2 and includes a domain separator with chain ID.",
+        "labels": [
+            "Spearbit",
+            "Uniswapx",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Input scaling quickly scales to 0",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Uniswapx-Spearbit-Security-Review-July-2024.pdf",
+        "body": "When scaling input.amount, values quickly scale to 0. See the pseudocode below: priorityFee = tx.gasprice - block.basefee; priorityFee -= baselinePriorityFeeWei; scalingFactor = priorityFee * input.mpsPerPriorityFeeWei; if (scalingFactor >= MPS) then 0 else (amount * (MPS - scalingFactor)) / MPS UniswapX confirmed mpsPerPriorityFeeWei will typically be either 0 or a 1. MPS is a constant of 1e7. In current conditions, a priorityFee less than MPS does offer some room to compete for arbitrage when filling an order. If gas prices were to spike, 1e7 as a percentage of total gas price becomes smaller. Potentially leaving little room to compete for first position in a block.",
+        "labels": [
+            "Spearbit",
+            "Uniswapx",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Zero value transfers may occur",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Uniswapx-Spearbit-Security-Review-July-2024.pdf",
+        "body": "User may include 0 values in their order (user error) and fillers may fill order with priority fees that scale to 0 (filler error).  For tokens allowing 0 value transfers, gas may be wasted.  For tokens restricting 0 value transfers, orders will revert.",
+        "labels": [
+            "Spearbit",
+            "Uniswapx",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Order looped through multiple times",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Uniswapx-Spearbit-Security-Review-July-2024.pdf",
+        "body": "When an order is filled, there are multiple loops iterating over the order data:  Resolving Order 1. During order validation when order.input.mpsPerPriorityFeeWei > 0, each PriorityOutput is checked to confirm order.outputs[i].mpsPerPriorityFeeWei == 0. 2. When scaling, each PriorityOutput is scaled.  Preparing Order 1. The mock fee controller iterates over each of the OutputTokens (assuming the production fee controller does the same). 2. When injecting fees, each output is iterated over to copy to a new memory array, with fee outputs appended. 3. When injecting fees, each fee OutputToken is looped over. 4. During the fee OutputToken loop, each token iterates backwards (some savings) to confirm it is not a duplicate of a fee OutputToken from an earlier index. 5. During the fee OutputToken loop, each non-fee OutputToken is iterated over, tallying the tokenValue. This value is later used to confirm the fee is not too large.  Filling Order 1. Filling the order loops through each ResolvedOrder, which includes the fee transfers.",
+        "labels": [
+            "Spearbit",
+            "Uniswapx",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Short circuit input and output scaling in the case that they won't be scaled",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Uniswapx-Spearbit-Security-Review-July-2024.pdf",
+        "body": "In the input and output PriorityFeeLib scale functions, we scale the provided amount accordingly to a priorityFee based scaling mechanism: amount: input.amount.mulDivDown((MPS - scalingFactor), MPS), amount: output.amount.mulDivUp((MPS + (priorityFee * output.mpsPerPriorityFeeWei)), MPS), In both cases, we apply this scaling logic regardless of whether the result will be any different. Since at most only one of the input or output will be scaled for each order, at least one of them will be scaled redundantly with each order.",
+        "labels": [
+            "Spearbit",
+            "Uniswapx",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Typehashes can be precomputed off-chain",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Uniswapx-Spearbit-Security-Review-July-2024.pdf",
+        "body": "In PriorityOrderLib, we compute several EIP-712 typehashes on-chain during contract deploy- ment, e.g.: bytes32 internal constant PRIORITY_INPUT_TOKEN_TYPE_HASH = keccak256(PRIORITY_INPUT_TOKEN_TYPE); As defined in the EIP-712 spec: The typeHash is a constant for a given struct type and does not need to be runtime computed. As such, we can precompute these typehashes off-chain and simply set the constants as the result. Include the",
+        "labels": [
+            "Spearbit",
+            "Uniswapx",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Small gas savings when using unchecked",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Uniswapx-Spearbit-Security-Review-July-2024.pdf",
+        "body": "This function returns early when scalingFactor >= MPS meaning the language level checked math is no longer needed.",
+        "labels": [
+            "Spearbit",
+            "Uniswapx",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Redundant self-reference in PriorityOrderLib constants",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Uniswapx-Spearbit-Security-Review-July-2024.pdf",
+        "body": "The PriorityOrderLib library unnecessarily self-references to access its own constants within the same contract. This is redundant as these constants can be accessed directly within the library.",
+        "labels": [
+            "Spearbit",
+            "Uniswapx",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "PriorityOutput array hash can be computed without inline assembly",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Uniswapx-Spearbit-Security-Review-July-2024.pdf",
+        "body": "PriorityOutput struct array is hashed using inline assembly. /// @notice returns the hash of an output token struct function hash(PriorityOutput[] memory outputs) private pure returns (bytes32) { unchecked { bytes memory packedHashes = new bytes(32 * outputs.length); for (uint256 i = 0; i < outputs.length; i++) { bytes32 outputHash = hash(outputs[i]); assembly { mstore(add(add(packedHashes, 0x20), mul(i, 0x20)), outputHash) } } return keccak256(packedHashes); } } Although the implementation is accurate, there is no need to resort to inline assembly. Using abi.encodePacked on a bytes32 array would generate the same packedHashes value.",
+        "labels": [
+            "Spearbit",
+            "Uniswapx",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Improper use of compound assignment operation",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Uniswapx-Spearbit-Security-Review-July-2024.pdf",
+        "body": "In PriorityOrderReactor._checkPermit2Nonce(), there is a compound assignment operation. uint256 flipped = bitmap ^= bit; This operation assigns the result of bitmap (cid:2) bit to both bitmap and to flipped variables. However, bitmap is only an intermediate variable used for calculation purposes, and updating its value is unnecessary.",
+        "labels": [
+            "Spearbit",
+            "Uniswapx",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Lack of scaling on both input and output allowed",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Uniswapx-Spearbit-Security-Review-July-2024.pdf",
+        "body": "In PriorityOrderReactor._validateOrder, we validate that the mpsPerPriorityFeeWei isn't set on both the input and the output, however, it doesn't enforce that the mpsPerPriorityFeeWei is non-zero for at least one of them. Since the unscaled input/output amounts represent maximum/minimum amounts if they are to be scaled, in the case that no scaling is occurring, this can result in an order being created without the MEV tax being applied, resulting in a loss for the user. Since a missing mpsPerPriorityFeeWei for both the input and output is at best just an inefficient limit order, we never want this to occur.",
+        "labels": [
+            "Spearbit",
+            "Uniswapx",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Changes to transaction ordering mechanisms can break expectations of MEV tax",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Uniswapx-Spearbit-Security-Review-July-2024.pdf",
+        "body": "The MEV tax mechanism introduced in the code under audit works by scaling the input or output in the favor of the order maker according to the priorityFee of the transaction. This logic depends upon the expectation that transactions are ordered based on the priorityFee, which is currently true for OP stack chains. This expectation is important because collusion between the filler and block builder or sequencer can result in an order being filled with a priorityFee of 0 ahead of other fill transactions, resulting in the filler getting the lowest possible cost by not paying the MEV tax. Assuming that OP stack chain sequencers are trusted, we don't risk this issue currently, however, there is a draft spec to move to a PBS-style mechanism. Similarly, some OP stack chains, notably Celo, have signalled intent to move to a classic leader election mechanism. In the case that any chains operating the PriorityOrderReactor move to either of these mechanisms, the MEV tax can be avoided at the expense of order makers.",
+        "labels": [
+            "Spearbit",
+            "Uniswapx",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Incorrect fee growth initialisation causes incorrect reward distribution",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Sorella-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The initialisation of the rewardGrowthOutside of a tick differs from Uniswap's. It is set to maintain the following invariant: for all ticks: if (tick > current_tick) then for all ticks: if (tick > tick) then  growthOutside[tick] >= growthOutside[tick  ] However, it is possible to re-initialise the rewardGrowthOutside when it shouldn't. For instance, one could create multiple positions with the same uninitialised lower tick, but different upper ticks that may have different growth outside values in the same block. This results in being able to create a new position being initialised with non-zero rewards. Proof of Concept: Insert into PoolUpdates.t.sol: function test_IncorrectFeeGrowthInside() public { uint128 liq1 = 8.2e21; address lp1 = makeAddr(\"lp_1\"); handler.addLiquidity(lp1, 120, 180, liq1); handler.addLiquidity(lp1, 120, 300, liq1); handler.addLiquidity(lp1, 120, 360, liq1); uint128 amount1 = 23.872987e18; handler.rewardTicks(re(TickReward({tick: 180, amount: amount1}))); bumpBlock(); handler.rewardTicks(re(TickReward({tick: 300, amount: amount1}))); bumpBlock(); uint128 liq2 = 0.64e21; address lp2 = makeAddr(\"lp_2\"); handler.addLiquidity(lp2, 60, 300, liq2); handler.addLiquidity(lp2, 60, 180, liq2); uint256 positionRewardsUpperTick300 = positionRewards(lp2, 60, 300, liq2); uint256 positionRewardsUpperTick180= positionRewards(lp2, 60, 180, liq2); assertEq(positionRewardsUpperTick180, 0); // the position with 300 as the upper tick was initialised with non-zero rewards assertGt(positionRewardsUpperTick300, 0); }",
+        "labels": [
+            "Spearbit",
+            "Sorella",
+            "Severity: High Risk"
+        ]
+    },
+    {
+        "title": "Incorrect extraFeeAsset0 fee accounting",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Sorella-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The application of extraFeeAsset0 is inconsistent depending on the direction & specication of the swap:  zeroForOne:  Exact input: extraFeeAsset0 is subtracted from quantityIn, which means the less asset0 is taken from the user, although less asset1 is given.  Exact output: For the specied asset1, extraFeeAsset0 is subtracted from the required as- set0 payable. Likely to cause the order to be excluded from the bundle because it would cause the asset0 bundle delta to be negative and thus the bundle transaction to revert with the BundleChangeNetNegative() error.  oneForZero:  Exact input: Correctly implemented.  Exact output: The user receives less than the specied quantity, but will pay less as well.",
+        "labels": [
+            "Spearbit",
+            "Sorella",
+            "Severity: High Risk"
+        ]
+    },
+    {
+        "title": "SwapCallLib.call() incorrectly uses return() instead of revert() on failed calls",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Sorella-Spearbit-Security-Review-October-2024.pdf",
+        "body": "When a swap call to UniswapV4 fails in SwapCallLib.call(), the return opcode is used instead of reverting: let success := call(gas(), uni, 0, add(self, CALL_PAYLOAD_START_OFFSET), CALL_PAYLOAD_CD_BYTES, 0, 0) if iszero(success) { let free := mload(0x40) returndatacopy(free, 0, returndatasize()) return(0, returndatasize()) } This terminates execution but all existing state changes persist, which makes it possible for wrongly sub- mitted bundles to not revert during execution.",
+        "labels": [
+            "Spearbit",
+            "Sorella",
+            "Severity: High Risk"
+        ]
+    },
+    {
+        "title": "Keys for _balances mapping are inverted in _settleOrderIn() and _settleOrderOut()",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Sorella-Spearbit-Security-Review-October-2024.pdf",
+        "body": "In the Settlement contract, _balances is declared as a mapping of asset => owner => bal- ance: mapping(address asset => mapping(address owner => uint256 balance)) internal _balances; However, _settleOrderIn() and _settleOrderOut() swap the asset and owner addresses when accessing the _balances maping: _balances[from][asset] -= amount; _balances[to][asset] += amount; This makes it impossible to use internal balances when handling orders.",
+        "labels": [
+            "Spearbit",
+            "Sorella",
+            "Severity: High Risk"
+        ]
+    },
+    {
+        "title": "deposit() can be used to inate a user's balance for not-yet-deployed tokens",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Sorella-Spearbit-Security-Review-October-2024.pdf",
+        "body": "In the Settlement contract, both deposit() functions transfer in assets from the user and adds to their internal balance: function deposit(address asset, uint256 amount) external { asset.safeTransferFrom(msg.sender, address(this), amount); _balances[asset][msg.sender] += amount; } function deposit(address asset, address to, uint256 amount) external { asset.safeTransferFrom(msg.sender, address(this), amount); _balances[asset][to] += amount; } Both functions use Solady's SafeTransferLib to handle token transfers. However, Solady's SafeTransfer- Lib does not check if the token has code before when performing any ERC-20 operations, as documented in the comments: /// - For ERC20s, this implementation won /// responsibility is delegated to the caller.  t check that a token has code, 6 If safeTransferFrom() is called on an address with no code, it will not revert. As such, an attacker can inate their balance in the protocol if they know a token's address ahead of time. For example, an attacker could front-runn a token deployment to call deposit() before the token is actually deployed. Adding this test to Settlement.t.sol demonstrates that calling deposit() with asset as an address with- out code is possible: function test_depositWithoutCode() public { address user = makeAddr(\"user\"); address asset = address(0xdeadbeef); vm.prank(user); angstrom.deposit(asset, type(uint256).max); assertEq(rawGetBalance(address(angstrom), asset, user), type(uint256).max); }",
+        "labels": [
+            "Spearbit",
+            "Sorella",
+            "Severity: High Risk"
+        ]
+    },
+    {
+        "title": "HookBufferLib.readFrom() reads dirty bytes from free memory",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Sorella-Spearbit-Security-Review-October-2024.pdf",
+        "body": "memPtr+0x50, where memPtr is the free memory pointer. Afterwards, the hook address is read from memPtr + 0x44, as shown below: let hookAddr := mload(add(memPtr, 0x44)) However, since memPtr+0x44 to memPtr+0x50 hasn't been written to yet, it could contain non-zero bytes used by previous operations. Should this occur, the upper 12 bytes of hookAddr will be dirty and could corrupt the memPtr stored in HookBuffer hook subsequently: hook := or( ) shl(HOOK_MEM_PTR_OFFSET, memPtr), or(shl(HOOK_ADDR_OFFSET, hookAddr), add(payloadLength, 0x64)) As seen from above, the upper 12 bytes of hookAddr will be OR-ed with memPtr, causing the hook pointer to be much larger than it should be. The following PoC demonstrates how memPtr is corrupted when memPtr + 0x44 contains non-zero bytes beforehand: // SPDX-License-Identifier: MIT pragma solidity ^0.8.0; import \"forge-std/Test.sol\"; import \"src/types/CalldataReader.sol\"; import \"src/types/HookBuffer.sol\"; contract HookBufferTest is Test { uint256 internal constant HOOK_ADDR_OFFSET = 32; uint256 internal constant HOOK_MEM_PTR_OFFSET = 192; uint256 internal constant HOOK_LENGTH_MASK = 0xffffffff; function getHookBuffer(bytes calldata data) external { 7 CalldataReader reader = CalldataReaderLib.from(data); // Fill free memory pointer+0x44 with garbage assembly { let memPtr := mload(0x40) mstore(add(memPtr, 0x44), 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff) } // Get hook (, HookBuffer hook, ) = HookBufferLib.readFrom(reader, false); uint256 memPtr; address hookAddr; assembly { memPtr := shr(HOOK_MEM_PTR_OFFSET, hook) hookAddr := shr(HOOK_ADDR_OFFSET, hook) } // memPtr is corrupted by garbage, since memPtr | 0xffffffffffffffff is stored assertEq(memPtr, 0xffffffffffffffff); assertEq(hookAddr, 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48); } function test_readFrom() public { address hook = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48; bytes memory hookData = abi.encodePacked(hook, \"AAAAAAAA\"); this.getHookBuffer(abi.encodePacked(uint24(hookData.length), hookData)); } } SignatureLib.readAndCheckEcdsa() uses free memory to store 65 signature bytes. As a result, if Hook- BufferLib.readFrom() is called after SignatureLib.readAndCheckEcdsa() without any memory allocation in-between, the hook pointer returned by HookBufferLib.readFrom() will be corrupted. This will cause HookBuffer.tryTrigger() to revert with EvmError: MemoryLimitOOG when trying to read the corrupted hook pointer, making it impossible to execute any user order with a hook. For example, consider two user orders: 1. First user order calls SignatureLib.readAndCheckEcdsa() to verify the signature. 2. Second user order contains a hook. When attempting to execute the hook in the second order, it will revert. The following imports and test can be added to Settlement.t.sol to demonstrate this: import {OrderMeta, ExactFlashOrder} from \"test/_reference/OrderTypes.sol\"; import {UserOrder, UserOrderLib} from \"test/_reference/UserOrder. function test_userOrder() public { // Give searcher sufficient assetIn address assetIn = assets[3]; MockERC20(assetIn).mint(searcher.addr, 10e18); // Enable pool for (assetIn, otherAsset) enablePool(assetIn, otherAsset); // Create two exact flash orders to swap 1e18 and 2e18 assets respectively ExactFlashOrder memory order1; ExactFlashOrder memory order2; order1.amount = 1e18; order2.amount = 2e18; order1.exactIn = order2.exactIn = true; order1.assetIn = order2.assetIn = assets[3]; order1.assetOut = order2.assetOut = otherAsset; order1.hook = order2.hook = address(this); order1.validForBlock = order2.validForBlock = uint64(block.number); // Sign both orders sign(searcher, order1.meta, erc712Hash(domainSeparator, order1.hash())); sign(searcher, order2.meta, erc712Hash(domainSeparator, order2.hash())); // Create bundle Bundle memory bundle; 8 bundle.addPair(assetIn, otherAsset); bundle.userOrders = new UserOrder[](2); bundle.userOrders[0] = UserOrderLib.from(order1); bundle.userOrders[1] = UserOrderLib.from(order2); // Execute orders bytes memory payload = bundle.encode(rawGetConfigStore(address(angstrom))); vm.prank(validator); angstrom.execute(payload); } function compose(address, bytes calldata) external pure returns (uint32) { return 0x24a2e44b; }",
+        "labels": [
+            "Spearbit",
+            "Sorella",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Pair.getSwapInfo() returns wrong prices for asset conversion",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Sorella-Spearbit-Security-Review-October-2024.pdf",
+        "body": "Pair.getSwapInfo() returns price0Over1 when zeroToOne = true, and price1Over0 when zeroToOne = false: assembly (\"memory-safe\") { let offsetIfZeroToOne := shl(5, zeroToOne) assetIn := mload(add(self, xor(offsetIfZeroToOne, 0x20))) assetOut := mload(add(self, offsetIfZeroToOne)) priceOutVsIn := mload(add(self, add(PAIR_PRICE_10_OFFSET, offsetIfZeroToOne))) oneMinusFee := sub(ONE_E6, mload(add(self, PAIR_FEE_OFFSET))) } However, price Buffer.loadAndComputeQuantity(): returned the does not match the asset calculations in UserOrder- if (variant.zeroForOne()) { if (variant.specifyingInput()) { quantityIn = AmountIn.wrap(quantity - extraFeeAsset0); quantityOut = price.convert(quantityIn); } else { quantityOut = AmountOut.wrap(quantity); quantityIn = price.convert(quantityOut) - AmountIn.wrap(extraFeeAsset0); } } else { if (variant.specifyingInput()) { quantityIn = AmountIn.wrap(quantity); quantityOut = price.convert(quantityIn) - AmountOut.wrap(extraFeeAsset0); } else { quantityOut = AmountOut.wrap(quantity - extraFeeAsset0); quantityIn = price.convert(quantityOut); } } For example:  If asset1 is WBTC and asset0 is USDT:  price1Over0 would be (1.0e8) * 1e27 / (65_000e6) = ~1.538e24.  price0Over1 would be 1e29.  Assume that:  zeroForOne and specifyingInput are both true, meaning the user swaps USDT to WBTC. 9  The amount of USDT to swap is specied as quantity = 65_000e6.  PairLib.getSwapInfo() would return price0Over1.  The calculation above be quantityOut = quantityIn * price0Over1 / 1e27 = 65_000e6 * 1e29 / 1e27 = 65_000e8. This returns 65,0000 WBTC for 65,000 USDT, which is incorrect. The correct calculation would be to use price1Over0 instead.",
+        "labels": [
+            "Spearbit",
+            "Sorella",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Bundles with PermitSubmitterHook can be forced to revert with permit front-running",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Sorella-Spearbit-Security-Review-October-2024.pdf",
+        "body": "When users submit user orders, they are allowed to specify a custom hook to be called when their order is executed. One of these hooks is PermitSubmitterHook, which uses ERC-20 permit to grant approvals before transferring tokens from the user. However, if a node calls execute() with multiple user orders and one of them calls PermitSubmitterHook, anyone can force the bundle to revert by front-running it and directly calling permit() with the signature beforehand. This will cause PermitSubmitterHook.compose() to revert when attempting to call permit() with the same signature, since it has already been used. This pattern is described in more detail innTrust-security's Permission denied post.",
+        "labels": [
+            "Spearbit",
+            "Sorella",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Incorrect Tick Compression Adjustment in isInitialized()",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Sorella-Spearbit-Security-Review-October-2024.pdf",
+        "body": "(int16 wordPos, uint8 bitPos) = TickLib.position(TickLib.compress(tick, tickSpacing) - 1); is used to get the word and bit positions after compressing the tick by tickSpacing. However, there is an incorrect offset by 1, resulting in an incorrect position calculation.",
+        "labels": [
+            "Spearbit",
+            "Sorella",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Potential DoS Risk with Excessive Initialized Ticks",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Sorella-Spearbit-Security-Review-October-2024.pdf",
+        "body": "There is a potential Denial of Service (DoS) risk if there are too many initialised ticks to iterate through, which could cause transactions to exceed the block gas limit. This would be more prevalent for pools with low tick spacings, and for ticks that are located further away from the current tick.",
+        "labels": [
+            "Spearbit",
+            "Sorella",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Potential zero reward allocation if reward tick is incorrectly specied",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Sorella-Spearbit-Security-Review-October-2024.pdf",
+        "body": "Reward distributors should be aware of a footgun, that it's possible to have non-zero reward- Total but zero reward distributed if the rewardTick happens to be the upper tick of the highest position (because the upper tick is exclusive of the position). Note another instance of this occurs when currentOnly is true and there is 0 active liquidity (ie. get- PoolLiquidity() = 0). Proof of Concept: Insert into PoolUpdates.t.sol. 11 function test_zeroRewardDistributed() public { uint128 liq1 = 8.2e21; address lp1 = makeAddr(\"lp_1\"); handler.addLiquidity(lp1, -120, 120, liq1); uint128 amount1 = 23.872987e18; // reward upper tick handler.rewardTicks(re(TickReward({tick: 120, amount: amount1}))); uint256 lpRewards = positionRewards(lp1, -120, 120, liq1); assertEq(lpRewards, 0); } function test_zeroRewardDistributed_currentOnly() public { uint128 liq1 = 8.2e21; address lp1 = makeAddr(\"lp_1\"); handler.addLiquidity(lp1, -180, -120, liq1); uint128 amount1 = 23.872987e18; // reward upper tick handler.rewardTicks(re(TickReward({tick: -120, amount: amount1}))); uint256 lpRewards = positionRewards(lp1, -180, -120, liq1); assertEq(lpRewards, 0); }",
+        "labels": [
+            "Spearbit",
+            "Sorella",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Fee overcharging arising from precision issues",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Sorella-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The calculation of fees can result in overcharging for swaps involving high-value tokens with low decimal precision (such as WBTC and GUSD). Proof of Concept: // SPDX-License-Identifier: MIT pragma solidity ^0.8.0; import { PriceAB as PriceOutVsIn, AmountA as AmountOut, AmountB as AmountIn } from \"src/types/Price.sol\"; import { RayMathLib } from \"src/libraries/RayMathLib.sol\"; import { Test, console2 as console } from \"lib/forge-std/src/Test.sol\"; contract FeesPOC is Test { function test_overchargingFees() public pure { // asset0 = WBTC, asset1 = GUSD uint256 qtyAsset0 = 1e5; // 0.001 WBTC uint256 price1Over0 = uint(65_000e2) * 1e27 / 1e8; // 0To1 uint256 feeInE6 = 1; price1Over0 = applyFeeInE6(price1Over0, feeInE6); PriceOutVsIn price1Over0Wrapped = PriceOutVsIn.wrap(price1Over0); AmountIn inQtyAsset0 = AmountIn.wrap(qtyAsset0); AmountOut outQtyAsset1 = price1Over0Wrapped.convert(inQtyAsset0); uint256 actualQuantityOut = AmountOut.unwrap(outQtyAsset1); assertEq(actualQuantityOut, 6499); } } In the proof of concept, 0.001 WBTC = 1e5 (= $65 USD) is swapped for GUSD at 65000 GUSD / BTC. The user receives $64.99 (1 cent taken as fee), but the fee should be $0.000065. Also, because fees are taken in asset0 (WBTC), there is overcharging, since 1 wei of WBTC is $0.00065. 12",
+        "labels": [
+            "Spearbit",
+            "Sorella",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Multiple orders with the same orderHash cannot be executed in the same block",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Sorella-Spearbit-Security-Review-October-2024.pdf",
+        "body": "When an orderHash is invalidated, the same orderHash cannot be used again in the same block: function _invalidateOrderHash(bytes32 orderHash) internal { tuint256 storage executed = alreadyExecuted[orderHash]; if (executed.get() != 0) revert OrderAlreadyExecuted(); executed.set(1); } This is used to prevent signature replay for top-of-block orders and ash user orders. However, a possible issue with this implementation is that it could block multiple legitimate orders with the same orderHash. For example, two user orders from different users could happen to have the UserOrderBuffer, as shown below:  typeHash = EXACT_FLASH_ORDER_TYPEHASH.  refId = 0.  exactIn_or_minQuantityIn = 1.  quantity_or_maxQuantityIn as 65,000 USDT.  maxExtraFeeAsset0 as 65 USDT.  minPrice as 64,500 USDT / WBTC.  useInternal = false.  assetIn as USDT, assetOut as WBTC.  recipient = address(0).  hookDataHash = EMPTY_BYTES_HASH.  nonce_or_validForBlock = block.number. Both users submit a ash order to buy 65,000 USDT worth of WBTC and receive it with their address. As a result, both orders have the same orderHash and one of the orders cannot be executed. The same issue is present with ToB orders, since _invalidateOrderHash() is used to invalidate hashes of ToBOrderBuffer as well.",
+        "labels": [
+            "Spearbit",
+            "Sorella",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Incorrect EIP-712 typehash for ToBOrderBuffer",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Sorella-Spearbit-Security-Review-October-2024.pdf",
+        "body": "In the ToBOrderBuffer struct, validForBlock is declared as a uint64: uint64 validForBlock; However, in TOP_OF_BLOCK_ORDER_TYPEHASH, which is the EIP-712 typehash for TobOrderBuffer, encodes validForBlock as a uint256: \"uint256 valid_for_block\"",
+        "labels": [
+            "Spearbit",
+            "Sorella",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "liquidityGross extraction can be optimised",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Sorella-Spearbit-Security-Review-October-2024.pdf",
+        "body": "Instead of shifting the value left and right, a mask can be applied to extract the lower 128 bits.",
+        "labels": [
+            "Spearbit",
+            "Sorella",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Redundancies",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Sorella-Spearbit-Security-Review-October-2024.pdf",
+        "body": "Referenced lines are redundant imports or unused events.",
+        "labels": [
+            "Spearbit",
+            "Sorella",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Variable and comment improvements",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Sorella-Spearbit-Security-Review-October-2024.pdf",
+        "body": "Referenced lines are incorrect comments, variable names or spelling errors. by 0x20 if we broke in the loop. by 0x20 if we didn t break in the loop. ",
+        "labels": [
+            "Spearbit",
+            "Sorella",
+            "Severity: Informational IHooks.sol#L72,"
+        ]
+    },
+    {
+        "title": "Code simplication via conditional function references",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Sorella-Spearbit-Security-Review-October-2024.pdf",
+        "body": "In the existing code, a conditional check is performed to decide between two similar func- tions, _rewardBelow and _rewardAbove. While this works as expected, the current approach involves du- plicating the code structure within the conditional block.",
+        "labels": [
+            "Spearbit",
+            "Sorella",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Hook revert reasons don't bubble up",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Sorella-Spearbit-Security-Review-October-2024.pdf",
+        "body": "Hook calls revert with InvalidHookReturn(), but don't bubble up the revert reason, making debugging a little harder. Proof of concept: 1. Save and apply git patch: diff --git a/contracts/src/modules/PermitSubmitterHook.sol (cid:44) b/contracts/src/modules/PermitSubmitterHook.sol index ca0ab1b8..0398b9ed 100644 --- a/contracts/src/modules/PermitSubmitterHook.sol +++ b/contracts/src/modules/PermitSubmitterHook.sol @@ -9,7 +9,7 @@ import {IDaiPermit} from \"../interfaces/IDaiPermit.sol\"; import {CalldataReader, CalldataReaderLib} from \"../types/CalldataReader.sol\"; /// @author philogy <https://github.com/philogy> -abstract contract PermitSubmitterHook is IAngstromComposable { +contract PermitSubmitterHook is IAngstromComposable { uint256 internal constant ERC2612_INFINITE = 0x00; uint256 internal constant ERC2612_SPECIFIC = 0x01; uint256 internal constant DAI_INFINITE = 0x02; diff --git a/contracts/test/types/HookBuffer.t.sol b/contracts/test/types/HookBuffer.t.sol index 50cb4b51..240eb037 100644 --- a/contracts/test/types/HookBuffer.t.sol +++ b/contracts/test/types/HookBuffer.t.sol @@ -10,6 +10,7 @@ import { } from \"../../src/interfaces/IAngstromComposable.sol\"; import {Recorder} from \"../_mocks/composable/Recorder.sol\"; import {SmolReturn} from \"../_mocks/composable/SmolReturn.sol\"; +import { PermitSubmitterHook } from \"src/modules/PermitSubmitterHook.sol\"; import {PRNG} from \"super-sol/collections/PRNG.sol\"; import {console} from \"forge-std/console.sol\"; @@ -18,10 +19,38 @@ import {console} from \"forge-std/console.sol\"; contract HookBufferTest is BaseTest { Recorder recorder; SmolReturn smol; + PermitSubmitterHook permitSubmitter; function setUp() public { recorder = new Recorder(); smol = new SmolReturn(); permitSubmitter = new PermitSubmitterHook(); } function test_fuzzing_invalidPermitType(uint8 permitType, address from) public { vm.assume(permitType > 2); bytes memory hookPayload = abi.encodePacked(permitType); vm.expectRevert(HookBufferLib.InvalidHookReturn.selector); this._test_fuzzing_invalidPermitType( abi.encodePacked( uint24(hookPayload.length + 20), address(permitSubmitter), hookPayload ), from, hookPayload ); } function _test_fuzzing_invalidPermitType( bytes calldata data, address from, bytes calldata hookPayload ) external { CalldataReader reader = CalldataReaderLib.from(data); (CalldataReader outReader, HookBuffer hookBuffer, bytes32 hash) = HookBufferLib.readFrom(reader, false); assertEq(hash, keccak256(abi.encodePacked(address(permitSubmitter), hookPayload)), \"wrong + + + + + + + + + + + + + + + + + + + + + + + + + (cid:44) hash\"); + + } assertEq(reader.offset() + 23 + hookPayload.length, outReader.offset()); hookBuffer.tryTrigger(from); 16 function test_emptyBytesHash() public pure { 2. Run forge test --mt test_fuzzing_invalidPermitType:",
+        "labels": [
+            "Spearbit",
+            "Sorella",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Lenient delta accounting may lead to overlooked fees",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Sorella-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The bundleDeltas check allows for positive deltas, but the excess may not be clearly ac- counted for (eg. from extraAsset0 and gas fees charged), which may not be included in saving that's logged. This may complicate accounting and fee distribution.",
+        "labels": [
+            "Spearbit",
+            "Sorella",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Missing memory-safe annotation on assembly block",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Sorella-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The referenced lines are assembly blocks that are memory safe, but do not have the memory- safe annotation.",
+        "labels": [
+            "Spearbit",
+            "Sorella",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "PoolConfigStore.get() does not check if index is less than the number of congured pools",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Sorella-Spearbit-Security-Review-October-2024.pdf",
+        "body": "PoolConfigStore.get() does not have a index < self.totalEntries() check that ensures index is less than the total number of entries. However, there is no impact in the current protocol's implementation: 1. If index is greater than the number of entries, the key check afterwards will revert. 2. If index is suciently large such that index * 32 + 1 overows, it will fortunately wrap around to a value that still fullls n * 32 + 1. Therefore, the entry that is read will always be valid. Note that (2) doesn't hold true if ENTRY_SIZE isn't 32; if ENTRY_SIZE is not 32, index being so large such that calculating the code offset overows would be a problem.",
+        "labels": [
+            "Spearbit",
+            "Sorella",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Multiple pools with the same asset pair but different tick spacing cannot be congured in the protocol",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Sorella-Spearbit-Security-Review-October-2024.pdf",
+        "body": "In PoolConfigStore, entries are stored as: bytes27 key | uint16 tickSpacing | uint24 feeInE6 where key is the last 27 bytes of the hash of asset0 and asset1: // Construct new entry by splicing in the values. let newEntry := or( key, or( shl(TICK_SPACING_OFFSET, and(tickSpacing, TICK_SPACING_MASK)), shl(FEE_OFFSET, and(feeInE6, FEE_MASK)) ) ) When adding a new entry, if a previous entry with the same key exists, that previous entry will be replaced. This is done by comparing the key of the previous entry to the current key to be added: // Search pool to see if it was already configured, if so replace the entry. let entriesEnd := add(entryOffset, totalEntryBytes) for {} lt(entryOffset, entriesEnd) { entryOffset := add(entryOffset, 0x20) } { let entry := mload(entryOffset) if eq(key, and(entry, KEY_MASK)) { mstore(entryOffset, newEntry) break } } 18 As such, it is not possible to have multiple entries with the same pair of asset0 and asset1. If PoolConfig- Store.setIntoNew() is called with the same asset0 and asset1, but a different tickSpacing or feeInE6, the old entry will be replaced. Therefore, unlike Uniswap, it is not possible to have multiple pools with the same asset pair but a different tick spacing.",
+        "labels": [
+            "Spearbit",
+            "Sorella",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Liquidity can still be deposited into pools no longer in PoolConfigStore",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Sorella-Spearbit-Security-Review-October-2024.pdf",
+        "body": "In PoolUpdates, the protocol's beforeAddLiquidity() hook does not check if the Uniswap V4 pool being deposited into exists in PoolConfigStore. As such, even after a pool is removed with TopLevelAuth.removePool() or replaced with TopLeve- lAuth.configurePool(), it is still possible to deposit liquidity into the old pool. However, these pools cannot be used to perform swaps in the protocol.",
+        "labels": [
+            "Spearbit",
+            "Sorella",
+            "Severity: Informational"
+        ]
     }
 ]
