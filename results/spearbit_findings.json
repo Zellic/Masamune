@@ -33278,5 +33278,695 @@
             "Sorella",
             "Severity: Informational"
         ]
+    },
+    {
+        "title": "Inconsistant stack in execute_fa_withdrawal",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-September-2024.pdf",
+        "body": "In the new logic of execute_fa_withdrawal, on L207, a new execution stack is pushed by han- dler.begin_inter_transaction. It then enters inner_execute_withdrawal with Rust's ? syntax. Later lines we also calls inner_execute_proxy also with Rust's ? syntax. If an error happens in either function, the function returns directly without any further clean up code, meaning that the handler.end_inter_transaction will not be called. In this case, the \"transaction stack\" will become inconsistent. At this stage, SputnikVM can guarantee nothing, not even correctly returning an ExitFatal error. We rate this as medium severity, as we believe that there's a particularly high risks that some forms of the bug may be exploitable during a system upgrade. From the author's experience with other blockchains of similar stacks, it's particularly likely, even in production environment, that some small amount of storage values may become unparsable due to incorrect migrations. At that moment, read_u256_le_default in the TicketTable will trigger this bug.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Call of FA bridge proxy contract not respecting the depth limit",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-September-2024.pdf",
+        "body": "After inner_execute_proxy, handler.execute_call takes over and starts to execute the proxy contract. It notes the call stack depth but does not enforce it.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Tokens on the withdraw precompile address",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-September-2024.pdf",
+        "body": "When an account calls the withdraw precompile, tokens are transferred and added to the withdraw precompile address. In effect the withdraw precompile's balance declares the total of all withdrawals in the history.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "LinkedList: removing the middle element from 3 element list",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-September-2024.pdf",
+        "body": "When removing the middle element from 3 element list, the back element of list is set incorrectly.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "The proxy may return a magic value instead of simply success",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-September-2024.pdf",
+        "body": "When handling FA deposit and FA withdrawal, a proxy contract is called. The call must succeed in order to make sure that the target contract understands the operation and tokens are handled properly. Some enhancement is to require the call not only to succeed but also return a magic value - a specified constant 4 bytes. That increases sureness that a called code is intended to handle deposits or withdrawals. Motivation and inspiration is ERC721TokenReceiver. An example of contract that may successfully handle calls having unexpected semantics is WETH9. WETH9 contract has the default call handler that performs ETH deposit.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "A silent success on reentrancy to a circular withdrawal call",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-September-2024.pdf",
+        "body": "In order to prevent circular calls (reentrancy), the entry apply_fa_deposit has got removed with- drawal precompiles from the set of precompiles. The point is that withdrawal precompile addresses have no bytecode, as contract bytecode. A call to no bytecode address always succeeds, so a call to a withdrawal address always succeed. For the record. It is not always the case that reentrancy is a malicious action of proxy. Making an external call may be a part of design. For instance, the standard ERC-777 is an extension of ERC-20 and it calls a contract receiver upon a token transfer.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Checks Effects Interactions pattern in execute_fa_deposit",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The flow of the function execute_fa_deposit is: call the proxy, update the ticket table, add EVM log. The safety practice is to have contract calls in the end of operations sequence. The point to discuss is: if the deposit and FA deposit functions and withdraw and FA withdraw precompiles would follow the Checks Effects Interactions pattern, the system would be protected from reentrancy attacks. In particular, we should consider what resources are to be protected. the ticket table, tez balances, EVM logs and outbox messages. Note that FA deposit and FA withdrawal have only one call to the proxy what makes things even more clear. It seems that the resources are: Note that the issue \"Potential incorrect order of outbox messages\" also refers to the Checks Effects Interactions pattern as adding a message to the outbox is Effects. And this issue should be fixed in order to provide seal reentrancy protection.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Shared gasometer in FA bridge proxy contract invocation",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-September-2024.pdf",
+        "body": "When the FA bridge executes the proxy contract, it calls handler.execute_call directly. This call does not create a new \"transaction data layer\". The gasometer is shared between the fa_bridge precompile and the proxy contract. The SputnikVM engine does not guarantee reuse of gasometer to be valid, especially after an OOG.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Use of ticket table not respecting EIP-161 empty account rule",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The FA bridge has the concept of a ticket table. The ticket table is stored, under a special path, of the account of SYSTEM_ACCOUNT_ADDRESS. After EIP-161, an account is considered empty (and may be removed by the EVM engine) if an account has empty code, empty nonce, and empty balance. The empty check rule does not take storage values or custom storage into account. The EIP-161 rule states that an account, after being touched, shall be removed if it becomes empty. The author has not specifically checked whether this rule applies to the SYSTEM_ACCOUNT_ADDRESS when being invoked as the fa_bridge precompile, due to this being a rare case, explained below. However, we want to note that if the EVM engine is EIP-161 conforming (which according to previous tests, it was), there is a possibility that it will invoke the removal of the account. On the other hand, during FA deposit, the execution is done as if it's a transaction from SYSTEM_ACCOUNT_ADDRESS, thus it will increase the nonce, eliminating the possibility that it is considered an empty account.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "FA Deposit log should be first on the list",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-September-2024.pdf",
+        "body": "In the function execute_fa_deposit first is a call to a proxy and then the evm log Deposit is added. If a call to the proxy creates evm logs, then the Deposit log is the last on the list. It is preferred to have more informative logs first on the list. The Deposit log is the main log and it should be first.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Potential incorrect order of outbox messages",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The flow of execute_fa_withdrawal goes as follows:  Update the ticket table.  Add the EVM log.  Call the proxy.  The withdrawal message is added to the outbox. The last step is executed outside out the function when the message is returned to the calling function. The point is the if we allow the reentrancy, a safe reentrancy, the order of EVM logs can be different than as the order of messages in the outbox. More general, if the call to the proxy adds a message to the outbox, it is before the withdrawal message in the outbox. Note that this issue can be of medium severity if the reentrancy is allowed.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Incorrect logic when checking the Transfer object in fa_bridge precompile",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-September-2024.pdf",
+        "body": "If a Transfer object does not exist, then it's not a normal CALL. So the logic here is incorrect. How- ever, the severity of this is \"informational\", because another branch also checks for DELEGATECALL and CALLCODE above.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Backward compatibility of fixed gas limit in custom contract calls",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-September-2024.pdf",
+        "body": "During FA bridge deposit phrase, a fixed gas limit FA_DEPOSIT_PROXY_GAS_LIMIT is used to execute the proxy contract. We would like to note a possible backward compatibility issue that needs to be taken consideration every time the EVM gas configuration is changed. In many situations, especially due to more expensive storage access costs when the state grows larger, the EVM gas configurations have often been raised. In this scenario, if a proxy contract was previously just below FA_- DEPOSIT_PROXY_GAS_LIMIT, after the upgrade, it will suddenly become not-executable. The value FA_DEPOSIT_- PROXY_GAS_LIMIT must also be changed at the same time.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Unsafe type cast for strategy.allocated in harvest",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Euler-Spearbit-Security-Review-October-2024.pdf",
+        "body": "In _harvestStrategy, the strategy.allocated is updated to the new strategy's total value: uint256 eulerEarnShares = IERC4626(_strategy).balanceOf(address(this)); uint256 eulerEarnAssets = IERC4626(_strategy).previewRedeem(eulerEarnShares); $.strategies[_strategy].allocated = uint120(eulerEarnAssets); This type cast is not safe, the strategy's share value could have grown beyond uint120.max. The impact is that strategy.allocated is truncated to a smaller value but the function continues booking it as a normal profit of eulerEarnAssets (uint256) - strategyAllocatedAmount and adding it to the uint256 $.totalAllocated. The allocated amount is now desynced and the invariant that $.totalAllocated is the sum of all strategies' allocated values does not hold anymore. Breaking proper rebalancing and blocking withdrawals with an underflow (see EulerEarnVault.sol#L511-L517) when deallocating from the strategy.",
+        "labels": [
+            "Spearbit",
+            "Euler",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Permissionless rebalance can lead to loss of funds for specific strategies",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Euler-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The rebalance action is permissionless and can be executed by anyone. It will withdraw from strategies that are over-allocated and deposit into strategies that are under-allocated (according to the allocation points for each strategy). The strategies and the rebalance order can be defined as a parameter to rebalance. Note that the value allocated to a vault with a deposit can be less than what is received by withdrawing from the vault again, for example, if the vault takes fees: The differences may be small (like if due to rounding error), or very significant (like if a Vault implements withdrawal or deposit fees, etc). EIP-4626 Note that the loss due to fees is not immediately booked in the rebalance() as the strategy.allocated value increased/decreased by the deposited / withdrawn value. It gets booked in a subsequent harvest operation, when the value of the shares is computed: strategy.allocated = strategy.previewRedeem(strategy.balanceOf(this)) An attacker can: 1. rebalance the strategies. 2. harvest to book the fee loss, decreasing the strategy's strategy.allocated and the overall totalAllo- cated, resulting in the allocation percentage strategy.allocated / totalAllocated for that vault to drop below it's desired share again. 3. repeat the rebalance. 4 The rebalance step can be combined with finding Flash deposit and withdraw can be used to off-balance assets to rebalance almost the entire total assets to a specific strategy, increasing the loss for each iteration. The impact is that the vault's funds can be lost entirely to fees by continuous rebalancing.",
+        "labels": [
+            "Spearbit",
+            "Euler",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Performance fee is instantly given to fee recipient while yield is smeared for everyone else",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Euler-Spearbit-Security-Review-October-2024.pdf",
+        "body": "When a positive yield is harvested this yield is smeared and earned by the depositors over a 2 week period. However, the performance fee taken on the yield is not streamed to the fee recipient, they receive it instantly in the form of EarnVault shares. This can be considered unfair as the full shares earn their fair share of the very own yield the fee came from (and of any other yield earned from now on). The yield for other depositors will also get erased again if a loss occurs, but the fee recipient is not affected by this. This dilutes the yield for other participants.",
+        "labels": [
+            "Spearbit",
+            "Euler",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Strategies with fees not properly supported",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Euler-Spearbit-Security-Review-October-2024.pdf",
+        "body": "When allocating to a strategy via rebalance(), the strategy's allocated amount is set to the deposited amount, instead of what the received shares are worth (previewRedeem). // rebalance IERC4626(_strategy).deposit(amountToRebalance, address(this)); $.strategies[_strategy].allocated = (strategyData.allocated + amountToRebalance).toUint120();  previewRedeem() // harvest // Use uint256 eulerEarnShares = IERC4626(_strategy).balanceOf(address(this)); uint256 eulerEarnAssets = IERC4626(_strategy).previewRedeem(eulerEarnShares); $.strategies[_strategy].allocated = uint120(eulerEarnAssets); to get the actual assets amount  5 There might be a discrepancy between these two values if the strategy takes fees or, due to rounding, or for other reasons. This loss is only booked once harvest is called and the previewRedeem() value is fetched and compared to the allocated amount. The loss will be socialized among all depositors. Even users that join after a large depositor will take that depositor's deposit/withdrawal fee loss once harvest is called which might be considered unfair.",
+        "labels": [
+            "Spearbit",
+            "Euler",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Potential underflow when withdrawing from strategies",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Euler-Spearbit-Security-Review-October-2024.pdf",
+        "body": "When a withdrawal needs to withdraw from a strategy, a withdrawAmount is computed and the strategy's allocated amount is reduced by it: uint256 underlyingBalance = strategy.maxWithdraw(address(this)); uint256 desiredAssets = _assets - assetsRetrieved; uint256 withdrawAmount = (underlyingBalance >= desiredAssets) ? desiredAssets : underlyingBalance; // allocated = strategy.previewRedeem(strategy.balanceOf(this)) $.strategies[address(strategy)].allocated -= uint120(withdrawAmount); This performs an unsafe typecast to uint120 and it should ensure that the subtraction never underflows. However, this requires the following conditions: 1. strategy.allocated being up-to-date, $.strategies[_strat- egy].allocated = uint120(strategy.previewRedeem(eulerEarnShares)). This condition always holds because a harvest is always performed if it's not a cash-reserve-only withdrawal. i.e., a harvest was performed: 2. withdrawAmount <= strategy.allocated: From the The strategy vault needs the following invariant strategy.maxWithdraw(this). the doesn't subtraction egy.previewRedeem(strategy.balanceOf(this)) (= strategy.allocated). allocated underflow: code we see that withdrawAmount <= to ensure strategy.maxWithdraw(this) <= strat-",
+        "labels": [
+            "Spearbit",
+            "Euler",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "maxWithdraw/maxRedeem returns wrong values for fee recipient",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Euler-Spearbit-Security-Review-October-2024.pdf",
+        "body": "Withdrawals can result in a harvest with a positive yield from which a performance fee is credited to the fee recipient in terms of minted shares. The maxWithdraw(user)/maxRedeem(user) functions do not take into account this increase in shares for the fee recipient. The behavior of withdraw and redeem regarding the performance fee shares also differs:  withdraw performs the harvest before the rors.ERC4626ExceededMaxWithdraw(_owner, _assets, maxAssets)) recipient can withdraw their accrued performance fees. require(_assets <= maxAssets, Er- fee check, the so  redeem performs the harvest after the require(_shares <= maxShares, Errors.ERC4626ExceededMaxRedeem(_- owner, _shares, maxShares)) check, so the fee recipient cannot withdraw their accrued performance fees immediately. Currently, the maxRedeem and redeem functions are coherent but they both underestimate the max amount that can be withdrawn for the fee recipient. The maxWithdraw underestimates the amount that can currently be withdraw for the feeRecipient.",
+        "labels": [
+            "Spearbit",
+            "Euler",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "maxWithdraw/maxRedeem does not always return optimal maximum amount",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Euler-Spearbit-Security-Review-October-2024.pdf",
+        "body": "When performing a withdrawal, a harvest is skipped if withdrawn only from the cash reserve. Other- wise, a harvest could be performed (depending on the harvest cooldown) which can result in a loss. The current algorithm starts by estimating the max amount to withdraw as the user's entire amount (share balance * share price) and simulates the harvest conditions based on that. However, it could happen that the user's entire amount results in withdrawing more than the cash reserve which results in a harvest ending up with a loss, reducing the share price and the amount the user receives. Whereas if the user only withdrew the cash reserve, they would have skipped the loss and withdrawn more.",
+        "labels": [
+            "Spearbit",
+            "Euler",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "ERC4626 max* view functions ignore hook behavior",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Euler-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The deposit, mint, withdraw, redeem functions all call a hook (if defined) at the beginning which can revert to implement pause states, or user/global limits. However, the corresponding max* functions do not take the hook behavior into account. This violates EIP4626-behavior for these functions: MUST factor in both global and user-specific limits, like if deposits are entirely disabled (even temporar- ily) it MUST return 0. maxDeposit",
+        "labels": [
+            "Spearbit",
+            "Euler",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Flash deposit and withdraw can be used to off-balance assets",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Euler-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The _withdraw function iterates over strategies in the withdrawal queue order and withdraws from the strategies in case more withdrawable assets are needed. This can be exploited by a griefer to off-balance the Earn vault strategy allocation, for example, leaving all assets in the last strategy of the withdrawal queue, affecting the APR of the Earn vault. Example: Imagine 10Misallocatedevenlyacrossthecashreserveand4strategies(2M in each \"strategy\"). A user per- forms the following actions in a single transaction:  flashloan $40M.  deposit $40M.  rebalance(allStrategies). Each strategy now holds $10M.  Withdraw $40M. The cash reserve only has $10M, the other $30M will be withdrawn from the first three strategies in the withdrawal queue.  The final result is that the entire $10M initial total assets are in the last strategy.",
+        "labels": [
+            "Spearbit",
+            "Euler",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "$.withdrawalQueue.length should be cached inside _previewHarvestBeforeWithdraw",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Euler-Spearbit-Security-Review-October-2024.pdf",
+        "body": "$.withdrawalQueue.length can be cached inside the _previewHarvestBeforeWithdraw even if this is a view function and is called only inside view functions, this might be used onchain by 3rd parties.",
+        "labels": [
+            "Spearbit",
+            "Euler",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Internal balances should be fetched via _balanceOf instead of nonReentrant balanceOf",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Euler-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The inherited ERC20VotesUpgradeable._getVotingUnits function uses the overridden balanceOf function, which is the function that has a nonReentrant modifier, resulting in reverts when called while the contract is locked. There is currently no impact as _getVotingUnits is only used for the delegate functions which do not have a reentrancy lock.",
+        "labels": [
+            "Spearbit",
+            "Euler",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Missing nonReentrantView on maxMint",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Euler-Spearbit-Security-Review-October-2024.pdf",
+        "body": "During the engagement, the team provided additional changes, including a rework of the maxMint and maxDeposit functions to better reflect their intended values. The maxMint function is missing the nonReentrantView modifier, as it now reads from storage rather than returning a constant. On the other hand, while the maxDeposit function also reads from storage via the previewMint call, that subsequent call is already guarded by the nonReentrantView modifier.",
+        "labels": [
+            "Spearbit",
+            "Euler",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Missing functions from the IEulerEarn interface",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Euler-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The IEulerEarn interface is missing the following function signatures:  asset()  permit2Address()  EVC()  isHarvestCoolDownCheckOn()",
+        "labels": [
+            "Spearbit",
+            "Euler",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "The harvest will be executed even if the queue is empty or fully emergencied",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Euler-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The _harvest function iterates through all strategies to collect the Profit and Loss (PnL). After the iteration, the PnL is applied to the storage, and an event is emitted: emit Events.Harvest($.totalAllocated, totalPositiveYield, totalNegativeYield); The issue arises when the withdrawal queue is empty, or all strategies are marked as Emergency. In such cases, no PnL is collected, yet the event is still emitted with 0 values for both totalPositiveYield and totalNegativeYield. This can lead to misleading data being recorded in the event logs, suggesting that harvesting occurred when in reality, no profit or loss was generated.",
+        "labels": [
+            "Spearbit",
+            "Euler",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Missing init subsequent calls from the init function",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Euler-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The EulerEarn contract is an upgradeable contract that inherits from several dependencies. In upgradaeble contracts, it is standard practice to invoke the init functions of all inherited dependencies to ensure proper initialization. Currently, the following init functions are missing:  __Votes_init_unchained  __Nonces_init_unchained  __Context_init_unchained  __AccessControl_init_unchained  __ERC165_init_unchained 10 This issue is classified as informational, as these missing calls do not execute any logic. Therefore, omitting them has no impact on the contract's storage or functionality. However, including them would adhere to best practices for initialization.",
+        "labels": [
+            "Spearbit",
+            "Euler",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Strategies in Emergency are not removed from the rewards",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Euler-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The EULER_EARN_MANAGER can call optInStrategyRewards and enableRewardForStrategy for a particular strategy only if the strategy is active, as we can see by the following check: require($.strategies[_strategy].status == IEulerEarn.StrategyStatus.Active, ,! Errors.StrategyShouldBeActive()); However, when a strategy is marked as Emergency, it is essentially decommissioned and should no longer influence the vault. Ideally, a decommissioned strategy should not continue to accrue rewards, even if it theoretically could, given that it's no longer active. Currently, this is not the case: a decommissioned strategy can still generate rewards unless it is manually removed from the rewards system. To fully decommission a strategy, the manager must manually call optOutStrategyRewards and disableRewardForStrategy.",
+        "labels": [
+            "Spearbit",
+            "Euler",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Strategies in Emergency mode can not be removed",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Euler-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The GUARDIAN role has the ability to mark a strategy's status as Emergency, acting as a circuit- breaker in the event of a malfunction (e.g., when withdrawals are no longer functioning on that strategy). When this is triggered, the state is updated as follows:  Losses are socialized across all depositors.  The strategy's allocated points are deducted from the total points: $.totalAllocationPoints -= strate- gyCached.allocationPoints.  The strategys allocated capital is subtracted from the total allocated capital: $.totalAllocated -= strat- egyCached.allocated. Additionally, the STRATEGY_OPERATOR can remove a strategy from the strategy queue using the removeStrategy function. However, this can only occur if the strategy is in the Active state and has no allocated: require(strategyStorage.allocated == 0, Errors.CanNotRemoveStrategyWithAllocatedAmount()); Combining these two flows creates an issue: a malfunctioning strategy marked as Emergency cannot be removed from the withdrawal queue because:  The allocated capital is not reset to 0 when the strategy is marked as Emergency. 11  Only Active strategies can be removed by the removeStrategy function. This can be problematic because malfunctioning strategies that remain in the queue are still iterated over in various flows, leading to unnecessary gas consumption. Furthermore, there is a limit of Constants.MAX_STRATEGIES that can be added. A malfunctioning strategy occupying a slot in the queue prevents new, potentially beneficial strategies from being added, which negatively impacts depositors.",
+        "labels": [
+            "Spearbit",
+            "Euler",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Re-enabling emergency-mode strategy does not gulp",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Euler-Spearbit-Security-Review-October-2024.pdf",
+        "body": "When re-enabling an emergency-disabled strategy via toggleStrategyEmergencyStatus, the strat- egy's former shares are booked as yield. However, this yield is not immediately smeared, users need to call gulp() first.",
+        "labels": [
+            "Spearbit",
+            "Euler",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "rebalance depends on order of strategies",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Euler-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The rebalance function depends on the order of strategies. It should be called such that all the withdrawals happen first, and all the deposits afterwards. Otherwise, one could end up skipping a deposit when being temporarily short on cash (but it would become available after a withdraw).",
+        "labels": [
+            "Spearbit",
+            "Euler",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Strategy's previewRedeem might be manipulable",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Euler-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The EulerEarn vault uses strategy.previewRedeem to measure the value allocated to this strategy. EIP-4626 warns that this value might be manipulable and is not always safe to be used as an oracle: The preview methods return values that are as close as possible to exact as possible. For that reason, they are manipulable by altering the on-chain conditions and are not always safe to be used as price oracles. This specification includes convert methods that are allowed to be inexact and therefore can be implemented as robust price oracles.",
+        "labels": [
+            "Spearbit",
+            "Euler",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "No slippage checks on withdraw",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Euler-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The received assets from a withdraw / redeem call might be less than expected if a large loss happened while the transaction was pending. This can for example happen if a strategy enters emergency mode temporarily. The user might have preferred to stay allocated to the EarnVault instead of withdrawing at a reduced share price.",
+        "labels": [
+            "Spearbit",
+            "Euler",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Typos & Doc improvements",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Euler-Spearbit-Security-Review-October-2024.pdf",
+        "body": "1. Shared.sol#L68: Resetting interestLeft = 0 in _deductLoss so it gets gulped again afterwards only works if $.totalAllocated is reduced by the entire loss amount in between the _deductLoss and _gulp calls (this is done for both _harvest and toggleStrategyEmergencyStatus). Document that this relies on $.totalAl- located being reduced after the call. 2. StorageLib.sol#L32: It's unclear what \"not for update\" means for the reentrancy lock. Consider removing this part. 3. EulerEarnVault.sol#L592: Missing natspec for the _isOnlyCashReserveWithdraw parameter. 13 4. EulerEarnVault.sol#L842: Consider documenting that it uses cached _totalAssets() and _totalSupply() but in the positive yield branch these cached values are correct. 5. Strategy.sol#L65: deduct ! deducts. 6. EulerEarn.sol#L368: VaultModule ! EulerEarnVaultModule, this is just an example, should be replaced everywhere. 7. EulerEarnFactory.sol#L29-L30: Aggreation vault   asset ! Aggregation vault s asset and Vaut ! Vault. 8. Shared.sol#L97: amd ! and. 9. EulerEarnVault.sol#L795-L800: The if statement order should match the one from the harvest function. 10. EulerEarnVault.sol#L663: performace ! performance . 11. EulerEarnVault.sol#L257: The convertToShares comment should be improved to state that this is an ap- proximation and should not be used to compute the share price due to missing harvest simulation. 12. EulerEarnVault.sol#L264: The convertToAssets comment should be improved to state that this is an ap- proximation and should not be used to compute the share price due to missing harvest simulation. 13. EulerEarnVault.sol#L709: The comment should be ! cap.resolve() will be type(uint256).max and there- fore capAmount will be type(uint120).max if no cap is set. 14. Rewards.sol#L81: The caching to rewardStreams is unnecessary, should just do IReward- Streams(IBalanceForwarder(_strategy).balanceTrackerAddress()).claimReward(_strategy, _reward, _recipient, _forfeitRecentReward);.",
+        "labels": [
+            "Spearbit",
+            "Euler",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Document why unsafe casts and arithmetic is safe",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Euler-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The code performs some non-trivial unsafe type cast, unsafe arithmetic, and subtractions that should never underflow, but it's not documented why it's safe to do so: 1. EulerEarnVault.sol#L624: lossAmount <= $.totalAllocated: a strategy's loss is capped by the current strategy.allocated. As totalAllocated is the sum of all strategies' strategy.allocated, the loss can never spill over into the cash reserve. Therefore, the subtraction cannot underflow. 2. Shared.sol#L76, EulerEarnVault.sol#L830: lossAmount - totalNotDistributed. by $.totalAssetsDeposited for the subtraction to not underflow: The loss socialization reduces $.totalAssetsDeposited lossAmount - totalNotDistributed <= require We lossAmount - totalNotDistributed = lossAmount - ($.totalAllocated + cashBalance) + $.totalAssetsDeposited // def ,! <= = -cashBalance + $.totalAssetsDeposited // cashBalance >= 0 <= $.totalAssetsDeposited totalNotDistributed $.totalAllocated - ($.totalAllocated + cashBalance) + $.totalAssetsDeposited // by 1. 3. EulerEarnVault.sol#L715: Downcasting to uint120 is safe as it leads to a smaller cap.",
+        "labels": [
+            "Spearbit",
+            "Euler",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "MEV for large interest events",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Euler-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The interest is smeared over a 2-week period. Large interest events like turning off the emergency status for a strategy will spike the APR for this period and new depositors can come in to earn a share of the large interest, bringing down the APR as the fixed smeared interest is distributed over a larger set of depositors. This might feel unfair for depositors who suffered the loss when the strategy was emergency-removed.",
+        "labels": [
+            "Spearbit",
+            "Euler",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Sudden price drops due to deductLoss could have unwanted effects",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Euler-Spearbit-Security-Review-October-2024.pdf",
+        "body": "During harvest or toggleStrategyEmergencyStatus the loss suffered by that specific strategy is socialized across all the depositors after the interest removal:  Shared.sol#L76: // socialize the loss $.totalAssetsDeposited = totalAssetsDepositedCache - _lossAmount; This will cause a sudden price drop of the share that can be problematic:  Depositors can frontrun this and withdraw as much as possible before the price drop. This is already docu- mented in docs: Although opportunistic depositors could frontrun loss socialisation by withdrawing earlier, that would only work if harvest is not triggered during the withdrawal because the HARVEST_COOLDOWN period hasn't pass yet.  If the vault's shares are used on another platform the sudden price drop can be used to short the price. Another issue might be that if those shares are used on a lending platform, sudden price drops could cause liquidations.",
+        "labels": [
+            "Spearbit",
+            "Euler",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Users can increase liquidity for token owned by sanctioned or non-verified user",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Verified-Pools-Spearbit-Security-Review-September-2024.pdf",
+        "body": "VerifiedPoolsPositionManager.sol ensures that users can only mint, decrease liquidity, and burn positions for themselves via the _ensureOwner() check. The policy contracts check that the caller is verified and not on a list of sanctioned addresses. Anyone is able to increase the liquidity of any position, even if the position owner has been subsequently added to the sanctions list or has lost their KYC/country verifications. This may result in regulatory issues. In the case where liquidity is added to a position owned by an address placed on the sanctions list, the liquidity will be frozen. Proof of concept: contract IncreaseLiquidityTest is VerifiedPoolsBasicHookTest { using PoolIdLibrary for PoolKey; using CurrencyLibrary for Currency; using Planner for Plan; PoolKey private _poolKey; PoolId private _poolId; address private _lp; uint256 private _tokenId; PositionConfig private _config; bytes32 private _vaUid; bytes32 private _vcUid; event ModifyLiquidity( PoolId indexed id, address indexed sender, int24 tickLower, int24 tickUpper, int256 liquidityDelta ); error Wrap__FailedHookCall(address hook, bytes revertReason); error InvalidVerifiedAccountAttestation(); error IncorrectPositionConfigForTokenId(uint256 tokenId); error NotApproved(address caller); function setUp() public virtual override { super.setUp(); (_poolKey, _poolId) = _initializePool(); _lp = makeAddr(\"Liquidity Provider\"); _fundAddress(_lp, 1_000_000 ether); _approveLP(_lp, _erc20(currency0)); _approveLP(_lp, _erc20(currency1)); (_vaUid, _vcUid) = _issueAttestations(_lp); _config = _defaultPositionConfig(_poolKey); vm.startPrank(_lp); (_tokenId, ) = _addLiquidityWithParams( _config, 100 ether, 100 ether, ZERO_BYTES, 4 _lp ); vm.stopPrank(); } modifier whenCallerVerified() { _; } function test_WhenNotTokenOwnerAndOwnerIsSanctioned() external whenCallerVerified { } address anotherLp = makeAddr(\"Another Liquidity Provider\"); _issueAttestations(anotherLp); _fundAddress(anotherLp, 1_000_000 ether); _approveLP(anotherLp, _erc20(currency0)); _approveLP(anotherLp, _erc20(currency1)); // Add sanction to owner of LP position (_lp) MockSanctionsList(address(_sanctionsList)).addSanction(_lp); // It should increase liquidity vm.startPrank(anotherLp); _assertIncreaseLiquidityWithHookData(ZERO_BYTES); vm.stopPrank(); function _assertIncreaseLiquidityWithHookData( bytes memory hookData ) private { vm.expectEmit(); emit ModifyLiquidity( _poolId, address(_posm), _config.tickLower, _config.tickUpper, 100 ether ); increaseLiquidity(_tokenId, _config, 100 ether, hookData); } }",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Verified-Pools",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Verified smart wallet accounts can be used as proxies to facilitate swaps",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Verified-Pools-Spearbit-Security-Review-September-2024.pdf",
+        "body": "Smart contract wallets such as ERC-4337 contracts can receive attestations which allow interacting with Coinbase's verified pools. These wallets can be used as proxies executing swaps and creating wrapper contracts for managed positions. Even if these wallets do not contain logic allowing arbitrary actors to bypass Coinbase's policies at the time of the attestation issuance, the required logic can be included at a later time as these are often upgradeable and include delegatecall functionality. Impact: High: This scenario allows swaps to be performed by sanctioned entities bypassing the sanctions list and KYC verification. The verified contract does not require any upfront capital and is able to profit from this exchange. Likelihood: Low/Medium: This requires a KYC verified user to violate Coinbase's ToS and to potentially interact with sanctioned funds. This exchange can be performed permissionlessly allowing any entity to perform swaps immediately. Wrapper contracts for liquidity positions only work until the attestation is revoked.",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Verified-Pools",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Verified accounts can execute swaps as limit orders by sanctioned users",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Verified-Pools-Spearbit-Security-Review-September-2024.pdf",
+        "body": "Verified accounts are able to execute swaps placed as limit orders by sanctioned users. When a sanctioned user wants to swap with the Coinbase verified pools, they can create an order in an order book contract waiting to be executed by a verified user. The verified user only provides the credentials for interacting with the verified pools contracts. They do not require any capital to execute the swap on behalf of a sanctioned user. The tainted funds always stay with the sanctioned user and are directly exchanged with the pools without touching the verified user. The verified user can receive a portion of the swap output as a commission as an incentive. This requires the possibility of taking control of transaction execution when the pool manager is in an unlocked state. This step can depend on the functionality of the router serving as an entry point, however many possibilities exist. The proof of concept uses batched actions in the router that include a TAKE action using native currency and a zero value to enable an arbitrary call from PoolManager. Note that there are many possibilities of actors gaining control of execution when the pool manager is unlocked. Some examples are:  Routers allowing for arbitrary calls.  Transferring native currency to arbitrary actors through .call.  Transferring custom tokens.  Interacting with unverified pools that include custom tokens.  Unintended callbacks in routers when interacting with other protocols.  Unlocking the router first from a smart contract account.  Setting up subscriptions for liquidity positions that notify arbitrary actors. The actor might not even require gaining explicit control as a limit order could also be set up through an unverified pool with a custom hook. Impact: High: This scenario directly uses funds from sanctioned addresses to perform swaps, bypassing the sanctions list and KYC verification. Verified accounts can profit from this exchange without requiring upfront capital. Likelihood: Low: This requires an external protocol being built on Base for the purpose of bypassing KYC. Swaps cannot be executed directly by sanctioned entities. These must wait for a corresponding verified user willing to engage with them for a commission. The verified user is likely to violate Coinbase's ToS in this process. Proof of concept: As a final version of the router used in production was not finished, a TestRouter inheriting from V4Router was used for the proof of concept. struct Order { Currency have; Currency want; uint256 haveAmount; uint256 wantAmount; address recipient; } contract OrderEscrow { Order order; IPoolManager immutable poolManager; address immutable router; constructor(IPoolManager poolManager_, address router_, Order memory order_) { poolManager = poolManager_; order = order_; router = router_; } 7 function orderIsFilled() public view returns (bool) { return ERC20(Currency.unwrap(order.want)).balanceOf(address(this)) >= order.wantAmount; } function executeOrder() public { // Transfer maker ERC20(Currency.unwrap(order.want)).transfer(order.recipient, order.wantAmount); // Transfer taker ERC20(Currency.unwrap(order.have)).transfer(router, order.haveAmount); } receive() external payable { executeOrder(); } } contract SanctionedOrderBook { IPoolManager immutable poolManager; address immutable router; constructor(IPoolManager poolManager_, address router_) { poolManager = poolManager_; router = router_; } function createOrder(Order calldata order) external returns (address orderEscrow) { bytes32 orderId = keccak256(abi.encode(order)); orderEscrow = address(new OrderEscrow{salt: orderId}(poolManager, router, order)); ERC20(Currency.unwrap(order.have)).transferFrom(msg.sender, orderEscrow, order.haveAmount); } } contract TestRouter is V4Router, ReentrancyLock { constructor(IPoolManager _poolManager) V4Router(_poolManager) {} modifier checkDeadline(uint256 deadline) { if (block.timestamp > deadline) revert(\"DeadlinePassed()\"); _; } function executeActions(bytes calldata unlockData, uint256 deadline) external payable isNotLocked checkDeadline(deadline) _executeActions(unlockData); { } function msgSender() public view override returns (address) { return _getLocker(); } function _pay(Currency currency, address payer, uint256 amount) internal override { if (payer == address(this)) { currency.transfer(address(poolManager), amount); } else { ERC20(Currency.unwrap(currency)).transferFrom(payer, address(poolManager), uint160(amount)); } } } 8 contract OrderBookTest is EndToEndTest { using Planner for Plan; TestRouter router; function setUp() public override { super.setUp(); router = new TestRouter(manager); vm.prank(_hookAdmin); _hook.setSwapRouter(address(router), true); } function test_limitOrderBySanctionedAccount() external { address alice = makeAddr(\"Alice\"); address sanctioned = makeAddr(\"Sanctioned\"); SanctionedOrderBook sanctionedOrderBook = new SanctionedOrderBook(manager, address(router)); // Alice is has verified KYC _issueAttestations(alice); // Sanctioned does not have any valid attestations // and is sanctioned. MockSanctionsList(address(_sanctionsList)).addSanction(sanctioned); MockSanctionsList(address(_sanctionsList)).addSanction(address(sanctionedOrderBook)); _token1.mint(sanctioned, 3 ether); vm.startPrank(sanctioned); // Sanctioned wants to swap Order memory order = Order({   3.0 c1 for   2.0 c0 have: Currency.wrap(address(_token1)), want: Currency.wrap(address(_token0)), haveAmount: 3 ether, wantAmount: 2 ether, recipient: sanctioned }); // Sanctioned creates an order in ERC20(Currency.unwrap(order.have)).approve(address(sanctionedOrderBook), order.haveAmount); address orderEscrow = sanctionedOrderBook.createOrder(order); orderBook   vm.stopPrank(); vm.startPrank(alice); Plan memory planner = Planner.init(); IV4Router.ExactInputSingleParams memory swapParams = IV4Router.ExactInputSingleParams({ poolKey: _poolKey1, zeroForOne: false, amountIn: uint128(order.haveAmount), amountOutMinimum: uint128(order.wantAmount), sqrtPriceLimitX96: 0, hookData: \"\" });   order // Perform the swap to fill planner.add(Actions.SWAP_EXACT_IN_SINGLE, abi.encode(swapParams)); // Give what maker wants planner.add(Actions.TAKE, abi.encode(_token0, orderEscrow, order.wantAmount)); // Take what maker has planner.add(Actions.TAKE, abi.encode(CurrencyLibrary.NATIVE, orderEscrow, 0)); 9 // Give alice the surplus as a commission planner.add(Actions.TAKE, abi.encode(_token0, alice, ActionConstants.OPEN_DELTA)); // Settle maker planner.add(Actions.SETTLE, abi.encode(_token1, ActionConstants.OPEN_DELTA, false)); bytes memory actions = planner.encode(); s currency  // Alice does not hold any tokens assertEq(_token0.balanceOf(alice), 0); assertEq(_token1.balanceOf(alice), 0); // Sanctioned does not hold any tokens assertEq(_token0.balanceOf(sanctioned), 0); assertEq(_token1.balanceOf(sanctioned), 0); // Escrow contract only holds assertEq(_token0.balanceOf(orderEscrow), 0); assertEq(_token1.balanceOf(orderEscrow), order.haveAmount); _token1   router.executeActions(actions, block.timestamp); // Escrow does not hold any tokens assertEq(_token0.balanceOf(orderEscrow), 0); assertEq(_token1.balanceOf(orderEscrow), 0); // Sanctioned has filled their order and is holding assertEq(_token0.balanceOf(sanctioned), order.wantAmount); assertEq(_token1.balanceOf(sanctioned), 0); _token0   // Alice has gained a commission in assertGt(_token0.balanceOf(alice), 0); assertEq(_token1.balanceOf(alice), 0);  _token0  } } Note: Alice, the verified user, requires no upfront capital. All funds used for the swap are provided by sanctioned entities. The diagram below highlights the main calls and the flow of funds. 10",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Verified-Pools",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "PoolManager allows funds from verified pools to be used by sanctioned accounts during flashloans",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Verified-Pools-Spearbit-Security-Review-September-2024.pdf",
+        "body": "Tainted funds can be moved through PoolManager and sanctioned entities can borrow capital which stems from Coinbase's verified pools via flash loans. These could potentially be used to perform exploits which sometimes have large capital requirements. Proof of concept: contract TaintedFundsMover is SafeCallback { constructor(IPoolManager _poolManager) SafeCallback(_poolManager) {} function unlock(bytes calldata data) public { bytes memory unlockData = abi.encode(msg.sender, data); poolManager.unlock(unlockData); } function _unlockCallback(bytes calldata unlockData) internal override returns (bytes memory) { (address from, bytes memory data) = abi.decode(unlockData, (address, bytes)); (Currency currency, address to, uint256 amount) = abi.decode(data, (Currency, address, ,! uint256));   and give to   to poolManager // Take funds from poolManager.take(currency, to, amount); // Sync currency poolManager.sync(currency); 11     from // Move tainted funds from ERC20(Currency.unwrap(currency)).transferFrom(from, address(poolManager), amount); // Settle poolManager.settle(); return \"\"; poolManager to } } contract TaintedFundsMoverTest is EndToEndTest { function test_moveTaintedFundsThroughManager() external { TaintedFundsMover mover = new TaintedFundsMover(manager); vm.label(address(mover), \"Mover\"); address sanctioned = makeAddr(\"Sanctioned\"); address to = makeAddr(\"to\"); uint256 amount = 1 ether; _token0.mint(sanctioned, amount); // \"Sanctioned\" approves \"Mover\" vm.startPrank(sanctioned); _token0.approve(address(mover), amount); // \"Mover\" moves funds from \"sanctioned\" through bytes memory data = abi.encode(_token0, to, amount); mover.unlock(data);  manager  } }",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Verified-Pools",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Individual pools cannot have zero-fee hooks if DEFAULT_POOL hook fee is set to non-zero",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Verified-Pools-Spearbit-Security-Review-September-2024.pdf",
+        "body": "In the case where hookFees[DEFAULT_POOL] is set greater than zero, it is impossible for specific pools to allow for a hookFee = 0. Take the following scenario:  Coinbase sets DEFAULT_POOL hook fee to 100 bips (1%) ! hookFees[DEFAULT_POOL] = 100.  Coinbase wants to incentivize use of their ETH-USDC pool with a 0% hook fee ! hookFees[poolId] = 0. The hookFee that will be used will be that of DEFAULT_POOL.",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Verified-Pools",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "sweep performs no policy checks",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Verified-Pools-Spearbit-Security-Review-September-2024.pdf",
+        "body": "sweep allows funds from unverified accounts to move funds in and out of the PositionManager. These funds do not enter pools and only serve to leave a flow of funds through the PositionManager with an undesired appearance (sender and recipient being unverified).",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Verified-Pools",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "VerifiedPoolsPositionManager does not override tokenURI",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Verified-Pools-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The VerifiedPoolsPositionManager does not override the tokenURI function from UniswapV4's PositionManager and ERC721Permit_v4 contract. It currently returns \"https://example.com%22 for every token ID. Any third party integration (e.g. opensea) will display a user's NFTs with data returned by tokenURI. If this is a dummy address, then there won't be any valid metadata for the NFT. The metadata info is optional per EIP-721 spec, however, as the \"name\" and \"symbol\" variables are overridden and the tokenURI function is defined, it is recommended to use a valid metadata URI. Impact: Low/Medium: There are no loss of funds, however, nearly every NFT uses metadata to be displayed to the user. There is also potentially a reputational damage associated with a non-functioning feature which cannot be fixed. Likelihood: Medium: Most NFTs use the metadata extension and aggregators fetch the token URI data automat- ically. Proof of concept: 16 function test_tokenURI() external { console.log(_posm.tokenURI(1)); // https://example.com }",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Verified-Pools",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Sanctioned accounts can pay for pool interactions of verified users",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Verified-Pools-Spearbit-Security-Review-September-2024.pdf",
+        "body": "Both UniversalRouter (used for swaps) and VerifiedPoolsPositionManager (used for modifying liquidity) can use their contract balance to settle pool interactions: // UniversalRouter function payOrPermit2Transfer(address token, address payer, address recipient, uint256 amount) internal ,! { if (payer == address(this)) pay(token, recipient, amount); else permit2TransferFrom(token, payer, recipient, amount.toUint160()); } // periphery/PositionManager, inherited by VerifiedPoolsPositionManager function _pay(Currency currency, address payer, uint256 amount) internal override { if (payer == address(this)) { // TODO: currency is guaranteed to not be eth so the native check in transfer is not optimal. currency.transfer(address(poolManager), amount); } else { permit2.transferFrom(payer, address(poolManager), uint160(amount), Currency.unwrap(currency)); } } A sanctioned user can send funds to these router contracts and a verified account can use these funds to swap in or add liquidity to a verified pool.",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Verified-Pools",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Liquidity can be locked up if position manager is removed",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Verified-Pools-Spearbit-Security-Review-September-2024.pdf",
+        "body": "Liquidity to verified pools can only be managed through Coinbase's VerifiedPoolsPositionMan- ager. The hooks check if the liquidity modification originated by an allow-listed position manager: if (sender == ZERO_ADDRESS || !positionManagers[sender]) { revert PositionManagerNotAllowed(sender); } A position manager can be removed from the positionManagers mapping through a privileged setPosition- Manager(address positionManager, bool allowed) call. Users will be unable to remove their liquidity if a Po- sitionManager is removed that they provided liquidity through. (The Coinbase VerifiedPoolsPositionManager also disallows transfers of the ERC721 liquidity position). Furthermore, there is no proper migration path from one PositionManger to a new one in the current code as one cannot selectively disallow only adding liquidity operations while still allowing removals.",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Verified-Pools",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "feeAmount computation might fail because of intermediate overflow",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Verified-Pools-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The afterSwap hook computes the feeAmount as: uint256 feeAmount = uint128(swapAmount) * hookFee / TOTAL_FEE_BIPS; Currently, the math is done in uint128 types as all 3 variables involved are of type uint128. The cast to the uint256 result type is only done after the computation is performed. The intermediate swapAmount * hookFee computation will overflow if it exceeds type(uint128).max, even if the final result would fit in a uint128.",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Verified-Pools",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Verified Account attestation checks ignore data field",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Verified-Pools-Spearbit-Security-Review-September-2024.pdf",
+        "body": "Checking if an account is a verified (business) account is performed by calling AttestationVer- ifier.verifyAttestation(...). However, this function does not check the attribute's data field. Coinbase's StaticAttester encodes a true boolean in the data field in its attestAccount function. AttestationRequest memory request = AttestationRequest({ schema: verifiedAccountSchema, data: AttestationRequestData({ recipient: recipient, expirationTime: 0, revocable: true, refUID: 0x0, // The Verified Account attestation schema is // Bool fields are represented as a single uint256 and in our case is always set to true. data: abi.encode(true), value: 0 bool verifiedAccount .   }) });",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Verified-Pools",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Policy verification results can be cached in transient storage",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Verified-Pools-Spearbit-Security-Review-September-2024.pdf",
+        "body": "Verifying if the sender has passed all the policy checks can be cached in transient storage allowing checks performed in the same transaction to be skipped. Transient storage automatically is reset once the trans- action has executed. The attestation data and policy check results are likely not to change during the execution of a user initiated transaction and can therefore be cached for the duration of the transaction. This can be useful when multiple swaps with verified pools are executed, or if wrapped tokens requiring policy checks on transfers are used in the future.",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Verified-Pools",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Gas savings by short circuiting the check on vbaAttestation if the first evaluates to true",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Verified-Pools-Spearbit-Security-Review-September-2024.pdf",
+        "body": "Only one of vaVerified and vbaVerified is required to be true.",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Verified-Pools",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "_validCountry() check is redundant",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Verified-Pools-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The _isVerifiedCountry() function contains a redundant check to _validCountry(). This func- tion checks that the country string length is exactly 2 characters, however, the same _validCountry() check is performed when adding and removing a country from the _countries mapping. Therefore, there is no path for the country code input to be included in the _countries mapping while simultaneously not having a length of two characters. The extra call to _validCountry() occurs either once or twice upon each call to verify():  VerifiedCountryPolicy.sol#L118-L125: if (vcValid) { string memory countryCode = _decodeCountryCode(vcAttestation.data); vcInVerifiedCountry = _isVerifiedCountry(countryCode); } if (vbcValid) { string memory countryCode = _decodeCountryCode(vbcAttestation.data); vbcInVerifiedCountry = _isVerifiedCountry(countryCode); }",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Verified-Pools",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "_validCountry can be constrained further",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Verified-Pools-Spearbit-Security-Review-September-2024.pdf",
+        "body": "As _validCountry's comment states, the country codes use the Alpha-2 standard. Meaning country codes are represented by two uppercase ASCII characters. The current code uses a UTF-8 string length library to properly count multi-byte characters.",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Verified-Pools",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Verified and unverified pool funds are likely to be mixed through arbitrage",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Verified-Pools-Spearbit-Security-Review-September-2024.pdf",
+        "body": "Arbitrage between pools is a core mechanism in decentralized exchanges (DEXs) that helps maintain price synchronization with real market prices. This process has several benefits: 1. Reduced slippage for users. 2. More efficient trades. 3. Balanced prices across different pools. Arbitrageurs are likely to interact with both verified and unverified pools to capitalize on price differences. This process occurs automatically as soon as arbitrage bots identify an opportunity. As arbitrageurs keep prices synchronized between verified and unverified pools, liquidity providers in unverified pools may inadvertently benefit from swaps performed in verified pools. This creates a potential issue: funds could indirectly flow between Coinbase's verified pools and potentially sanctioned entities in unverified pools.",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Verified-Pools",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Swapping and modifying liquidity positions is not possible in a single transaction for EOAs",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Verified-Pools-Spearbit-Security-Review-September-2024.pdf",
+        "body": "In the current implementation of the VerifiedPoolsBasicHook, it is not possible to both perform a swap and modify liquidity positions in a single transaction for externally owned accounts. Interacting with any of the current routers acquires the lock from PoolManager and allows performing batched actions from the router contract. If both actions (swapping and modifying liquidities) are to be done in one go, one router would need to call into the other router. the hook requires the sender to be an approved position manager When modifying liquidity positions, (positionManagers[sender]) and it requires an account policy verification on the original sender originalSender = IMessageSender(sender).msgSender(). When performing a swap, the hook requires the sender to be an approved swap router (swapRouters[sender]) and likewise, an account policy verification on the original sender. 22 When one router calls into the other, then originalSender will be a router and not the user executing the transac- tion. Therefore the account policy check will always fail in its current implementation.",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Verified-Pools",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Swapping can be used to allow funds to enter pools bypassing the donation hooks",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Verified-Pools-Spearbit-Security-Review-September-2024.pdf",
+        "body": "Swapping large, possibly flash loaned amounts back and forth can allow actors to donate to liquidity providers through fees without triggering the VerifiedPoolsBasicHook's beforeDonate hooks.",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Verified-Pools",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Verified accounts can use sanctioned 6909 claim tokens",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Verified-Pools-Spearbit-Security-Review-September-2024.pdf",
+        "body": "A sanctioned account can create an internal PoolManager claim balance through the mint and sync/transfer/settle combination. They can then set any account as an operator. This operator could burn the sanctioned account's balance to increase their own account's delta which can be used to pay for swaps or adding liquidity. Note that currently the MINT_6909 and BURN_6909 actions are defined but not enabled on the V4Router (used by UniversalRouter) and the PositionManager. However, a verified smart contract could unlock the pool manager to perform the burn prior to using the router's modifyLiquiditiesWithoutUnlock or similar functions. Tokens with callbacks or notification receivers through the subscribe functionality in the PositionManager could also hijack the control flow to burn on the pool manager.",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Verified-Pools",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Setting a new schemaUid effectively invalidates all existing verifications",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Verified-Pools-Spearbit-Security-Review-September-2024.pdf",
+        "body": "For the purpose of verified pools, updating schemaUid effectively invalidates all existing verifications under the previous schema.",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Verified-Pools",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Function argument shadows state variable",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Verified-Pools-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The constructor and setQuoter function have an argument that shadows the storage variable by the same name.",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Verified-Pools",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Silence linter warning for unused function parameters",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Verified-Pools-Spearbit-Security-Review-September-2024.pdf",
+        "body": "There are unused function parameters in some of the functions.",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Verified-Pools",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Consider adding a check to avoid user error and confirm revocable == true",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Verified-Pools-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The verifyAttestation check verifies a similar set of checks to what is verified in the indexer. While gas could be saved by relying on the indexing the added safety is not harmful. The attestations for verified pools are also assumed to be revokable.",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Verified-Pools",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Quoter swap simulations ignore policy checks",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Verified-Pools-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The Quoter swap simulations trigger the hooks but the beforeSwap hook includes a special case to ignore the policy checks (this is because the Quoter does not provide the original sender).",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Verified-Pools",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "PolicyCheckFailed(originalSender) error will not be used as policies already revert",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Verified-Pools-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The hooks call the policy to check the sender: bool verified = policy.verify(originalSender, hookData); if (!verified) { revert PolicyCheckFailed(originalSender); } Even though the policy.verify returns a boolean on success, it'll always revert with its own error instead of returning false. (This is true for both BasicPolicy and RemoveLiquidityPolicy.)The error that will be shown is the internal error of the policy and not the PolicyCheckFailed error.",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Verified-Pools",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "SanctionsListUpdated parameter order is swapped",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Verified-Pools-Spearbit-Security-Review-September-2024.pdf",
+        "body": "SanctionsList) event's first parameter is the next sanctions list and the second parameter is the previous sanctions list. Usually, for these type of events the order is swapped with the previous value being the first. See also: event VASchemaUpdated(bytes32 previousSchema, bytes32 currentSchema); event VBASchemaUpdated(bytes32 previousSchema, bytes32 currentSchema); event VCSchemaUpdated(bytes32 previousSchema, bytes32 currentSchema); event VBCSchemaUpdated(bytes32 previousSchema, bytes32 currentSchema);",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Verified-Pools",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Typos & documentation errors",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Coinbase-Verified-Pools-Spearbit-Security-Review-September-2024.pdf",
+        "body": "There are typos and natspec/documentation errors in the code.  Documentation: 1. VerifiedCountryPolicy.sol#L55: \"Error when both attestations are valid\" ! \"Error when both attestations are invalid\".  Typos: 1. IMessageSender.sol#L6-L8: \"to is used\" ! \"is used\", \"actua\" ! \"actual\", \"having to using\" ! \"having to use\". 2. ISanctionsList.sol#L4: \"sactions\" ! \"sanctions\". 3. BasicPolicy.sol#L24: \"polcies\" ! \"policies\". 4. NonSanctionedPolicy.sol#L14: \"SactionsList\" ! \"SanctionsList\". 5. VerifiedCountryPolicy.sol#L15: \"Policy contract to verify if the caller in a verified country.\" ! \"Policy contract to verify if the caller is in a verified country.\" 6. VerifiedCountryPolicy.sol#L212: \"complys\" ! \"complies\". 7. VerifiedCountryPolicy.sol#L239: \"unint256\" ! \"uint256\". 8. VerifiedPoolsBasicHook.sol#L524: \"befreDonate\" ! \"beforeDonate\". 27",
+        "labels": [
+            "Spearbit",
+            "Coinbase-Verified-Pools",
+            "Severity: Informational BasicPolicy.sol#L24, ISanctionsList.sol#L4,"
+        ]
+    },
+    {
+        "title": "The LTV-dependant ratio calculation in preLIF and preLCF can be refactor",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Morpho-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The LTV-dependant ratio calculation in preLIF and preLCF can be refactored: (ltv - PRE_LLTV).wDivDown(LLTV - PRE_LLTV)",
+        "labels": [
+            "Spearbit",
+            "Morpho",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Iterative pre-liquidation",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Morpho-Spearbit-Security-Review-October-2024.pdf",
+        "body": "Due to the following constraints: require(WAD <= _preLiquidationParams.preLIF1, ErrorsLib.PreLIFTooLow()); require(_preLiquidationParams.preLIF1 <= _preLiquidationParams.preLIF2, ErrorsLib.PreLIFDecreasing()); Not considering the division errors and gas costs (compared to the extracted value), it is guaranteed that the pre-liquidator always can extract some value. 1018 (cid:20) LIF1 (cid:20) LIF2 5 The portion of borrowed assets where the pre-liquidator can pre-liquidate is limited due to the following require statement: // Note that the pre-liquidation close factor can be greater than WAD (100%). // In this case the position can be fully pre-liquidated. uint256 preLCF = (ltv - PRE_LLTV).wDivDown(LLTV - PRE_LLTV).wMulDown(PRE_LCF_2 - PRE_LCF_1) + PRE_LCF_1; uint256 repayableShares = uint256(position.borrowShares).wMulDown(preLCF); require(repaidShares <= repayableShares, ErrorsLib.PreLiquidationTooLarge(repaidShares, ,! repayableShares)); One can preform the pre-liquidation if: LLTVpre < LTV (cid:20) LLTV For certain parameters there might be cases that after pre-liquidation the LTV stays in the above range (even though it might have been slightly improved) and thus the pre-liquidator can keep pre-liquidating as long as LTV stays in the above range which might potentially allow the pre-liquidator to pre-liquidate most of the borrowed assets.",
+        "labels": [
+            "Spearbit",
+            "Morpho",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Different SafeTransferLib has been used compared to morpho-blue",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Morpho-Spearbit-Security-Review-October-2024.pdf",
+        "body": "In morpho-blue a custom SafeTransferLib has been used where as in the project one is using the library from solmate. Besides one being written in assembly and the other in a higher-level solidity language. The main difference is that the custom SafeTransferLib has the extra check: require(address(token).code.length > 0, ErrorsLib.NO_CODE); Which was added in PR629: fix(safe-transfer-lib): check for code",
+        "labels": [
+            "Spearbit",
+            "Morpho",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Solidity version",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Morpho-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The solidity versions used for some of the contracts is solc 0.8.27. This version includes new opcodes/bytecodes that depending on the evm_version selected can introduce PUSH0, MCOPY,...",
+        "labels": [
+            "Spearbit",
+            "Morpho",
+            "Severity: Informational"
+        ]
     }
 ]
