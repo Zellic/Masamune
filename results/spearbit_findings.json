@@ -33968,5 +33968,15 @@
             "Morpho",
             "Severity: Informational"
         ]
+    },
+    {
+        "title": "Document why unsafe casts and arithmetic is safe",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Euler-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The code performs some non-trivial unsafe type cast, unsafe arithmetic, and subtractions that should never underflow, but it's not documented why it's safe to do so: 1. EulerEarnVault.sol#L624: lossAmount <= $.totalAllocated: a strategy's loss is capped by the current strategy.allocated. As totalAllocated is the sum of all strategies' strategy.allocated, the loss can never spill over into the cash reserve. Therefore, the subtraction cannot underflow. 2. Shared.sol#L76, EulerEarnVault.sol#L830: lossAmount - totalNotDistributed. by $.totalAssetsDeposited for the subtraction to not underflow: We The loss socialization reduces $.totalAssetsDeposited lossAmount - totalNotDistributed <= require lossAmount - totalNotDistributed = lossAmount - ($.totalAllocated + cashBalance) + $.totalAssetsDeposited // def ,! <= = -cashBalance + $.totalAssetsDeposited // cashBalance >= 0 <= $.totalAssetsDeposited totalNotDistributed $.totalAllocated - ($.totalAllocated + cashBalance) + $.totalAssetsDeposited // by 1. 3. EulerEarnVault.sol#L715: Downcasting to uint120 is safe as it leads to a smaller cap.",
+        "labels": [
+            "Spearbit",
+            "Euler",
+            "Severity: Informational"
+        ]
     }
 ]
