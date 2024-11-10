@@ -33978,5 +33978,355 @@
             "Euler",
             "Severity: Informational"
         ]
+    },
+    {
+        "title": "CALLCODE to withdrawal precompile may lead to fund loss",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "The current withdrawal precompile implementation blindly accepts a Transfer without checking its source and target. When a CALLCODE instruction executes, it creates a Transfer object with the following values:  source: the context address.  target: same as source. The transfer would then be complied by sputnikvm. It may sound like a no-op, but it's an important implementation detail due to EVM's special account existence rules. The fund will not be transferred to the precompile, but the precompile routine is invoked, passed with the above Transfer object. The precompile then blindly creates a Withdrawal message, but the source money is not de- ducted at all. This is a critical severity issue due to its attack simplicity and impact of fund lose of the L2.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Critical Risk"
+        ]
+    },
+    {
+        "title": "Small amount of native token transfer dropped from mempool",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "When attempting to send a small amount of native tokens (e.g., 0.000000000000000001 ether) using the cast send command to invoke the withdraw_base58 function of a precompile contract, the transaction is being dropped from the mempool. This issue occurs even when providing a high gas limit and gas price. The specific command used is: cast send 0xff00000000000000000000000000000000000001 \"withdraw_base58(string)\" ,! \"tz1PSeFiWEu5Ry9h6PvNnd8EJG51zEB2yA8Y\" --value 0.000000000000000001ether --rpc-url https://node.ghostnet.etherlink.com/ --private-key xxxxxx --legacy --gas-limit 20000000 --gas-price 100000000000 ,! ,! The error message received indicates that the transaction was not found and might have been dropped from the mempool: Error: tx not found, might have been dropped from mempool: ,! 0x4023fd45ae7642c231a8cd89acba948cd55bf79edcdb8cc196095db3a8d8059c In the logs when try to execute a withdrawal with value = 1wei I get: 4 ------------------ Kernel Invocation ------------------ [Info] Going to run an Ethereum transaction - from address: 0x1074...f3eb - to address: Some(0xff00000000000000000000000000000000000001) [Info] Withdrawal to \"tz1fp5ncDmqYwYC568fREYz9iwQTgGQuKZqX\" [Error] Block 5 failed with Invalid ticket. Reverting. The team introduced a failsafe mechanism in the kernel:  When the kernel starts to process a block, everything is copied to a temporary directory.  If the block was succesfuly applied, we promote the temp directory.  If the block fails, we revert the blocks and drop the transactions. The block fails here, because of a kernel bug, therefore we can attack the kernel by spamming these withdrawals. Fortunately as we have a sequencer as frontend it'll probably just drop the transaction because it cannot produce a block with it. But we can always use the delayed inbox to spam it.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Critical Risk"
+        ]
+    },
+    {
+        "title": "Non monotonic L2 block timestamps",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "The L2 blocks use two different sources for the block timestamps:  The blocks produced from the sequencer's blueprints use the blueprint timestamp, which are set arbitrary by the sequencer.  The blocks produced from the delayed inbox base on the L1 block timestamp. It is almost certain that the blocks produced from the delayed inbox break monotonicity of block timestamps.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: High Risk"
+        ]
+    },
+    {
+        "title": "Inconsistency between hardcoded gas limit and actual gas left in smart contract execution",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "During the execution of a smart contract function a() in contract A, an inconsistency was observed between the hardcoded maximum gas limit defined in the code and the actual remaining gas reported by the gasleft() function. In the code snippet provided, the MAXIMUM_GAS_LIMIT constant is set to 30_000_000, which represents the maxi- mum amount of gas allowed for a transaction. This value is derived from the block gas limit defined in EIP-1559 as 2 times the gas target. However, when executing the a() function using the cast call command with a specified gas limit of 999999999, the gasleft() function returned a value of 999978817, which is significantly higher than the hardcoded MAXIMUM_- GAS_LIMIT. This inconsistency raises concerns about the accuracy and reliability of the gas limit enforcement in the smart contract execution environment. If the actual gas left exceeds the defined maximum gas limit, it suggests that the gas limit is not being properly enforced or that there may be issues with the gas accounting mechanism. Proof of concept: contract A { function a() public view returns(uint) { return gasleft(); } }  Deploy contract: forge create --rpc-url https://node.ghostnet.etherlink.com/ --private-key xxx src/A.sol:A ,! --legacy  Call public function: cast call 0x131fC1CAC96D7c279C6D46810f37595bC0F2fc7E \"a()(uint256)\" --rpc-url ,! 999978817 [9.999e8] https://node.ghostnet.etherlink.com/ --gas-limit 999999999",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Unbounded gas limit in the simulation & precompile",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "In the simulations, there is an inconsistency between the defined maximum gas limit for Ethereum transactions and the usage of u64::MAX as the default gas limit in the run function of the Evaluation struct. In the constants module, the MAXIMUM_GAS_LIMIT constant is defined as follows:  tick_model.rs#L21: pub const MAXIMUM_GAS_LIMIT: u64 = 30_000_000; 6 This constant sets the maximum gas limit for Ethereum transactions to 30 million gas units. However, in the run function of the Evaluation struct, when calling the run_transaction function, the gas limit is set to u64::MAX if no gas limit is provided in the Evaluation instance: self.gas.or(Some(u64::MAX))",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Stack-based call stack may overflow the stack",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "EVM execution requires a call stack to store all information of sub-calls as they happen. Etherlink uses a custom implementation of its call/create routines. Within it, the sub-call execution directly happens on the (native) stack. This will likely lead to (native) stack overflow, because the depth limit of EVM sub-calls is 1024.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Fallback mechanism risks data loss due to lack of backup file validation",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "The fallback_backup_kernel function assumes that the backup files (BACKUP_KERNEL_ROOT_HASH and BACKUP_KERNEL_BOOT_PATH) exist and contain valid data. However, it does not perform any checks to verify the existence and validity of the backup files before copying them back to the original locations (KERNEL_ROOT_HASH and KERNEL_BOOT_PATH). If the backup files are missing or corrupt, copying them back to the original locations could lead to data loss or unexpected behavior. The function blindly copies the backup files without ensuring their integrity, which can result in a faulty fallback mechanism. pub fn fallback_backup_kernel(host: &mut impl Runtime) -> Result<(), RuntimeError> { log!( host, Error, \"Something went wrong, fallback mechanism is triggered.\" ); host.store_copy(&BACKUP_KERNEL_ROOT_HASH, &KERNEL_ROOT_HASH)?; host.store_copy(&BACKUP_KERNEL_BOOT_PATH, &KERNEL_BOOT_PATH) }",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Old rustls version vulnerable to RUSTSEC-2024-0336",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "The dependency of rustls in Etherlink is 0.21.10. This is vulnerable to RUSTSEC-2024-0336. The vulnerability has a CVSS score of high. However, as it's only related to networking and we did not find a direct usage of rustls::ConnectionCommon::complete_io, we set our severity of this advisory to low.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Wrong expression precedence in withdrawal rounding check",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "The expression is wrong: !amount < U256::from(u64::max_value()) Rust's expression precedence is that unary (!) is applied before comparison (<). The current expression does not do what it is supposed. Practically, it returns true only for values greater than 0xfff...(x192)...000..., but we want to check for values greater than or equal to 0x000...(x191)...1000.... We rate this as a low severity issue because practically the amount will not be greater U256::from(u64::max_value()) unless another bug is triggered. than",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Risk of blueprint drop on a sequencer upgrade",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "The check if the current sequencer submitted a blueprint (a signature verification) takes place before a potential sequencer upgrade. And if there is a sequencer upgrade, then all stored blueprints are cleared. This has two implications. If the upgrade does not actually change a sequencer address, a valid blueprint may be dropped. On the other hand, if a new sequencer is eager and submits a blueprint in the same time the upgrade takes place, its blueprint is dropped because the signature is checked before the upgrade. Quite unlikely to happen, but worth to consider a fix.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Sequencer upgrades overriding allows the old sequencer to operate for a while",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "There is a single place to store a sequencer upgrade. If the sequencer upgrade is not yet activated and another one is read, then the previous setting is overridden. There is one caveat. Assume we have an old sequencer, the first upgrade request with a sequencer sA and an activation timestamp tA, the second overriding upgrade request with a sequencer sB and an activation timestamp tB. Then between timestamps tA and tB, the old sequencer is eligible to create blueprints instead of the sequencer sA.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Kernel Upgrade Override",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "The kernel upgrade is stored in a single place. If there is a kernel upgrade stored and another is received, then the new kernel upgrade overrides the previous one. This is still ok despite the activation time shift. But if the first kernel upgrade provides a store migration, it cannot be omitted. The kernel does not need to and should not rely on governance aware decisions.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Excessive logging through smart contract fallback function can cause DoS",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "The potential problem has been identified with the Counter smart contract, specifically in its fall- back function. The fallback function contains code that can lead to excessive logging, potentially causing a DoS Condition.  Contract: // SPDX-License-Identifier: UNLICENSED pragma solidity ^0.8.13; contract Counter { fallback () external { uint m = 5000000; assembly { revert(0, m) } } } 9 In this code, the fallback function is defined with an external visibility. When the fallback function is triggered, it assigns a large value of 5000000 to the variable m. Then, using inline assembly, it calls the revert function with the arguments 0 and m. The problem lies in the excessive size of the m value passed to the revert function. When a node processes a transaction that triggers this fallback function, it will attempt to generate an error message with a size of 5000000 bytes. Generating and logging such a large error message can consume significant computational resources on the node. If an attacker repeatedly triggers this fallback function with high frequency, it can lead to a DoS condition on the node. curl -X POST https://node.ghostnet.etherlink.com/ -H \"Content-Type: application/json\" -d {\"jsonrpc\": ,! ,! \"2.0\", \"id\": 1, \"method\": \"eth_call\", \"params\": [{\"to\": \"0x466a7e59905991c5Bdf9f21CE26e097db6CBeC31\", \"gas\": \"0x2faf080\"}]}",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Incorrect use of handler's ExitError",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "SputnikVM v0.x exposes a handler trait, where library users customize the environmental behav- iors (for example, log and storage). Many of the methods in the handler trait can return ExitError, indicating that things have gone wrong within the handler. The use of ExitError in handler should be limited to \"flat errors\". For example, if the environment has additional permission logic and certain get/set storage operation does not have the necessary access permission, it can return ExitError. Here, it's important to note the control flow after ExitError is returned. In this case, the current EVM call stack will immediately stop, with all state changes in the call stack reverted. The parent caller will then know that the child call stack has error, and may continue execution. Most errors returned in Etherlink's handler are not \"flat errors\" as we discussed above, but environmental/native errors. In those cases, the control flow after ExitError is inappropriate. The parent caller has no way to distinguish whether the child exit is related to a normal error (like out-of-gas) or an environmental error, and may erroneously continue execution. At this moment we mark it as low severity because we found that all environmental errors in the handler are only returned in case of logical errors. If other parts of the codebase is done correctly, then those errors will never happen. However, we want to note that in case the errors are found to actually happen, this may quickly turn into a high severity or critical severity issue.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Revoke admin access for kernel upgrade",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "The current implementation of the Tezos smart rollup contract grants privileged access to the admin contract address, allowing it to initiate kernel upgrades by sending specific messages to the rollup contract. This centralized approach introduces a single point of failure and goes against the principles of decentralization. While having a centralized authority for critical upgrades may provide a degree of control and coordination, it also poses risks such as censorship, collusion, or a single entity compromising the system. A decentralized approach would distribute the power across multiple parties, reducing the risk of a single point of failure and increasing the overall security and resilience of the system. fn parse_internal_transfer<Host: Runtime>( host: &mut Host, transfer: Transfer<RollupType>, smart_rollup_address: &[u8], tezos_contracts: &TezosContracts, context: &mut Mode::Context, ) -> Self { if transfer.destination.hash().0 != smart_rollup_address { log!( host, Info, \"Deposit ignored because of different smart rollup address\" ); return InputResult::Unparsable; } let source = transfer.sender; match transfer.payload { MichelsonOr::Left(left) => match left { MichelsonOr::Left(MichelsonPair(receiver, ticket)) => { Self::parse_deposit( host, ticket, receiver, &tezos_contracts.ticketer, context, ) } MichelsonOr::Right(MichelsonBytes(bytes)) => { Mode::parse_internal_bytes(source, &bytes, context) } }, MichelsonOr::Right(MichelsonBytes(bytes)) => { if tezos_contracts.is_admin(&source) || tezos_contracts.is_kernel_governance(&source) || tezos_contracts.is_kernel_security_governance(&source) { Self::parse_kernel_upgrade(&bytes) } else if tezos_contracts.is_sequencer_governance(&source) { Self::parse_sequencer_update(&bytes) } else { Self::Unparsable } } } } 11",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Potential integer overflow in add_ticks function",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "The add_ticks function in the BlockInProgress struct is responsible for incrementing the esti- mated_ticks_in_run and estimated_ticks_in_block fields by the provided ticks value. However, the function does not perform any checked addition or overflow checks. If the sum of the current values and the ticks pa- rameter exceeds the maximum value representable by u64, an integer overflow will occur, leading to unexpected behavior and potentially corrupting the state of the BlockInProgress. fn add_ticks(&mut self, ticks: u64) { self.estimated_ticks_in_run += ticks; self.estimated_ticks_in_block += ticks; }",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Inconsistent nonce increment logic",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "The codebase contains two functions that increment nonces: increment_nonce and get_and_- increment_deposit_nonce. However, there is an inconsistency in how these functions handle the nonce increment operation. In the increment_nonce function, the code uses the checked_add method to safely increment the nonce value. If the addition overflows, it returns an error (AccountStorageError::NonceOverflow). This approach ensures that the nonce increment is performed safely and any overflow condition is properly handled. On the other hand, the get_and_increment_deposit_nonce function does not use checked_add when increment- ing the nonce. Instead, it directly adds 1 to the current nonce value using the + operator (let new_nonce = nonce + 1;). This approach does not include any overflow checks or error handling. 12 pub fn get_and_increment_deposit_nonce<Host: Runtime>( host: &mut Host, ) -> Result<u32, Error> { let current_nonce = || -> Option<u32> { let bytes = host.store_read_all(&DEPOSIT_NONCE).ok()?; let slice_of_bytes: [u8; 4] = bytes[..] .try_into() .map_err(|_| Error::InvalidConversion) .ok()?; Some(u32::from_le_bytes(slice_of_bytes)) }; let nonce = current_nonce().unwrap_or(0u32); let new_nonce = nonce + 1; host.store_write_all(&DEPOSIT_NONCE, &new_nonce.to_le_bytes())?; Ok(nonce) }",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Transaction failure encountered during spam withdrawals",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "A smart contract named SpamWithdrawals was created to test the behavior of the withdrawal pre- compile function when making a large number of small native token transfers. contract SpamWithdrawals { function doWithdrawals() external payable { for (uint256 i = 0; i < 10000; i++) { address to = 0xff00000000000000000000000000000000000001; to.call{value: 0.0000001 ether}(abi.encodeWithSignature(\"withdraw_base58(string)\", ,! \"tz1WrbkDrzKVqcGXkjw4Qk4fXkjXpAJuNP1j\")); } } } The contract has one function: 1. doWithdrawals(): Performs 10,000 iterations of calling the withdraw_base58 function of the precompile contract (0xff00000000000000000000000000000000000001) with a small amount of 0.0000001 ether. The doWithdrawals() function was invoked using the cast send command with a value of 0.01 ether: cast send 0xfa5ac9f11eaB8782B7D8C2CDBa85e03cf6407c6e \"doWithdrawals()\" --value 0.01ether --rpc-url ,! https://node.ghostnet.etherlink.com/ --private-key xxxx --legacy --gas-limit 2000000 --gas-price 10000000000 ,! However, executing this command resulted in a failure, see the example transaction 0xc749b822ce461d6619b78c10e7dbd687e5b9294c03cfe7fc58d4309d83f12489.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Info logging in user invoked code may lead to spamming",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "The withdrawal precompile contains an Info log in case the function selector is invalid. CALL itself into the precompile, even taking account of WITHDRAWAL_COST is really cheap. An attacker may attempt to repeatedly call into the withdrawal precompile with invalid function selector in a single transaction invocation to spam the node log.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "StartOfLevel and EndOfLevel should not be Unparsable",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "Along with InfoPerLevel, the kernel gets StartOfLevel and EndOfLevel messages. And they are considered Unparsable.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Total issuance of Etherlink not accounting for the withdrawal precompile",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "When a user send funds to the withdrawal precompile, the fund is transferred to the precompile contract itself and is effectively \"burned\". However, the balance then stays at the precompile. This may cause external applications (for example, dapps) designed for Ethereum to read the total issuance of Etherlink wrongly, if they do not consider the particular situation of this precompile.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Unexpected output on eth_call with custom state override",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "When making an eth_call request to the Ethereum JSON-RPC API with a custom state override, an unexpected output or error is encountered. The issue arises when including an additional parameter in the eth_call request to specify a custom state override. The expected behavior is for the eth_call request to execute the specified smart contract function with the pro- vided input parameters and return the result, taking into account the custom state override. However, the API returns an error or an unexpected response format. For example, when making the following eth_call request: curl https://node.ghostnet.etherlink.com/ \\ -X POST \\ -H \"Content-Type: application/json\" \\ --data {\"method\":\"eth_call\",\"params\":[{\"from\": null,\"to\":\"0x6b175474e89094c44da98b954eedeac495271d0f c \",\"data\":\"0x70a082310000000000000000000000006E0d01A76C3Cf4288372a29124A26D4353EE51BE\"}, \"latest\", {\"0x1111111111111111111111111111111111111111\": {\"balance\": \"0xFFFFFFFFFFFFFFFFFFFF\"}}],\"id\":1,\"jsonrpc\":\"2.0\"} ,! ,! ,! The response received is an error: {\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32600,\"message\":\"Json_encoding.Cannot_destruct at /: No case ,! Unexpected array of size 3 instead of 2\\n matched:\\n ,! Unexpected array of size 3 instead of 1\"},\"id\":1} Similarly, when making the same request testnet.public.blastapi.io to other Ethereum&BSC API endpoints, such as https://bsc- or https://sepolia.era.zksync.dev, the response is 0x. {\"jsonrpc\":\"2.0\",\"result\":\"0x\",\"id\":1}",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Centralization and single point of failure in sequencer",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "The Etherlink sequencer currently operates as a centralized entity, posing significant risks to the security, reliability, and decentralization of the rollup system. The following issues need to be addressed: 1. Single Point of Failure: The sequencer acts as a single point of failure. If the sequencer experiences down- time, malfunction, or becomes compromised, it can severely impact the entire rollup, leading to disruptions in transaction processing and user experience. 2. Lack of Decentralization: The sequencer has complete control over the selection and ordering of transac- tions. This centralized control raises concerns about potential censorship, manipulation, or extraction of MEV (Miner Extractable Value) through transaction ordering.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Discrepancy in gas usage estimation for transaction execution",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "In the provided example, the output from the cast run command shows a \"Gas used\" value of 184,134, while the on-chain transaction details indicate a gas usage of 3,450,132 out of a limit of 3,521,481 (97.97% of the gas limit): cast run 0x7b13f38fd5090a9683d6b0bf30c204a98e5654310b6444354d44df9e0795530e --rpc-url ,! https://node.ghostnet.etherlink.com/ Output: Executing previous transactions from the block. Traces: [121296] (cid:25) new <unknown>@0x12dF1071Abdc7903E89C3E2e585a5C7662701F9F (cid:24) [Return] 494 bytes of code Transaction successfully executed. Gas used: 184134 See the transaction in the explorer: 0x7b13f38fd5090a9683d6b0bf30c204a98e5654310b6444354d44df9e0795530e. Output: Value 0 XTZ Transaction fee 0.003450132 XTZ Gas price 0.000000001 XTZ (1 Gwei) Gas usage & limit by txn 3,450,132 | 3,521,481 97.97% Gas fees (Gwei) Base: 1",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Logging should be disabled in production stage 0 and stage 1",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "Logging in Etherlink is implemented in tezos-evm-logging crate, where it calls alloc::format! and then pass the returned string to tezos_smart_rollup_debug::debug_msg. We want to note that Rust formatter is not panic safe. It's also not simple to eliminate panics, as each Display/Debug trait implementation itself may return error or panic. Because it's critical that no panic happens in stage 0 and stage 1, logging should be disabled in production.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Optimization through wasm-opt",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "The current deployment process does not include optimization steps for the generated wasm byte- code (see https://github.com/WebAssembly/binaryen).",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Unchecked arithmetic in set_balance function",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "The set_balance function in the provided code is susceptible to an underflow issue. In the set_- balance function, there is a condition that checks if the current_balance is greater than the balance parameter. If this condition is true, it attempts to subtract balance from current_balance and update the account's balance using balance_remove. However, if balance is smaller than current_balance, an underflow will occur: 17 fn set_balance( host: &mut MockHost, evm_account_storage: &mut EthereumAccountStorage, address: &H160, balance: U256, ) { let mut account = evm_account_storage .get_or_create(host, &account_path(address).unwrap()) .unwrap(); let current_balance = account.balance(host).unwrap(); if current_balance > balance { account .balance_remove(host, current_balance - balance) .unwrap(); } else { account .balance_add(host, balance - current_balance) .unwrap(); } }",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Incompatibility with updated selfdestruct behavior",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "The smart contract deployed at address 0x3853C7834d74ed8Afa05cEA06a2f2a3FB355EC61 is not compatible with the recent changes introduced to the behavior of the SELFDESTRUCT opcode. Under the new rules, the SELFDESTRUCT opcode will only destroy a contract when it's called in the same transaction In all other cases, SELFDESTRUCT will only transfer the contract's Ether balance to the that created the contract. specified target address without destroying the contract's bytecode. In the provided example, the Exploit contract is deployed and then subsequently destroyed using the destroy() function in a separate transaction. pragma solidity 0.7.6; contract Exploit { constructor() payable {} function destroy() public { selfdestruct(payable(address(this))); } function take() public { msg.sender.transfer(address(this).balance); } } Command cast send 0x3853C7834d74ed8Afa05cEA06a2f2a3FB355EC61 \"destroy()\" --rpc-url ,! https://node.ghostnet.etherlink.com/ --private-key --legacy 18 Code is set to 0x. curl https://node.ghostnet.etherlink.com/ \\ -X POST \\ -H \"Content-Type: application/json\" \\ --data {\"method\":\"eth_getCode\",\"params\":[\"0x3853C7834d74ed8Afa05cEA06a2f2a3FB355EC61\",\"latest\"],\"id\" c ,! :1,\"jsonrpc\":\"2.0\"} {\"jsonrpc\":\"2.0\",\"result\":\"0x\",\"id\":1} For more context, see EIP-6780.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Excessive logging verbosity",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "The code snippets provided for the run_transaction and parse_deposit functions contain multiple logging statements at the Info level, which can lead to excessive verbosity and potential performance issues. 1. run_transaction function; the logging statement in question is: log!(host, Info, \"Going to run an Ethereum transaction\\n - from address: {}\\n - to address: ,! {:?}\", caller, address); This statement logs detailed information about every Ethereum transaction processed by the run_transac- tion function, including the caller address and the destination address (if available). While this information can be useful for debugging and tracing purposes, logging it at the Info level for every transaction can introduce performance overhead and clutter the log output. 2. parse_deposit function; the parse_deposit function contains multiple logging statements at the Info level: log!(host, Info, \"Deposit of {} to {}.\", amount, receiver); These logging statements provide information about deposit transactions, including cases where deposits are ignored due to different ticketers or invalid receiver addresses, as well as successful deposit details. However, logging this information at the Info level for every deposit transaction can lead to excessive verbosity and impact performance, especially if the parse_deposit function is called frequently.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Inconsistent error message structure for eth_getLogs method",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "The eth_getLogs method on the Etherlink Ghostnet node returns an error message that does not follow the standard JSON-RPC error format. The error message is returned as a string within the \"message\" field, instead of being a separate \"error\" field with a \"code\" and \"message\" subfields. When making an the 0x0000000000000000000000000000000000000000000000000000000000000000), node returns the following error response: eth_getLogs method with request to a invalid the block Etherlink hash (e.g., Ghostnet curl --location https://node.ghostnet.etherlink.com \\ --header Content-Type: application/json \\ --data { \"jsonrpc\":\"2.0\", \"id\":1, \"method\":\"eth_getLogs\", \"params\": [{\"blockHash\":\"0x0000000000000000000000000000000000000000000000000000000000000000\"}] } { ,! } \"jsonrpc\": \"2.0\", \"error\": { \"code\": -32600, \"message\": \"Evm_node_lib_dev.Durable_storage.Make(Reader).Invalid_block_structure(\\\"Couldnt decode bytes\\\")\" }, \"id\": 1 In comparison, when making the same request to a different node, such as the Moonbase Alpha TestNet node (https://rpc.api.moonbase.moonbeam.network), the error response follows the standard JSON-RPC error for- mat: { } \"jsonrpc\": \"2.0\", \"error\": { \"code\": -32000, \"message\": \"unknown block\" }, \"id\": 1",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Unsupported JSON-RPC methods",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "The Etherlink node on the Ghostnet network does not support certain JSON-RPC methods, specif- ically eth_feeHistory and eth_maxPriorityFeePerGas. When attempting to call these methods using curl, the node responds with an error indicating that the methods are not supported. Proof of concept: 1. Send a POST request to https://node.ghostnet.etherlink.com/ with the following JSON payload: { } \"method\": \"eth_feeHistory\", \"params\": [4, \"latest\", [25, 75]], \"id\": 1, \"jsonrpc\": \"2.0\" Command: curl https://node.ghostnet.etherlink.com/ \\ -X POST \\ -H \"Content-Type: application/json\" \\ --data {\"method\":\"eth_feeHistory\",\"params\":[4, \"latest\", [25, 75]],\"id\":1,\"jsonrpc\":\"2.0\"} 2. Send a POST request to https://node.ghostnet.etherlink.com/ with the following JSON payload: { } \"method\": \"eth_maxPriorityFeePerGas\", \"params\": [], \"id\": 1, \"jsonrpc\": \"2.0\" Command: curl https://node.ghostnet.etherlink.com/ \\ -X POST \\ -H \"Content-Type: application/json\" \\ --data {\"method\":\"eth_maxPriorityFeePerGas\",\"params\":[],\"id\":1,\"jsonrpc\":\"2.0\"} Command curl https://node.ghostnet.etherlink.com/ \\ -X POST \\ -H \"Content-Type: application/json\" \\ --data {\"method\":\"debug_traceBlockByNumber\",\"params\":[\"0xccde12\", {\"tracer\": ,! \"callTracer\"}],\"id\":1,\"jsonrpc\":\"2.0\"} The lack of support for these methods on the Etherlink node can impact developers and applications that rely on fetching historical fee information (eth_feeHistory) or retrieving the maximum priority fee per gas (eth_- maxPriorityFeePerGas). It may limit the ability to analyze past transaction fees or optimize gas pricing strategies.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Blocks can be filled of transactions with zero value",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "A potential issue has been identified with the current configuration of the blockchain. As it stands, users are able to send transactions with zero value, which in itself is not a problem. However, there is currently no mechanism to prevent the blockchain blocks from being entirely filled with such zero-value transactions. This could potentially be exploited by malicious actors to spam the network, fill blocks, and slow down transaction processing times for legitimate, non-zero value transactions. If blocks are filled with zero-value transactions, the overall processing efficiency and performance of the blockchain could be affected. This could also increase transaction waiting times and lead to a suboptimal user experience. In worst-case scenarios, it might disrupt the normal operation of the blockchain, leading to a potential loss of trust in the system's reliability. Proof of concept: const { ethers } = require(ethers); // Set the RPC URL and private key const rpcUrl = https://node.ghostnet.etherlink.com/; const privateKey = -; // Create a provider instance const provider = new ethers.providers.JsonRpcProvider(rpcUrl); // Create a wallet instance using the private key const wallet = new ethers.Wallet(privateKey, provider); // Set the recipient address const recipientAddress = 0x1234567890123456789012345678901234567890; // Set the minimum gas price (adjust as needed) const minGasPrice = ethers.utils.parseUnits(1, gwei); // Set the number of transactions to send const numTransactions = 100; // Send multiple transactions with zero value async function sendZeroValueTransactions() { try { for (let i = 0; i < numTransactions; i++) { const tx = { to: recipientAddress, value: 0, gasLimit: 2000000, gasPrice: minGasPrice, }; const transaction = await wallet.sendTransaction(tx); console.log(Transaction ${i + 1} sent:, transaction.hash); } console.log(All transactions sent.); } catch (error) { console.error(Error sending transactions:, error); } } // Call the function to send the transactions 22 sendZeroValueTransactions();",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Withdrawal precompile reverts directly instead of returning false",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "The withdrawal precompile implementation in the provided Rust code follows a design pattern where it reverts directly using ExitReason::Revert or ExitReason::Error instead of returning a boolean value to indi- cate the success or failure of the operation. This approach deviates from the expected behavior when interacting with the precompile from Solidity contracts. In the Solidity code, when calling the precompile using call, delegatecall, or staticcall, the return value is expected to be a tuple (bool success, bytes memory result). The success variable is then checked using a require statement to determine if the call was successful. If success is false, the transaction is meant to revert with an error message. However, the current implementation of the withdrawal precompile does not adhere to this convention. Instead of returning a boolean value to indicate the success or failure, it reverts directly using ExitReason::Revert or ExitReason::Error in various scenarios, such as when there is an error recording the cost, when there is no transfer or the transfer value is zero, or when the input data or target address is invalid. This mismatch between the expected behavior in Solidity and the actual behavior of the precompile can lead to confusion and unexpected transaction reverts. Developers interacting with the precompile from Solidity may as- sume that the precompile will return a boolean value, but instead, the transaction reverts directly without returning the expected false value.  Example Transaction: 0x6f8681ae9b8f6165fd40453ec26da02d8f935b13da591e84eb43acb5e832cd6a  Example Contract: 23 contract CallPrecompile { function testCall() public payable { address to = 0xff00000000000000000000000000000000000001; (bool success, bytes memory result) = to.call{value: 0.0000001 ,! ,! ether}(abi.encodeWithSignature(\"withdraw_base58(string)\", \"tz1WrbkDrzKVqcGXkjw4Qk4fXkjXpAJuNP1j\")); require(success, \"call failed\"); } function testDelegatecall() public { address to = 0xff00000000000000000000000000000000000001; (bool success, bytes memory result) = ,! ,! to.delegatecall(abi.encodeWithSignature(\"withdraw_base58(string)\", \"tz1WrbkDrzKVqcGXkjw4Qk4fXkjXpAJuNP1j\")); require(success, \"call failed\"); } function testStaticcall() public { address to = 0xff00000000000000000000000000000000000001; (bool success, bytes memory result) = ,! ,! to.staticcall(abi.encodeWithSignature(\"withdraw_base58(string)\", \"tz1WrbkDrzKVqcGXkjw4Qk4fXkjXpAJuNP1j\")); require(success, \"call failed\"); } }",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "execute_transfer does not use the source and target value of the Transfer object",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "The EVM execution code of Etherlink contains a customized implementation with its own execute_- call and execute_transfer. The execute_transfer within a call is implemented as follows: self.execute_transfer( transaction_context.context.caller, transaction_context.context.address, transfer.value, ) However, Transfer object contains explicit source and target field. Only two invocations will invoke this code path: on invocation of CALL, and on invocation of CALLCODE. The transfer source and target happens to be correct in both cases, but is confusing.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "withdrawal precompile should disable invocation by CALLCODE, DELEGATECALL, STATICCALL",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Tezos-Spearbit-Security-Review-June-2024.pdf",
+        "body": "withdrawal is a custom precompile for Etherlink. Upon invocation, the EVM engine passes on Its Context also a parameter is_static, to determine if the current execution is within a STATICCALL context. determines if the invocation is a CALL, DELEGATECALL, or CALLCODE. The withdrawal precompile should respect the is_static parameter, and it should disable all other call variants other than CALL. Those additional invocation paths increases the attack surfaces and provides no benefits to the functionality.",
+        "labels": [
+            "Spearbit",
+            "Tezos",
+            "Severity: Informational"
+        ]
     }
 ]
