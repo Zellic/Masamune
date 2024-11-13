@@ -18439,5 +18439,122 @@
             "Oak Security",
             "Severity: Informational"
         ]
+    },
+    {
+        "title": "1. Rewards are lost if the distribution is funded after the expiry",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/DAO DAO/2024-11-07 Audit Report - DAO DAO Rewards Distributor, x_onft Staked Voting, BitSong FanToken Factory, Permission Granularity v1.2.pdf",
+        "body": "In contracts/distribution/dao-rewards-distributor/src/contract.rs:303, the execute_fund function restarts the distribution if it is not continuous and already expired at the current block. This is problematic because rewards accrued from the last updated timestamp active_epoch.last_updated_total_earned_puvp to the ending timestamp active_epoch.ends_at will be lost. Consequently, stakers will not receive the rewards for the staking period, causing a loss of rewards. Please see the test_lost_rewards test case in the appendix to reproduce this issue.",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "2. Incorrect reward distribution due to inconsistent voting power queries",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/DAO DAO/2024-11-07 Audit Report - DAO DAO Rewards Distributor, x_onft Staked Voting, BitSong FanToken Factory, Permission Granularity v1.2.pdf",
+        "body": "In contracts/distribution/dao-rewards-distributor/src/rewards.rs:113- 136, the get_active_total_earned_puvp function computes the reward index by dividing the accrued rewards by the total voting power queried from the previous block height (see contracts/distribution/dao-rewards-distributor/src/helpers.rs:19). This is incorrect because the user reward is computed with voting power queried from the in current contracts/distribution/dao-rewards-distributor/src/helpers.rs:33. height, block seen as Consequently, the reward index will be computed using an outdated total voting power, resulting in incorrect reward distribution. An attacker can exploit this issue by staking many tokens one block before claiming the rewards to receive more at the expense of other users. Please see the test_claim_more_rewards test case in the appendix to reproduce this issue.",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "3. Users can inate their voting power by registering duplicate NFT token IDs",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/DAO DAO/2024-11-07 Audit Report - DAO DAO Rewards Distributor, x_onft Staked Voting, BitSong FanToken Factory, Permission Granularity v1.2.pdf",
+        "body": "In the contracts/voting/dao-voting-onft-staked/src/contract.rs:149, execute_confirm_stake function does not validate that the supplied NFT token IDs are not duplicates. This is problematic because the register_staked_nfts function in increases contracts/voting/dao-voting-onft-staked/src/state.rs:65-77 the users voting power based on the total number of token IDs supplied, which may include duplicates. An attacker can exploit this issue by calling the execute_confirm_stake function with duplicates of a token ID, granting them a high amount of voting power without requiring them to stake the necessary NFTs. These voting powers can be weaponized to manipulate the DAO into dispatching malicious messages, such as transferring funds to the attacker.",
+        "labels": [
+            "Oak Security",
+            "Severity: High"
+        ]
+    },
+    {
+        "title": "4. Rounding error during voting power updates causes undistributed rewards",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/DAO DAO/2024-11-07 Audit Report - DAO DAO Rewards Distributor, x_onft Staked Voting, BitSong FanToken Factory, Permission Granularity v1.2.pdf",
+        "body": "the get_active_total_earned_puvp function computes In contracts/distribution/dao-rewards-distributor/src/rewards.rs:121- 130, the completed distribution periods by dividing the new_reward_distribution_duration with duration. The division is implemented as checked_div, which returns the variable as an unsigned integer. This is problematic because a rounding error will occur if the duration is larger than new_reward_distribution_duration, the complete_distribution_periods to zero. This scenario could happen when a voting causing power change occurs before a full interval has elapsed, resulting in accrued rewards being undistributed and stuck in the contract. This issue has been independently reported by the client.",
+        "labels": [
+            "Oak Security",
+            "Severity: Medium"
+        ]
+    },
+    {
+        "title": "5. Missing validation of submission policy during contract migration",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/DAO DAO/2024-11-07 Audit Report - DAO DAO Rewards Distributor, x_onft Staked Voting, BitSong FanToken Factory, Permission Granularity v1.2.pdf",
+        "body": "In packages/dao-pre-propose-base/src/execute.rs:670, the migrate function allows the contract migration admin to set the PreProposeSubmissionPolicy when updating the contract. However, no validation ensures the supplied policy does not accidentally lock the DAO due to an invalid conguration. We classify this issue as minor because it can only be caused by the contract migration admin, which is a privileged account.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "6. Units of duration are not distinguished",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/DAO DAO/2024-11-07 Audit Report - DAO DAO Rewards Distributor, x_onft Staked Voting, BitSong FanToken Factory, Permission Granularity v1.2.pdf",
+        "body": "Time durations are crucial However, the data types implemented are error-prone. to the logic of the dao-rewards-distributor contract. the example, For contracts/distribution/dao-rewards-distributor/src/helpers.rs:78 subtracts one Expiration from another. Although the end and start parameters explicitly indicate the unit duration types (i.e., blocks or seconds), this information is not preserved in the output as the function returns u64 instead of the Expiration struct. get_exp_diff function in Additionally, the get_exp_diff function returns 0 if Expiration::Never, which is mathematically incorrect. the input parameters are both the get_duration_scalar function in line 42 removes the duration unit Similarly, information and directly returns the inner value as u64, further elevating the potential for errors. Consequently, the code responsible for managing distribution schedules and timeframes becomes more challenging to interpret, particularly when it involves arithmetic operations with mixed time units. This complexity increases the likelihood of bugs in these segments.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "7. Expired linear distributions cannot be paused",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/DAO DAO/2024-11-07 Audit Report - DAO DAO Rewards Distributor, x_onft Staked Voting, BitSong FanToken Factory, Permission Granularity v1.2.pdf",
+        "body": "In contracts/distribution/dao-rewards-distributor/src/state.rs:271-27 2, the transition_epoch function sets the distribution ending period (Epoch.ends_at) to the current block height or timestamp. This is problematic because the distribution may have already expired in the previous block, which causes the ending period to be updated incorrectly. Consequently, expired linear distributions cannot be paused due to an overow error in contracts/distribution/dao-rewards-distributor/src/state.rs:285-28 8, preventing the protocol from working as intended. This issue has been independently reported by the client.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
+    },
+    {
+        "title": "8. Suboptimal storage update",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/DAO DAO/2024-11-07 Audit Report - DAO DAO Rewards Distributor, x_onft Staked Voting, BitSong FanToken Factory, Permission Granularity v1.2.pdf",
+        "body": "In the packages/dao-pre-propose-base/src/execute.rs:199, execute_update_config function validates the submission_policy parameter in line 213 and updates it in the Config state. this is inecient because the Config state is retrieved in line 211 before However, validating the submission policy. If the submission policy does not pass the validation, the loaded storage value (indicated as the prev variable) remains unused.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "9. Duplicate distribution congurations can be created",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/DAO DAO/2024-11-07 Audit Report - DAO DAO Rewards Distributor, x_onft Staked Voting, BitSong FanToken Factory, Permission Granularity v1.2.pdf",
+        "body": "In contracts/distribution/dao-rewards-distributor/src/contract.rs:129, the execute_create function allows the contract owner to create a distribution. However, other distributions may already exist with the same conguration, causing duplicate distributions to be created.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "10. Suboptimal usage of optional vectors",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/DAO DAO/2024-11-07 Audit Report - DAO DAO Rewards Distributor, x_onft Staked Voting, BitSong FanToken Factory, Permission Granularity v1.2.pdf",
+        "body": "The Option<Vec<...>> type is prevalent across the codebase. Although it is useful to distinguish between an empty and an absent list in certain scenarios, this distinction is currently not used in the codebase, which is inecient and increases code complexity. in example, packages/dao-voting/src/pre_propose.rs:72-84, For the PreProposeSubmissionPolicy enum declares the denylist and allowlist elds to Option<Vec<String>>. The lists are parsed with unwrap_or_default, which converts conguration in empty updating the submission policy to None before lists packages/dao-pre-propose-base/src/execute.rs:291 and 365. This indicates there is no meaningful distinction between None and an empty vector. Hence, we conclude that Option<Vec<...>> serves more as an optimization than a necessity. Given that modern Rust minimizes the memory footprint of empty vectors, the complexity added by Option<Vec<...>> pattern outweighs its benets. Consequently, the code complexity is increased due to additional checks and unwrapping without a signicant memory eciency gain.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "11. Storage collection considerations",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/DAO DAO/2024-11-07 Audit Report - DAO DAO Rewards Distributor, x_onft Staked Voting, BitSong FanToken Factory, Permission Granularity v1.2.pdf",
+        "body": "the contracts/voting/dao-voting-onft-staked/src/state.rs:33, In STAKED_NFTS_PER_OWNER state is dened as Map<(&Addr, &str), Empty>. This mapping type is optimal for scenarios when tokens are added incrementally, so the storage updates only mutate the aected entries without needing to read and write other unaected tokens. However, STAKED_NFTS_PER_OWNER can also be used in batch updates in lines 72-75 or 101-110. This scenario is problematic in the current implementation because it requires querying and mutating multiple storage entries one by one, increasing the gas consumption.",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "12. Code deduplication",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/DAO DAO/2024-11-07 Audit Report - DAO DAO Rewards Distributor, x_onft Staked Voting, BitSong FanToken Factory, Permission Granularity v1.2.pdf",
+        "body": "code in The packages/dao-pre-propose-base/src/execute.rs:262-283, and 330-351 are identical. These segments implement modifying permission lists with iteration, deduplication, and address validation, which can be abstracted as reusable components to increase code maintainability. 307-328, segments",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "13. Unnecessary code",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/DAO DAO/2024-11-07 Audit Report - DAO DAO Rewards Distributor, x_onft Staked Voting, BitSong FanToken Factory, Permission Granularity v1.2.pdf",
+        "body": "contracts/voting/dao-voting-onft-staked/src/contract.rs:178-180, In the execute_confirm_stake function removes the PREPARED_ONFTS state based on the supplied token IDs. This is unnecessary because the register_staked_nfts function in already contracts/voting/dao-voting-onft-staked/src/state.rs:73. removes them",
+        "labels": [
+            "Oak Security",
+            "Severity: Informational"
+        ]
     }
 ]
