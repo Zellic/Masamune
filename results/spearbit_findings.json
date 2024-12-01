@@ -34328,5 +34328,865 @@
             "Tezos",
             "Severity: Informational"
         ]
+    },
+    {
+        "title": "fallback() logic prevents hook's postCheck from getting executed",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "It was decided that all functions be hooked with the withHook() modifier to enforce pre and post- checks on the hook for all functions on nexus account. But the hook post-check do not work correctly on the fallback() because of the current logic. This is the withHook() modifier: modifier withHook() { address hook = _getHook(); if (hook == address(0)) { _; } else { bytes memory hookData = IHook(hook).preCheck(msg.sender, msg.value, msg.data); _; IHook(hook).postCheck(hookData); } } In case a hook exists, it first does a hook.preCheck(), then runs through the execution of the relevant function that was called, followed by a postCheck() call to the hook contract. This is the fallback() function for the nexus acocunt: fallback() external payable withHook { FallbackHandler storage $fallbackHandler = _getAccountStorage().fallbacks[msg.sig]; address handler = $fallbackHandler.handler; CallType calltype = $fallbackHandler.calltype; if (handler != address(0)) { if (calltype == CALLTYPE_STATIC) { assembly { calldatacopy(0, 0, calldatasize()) // The msg.sender address is shifted to the left by 12 bytes to remove the padding // Then the address without padding is stored right after the calldata mstore(calldatasize(), shl(96, caller())) if iszero(staticcall(gas(), handler, 0, add(calldatasize(), 20), 0, 0)) { returndatacopy(0, 0, returndatasize()) revert(0, returndatasize()) } returndatacopy(0, 0, returndatasize()) return(0, returndatasize()) } } if (calltype == CALLTYPE_SINGLE) { assembly { calldatacopy(0, 0, calldatasize()) // The msg.sender address is shifted to the left by 12 bytes to remove the padding // Then the address without padding is stored right after the calldata mstore(calldatasize(), shl(96, caller())) if iszero(call(gas(), handler, callvalue(), 0, add(calldatasize(), 20), 0, 0)) { returndatacopy(0, 0, returndatasize()) 5 revert(0, returndatasize()) } returndatacopy(0, 0, returndatasize()) return(0, returndatasize()) } } } /// @solidity memory-safe-assembly assembly {    let s := shr(224, calldataload(0)) // 0x150b7a02: // 0xf23a6e61: // 0xbc197c81: if or(eq(s, 0x150b7a02), or(eq(s, 0xf23a6e61), eq(s, 0xbc197c81))) { msg.sig  onERC721Received(address,address,uint256,bytes) onERC1155Received(address,address,uint256,uint256,bytes) onERC1155BatchReceived(address,address,uint256[],uint256[],bytes) mstore(0x20, s) // Store return(0x3c, 0x20) // Return msg.sig   .   .  . .  . } } revert MissingFallbackHandler(msg.sig); } The problem is that for all calls inside this fallback logic that succeed, an assembly return statement is used to return the data. The issue with the assembly return statement is that it ends the whole execution then and there and turns away from the current call context, which means that anything after that return is skipped from the call. This causes the hook.postCheck() to be skipped for all fallback handled calls that are successful, and it anyway reverts if the fallback-handled call fails. This is the flow:  For all fallback handled calls...  ) reaches fallback() on nexus account...  ) reaches withHook() modifier...  ) preCheck() is called and works...  ) if external call inside fallback is successful there's an assembly return...  ) call ends and the postCheck() inside withHook() modifier will never get called. This will prevent the hook's postCheck from ever being reached, skipping important logic required by the hook to enforce constraints on the calls to the account.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: High Risk"
+        ]
+    },
+    {
+        "title": "Enable Mode Signature can be replayed",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "During enable mode, two validators are used. 1. validator: The module to be installed as any module type that can be defined. It must be a validator either already before the user op or after enabling it as a validator in enable mode. This validator will be used to validate the final userOp. 2. enableModeSigValidator: This validator is used in _checkEnableModeSignature to check the _getEnable- ModeDataHash(validator, initData) for enabling the first validator. Note that these two validators are independent of each other and might have different trust assumptions and privileges. While a user operation has a nonce field (that is used in the userOpHash and its signature) and the entrypoint checks and increments this nonce to avoid replaying a user operation, the inner enableModeSignature does not have any such replay protection. The same module, moduleInitData, enableModeSignature can be used in a different user operation to install the module a second time, for example, after the user uninstalled the module already. As the entire enable mode data is encoded in the userOp.signature that is not part of userOpHash, a bundler can replace the enable mode data with a different previously signed one without invalidating the user operation (as long as the enable mode bit and the validator encoded in the userOp.nonce match). op.signature = (moduleType, moduleInitData, enableModeValidator, enableModeSignature, userOpSignature) This signature can also be replayed across another chain, as well as on another smart account on the same chain with the same owner.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: High Risk"
+        ]
+    },
+    {
+        "title": "Enable Mode Signature ignores module type",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "During enable mode, two validators are used. 1. validator: The module to be installed as any module type that can be defined. It must be a validator either already before the user op or after enabling it as a validator in enable mode. This validator will be used to validate the final userOp. 2. enableModeSigValidator: This validator is used in _checkEnableModeSignature to check the _getEnable- ModeDataHash(validator, initData) for enabling the first validator. Note that these two validators are independent of each other and might have different trust assumptions and privileges. The enableModeSigValidator owner might only want to produce a signature for a specific module type. However, the signature is only over the module (validator) and initData fields, not over the moduleType that the module will be installed as. The user op submitter can forge the module type without invalidating the enable mode signature. (As the entire enable mode data is encoded in the userOp.signature that is not part of userOpHash). They can then create a user op with the forged enable mode module type to install the module as any type they want. A multi-type validator can be installed as all of its types.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: High Risk"
+        ]
+    },
+    {
+        "title": "ERC-7484 registry checks missing on calls to modules",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The ERC-7484 registry is not checked when calls to validators, fallback handlers, or hooks are made. The check is performed when executors are used through the use of the withRegistry modifier. function executeFromExecutor( ExecutionMode mode, bytes calldata executionCalldata ) external payable onlyExecutorModule withHook withRegistry(msg.sender, MODULE_TYPE_EXECUTOR) returns ,! (bytes[] memory returnData) { The check is also performed when any new module is installed. 8 function _installValidator(address validator, bytes calldata data) internal virtual ,! withRegistry(validator, MODULE_TYPE_VALIDATOR) { // ... function _installExecutor(address executor, bytes calldata data) internal virtual ,! withRegistry(executor, MODULE_TYPE_EXECUTOR) { // ... function _installHook(address hook, bytes calldata data) internal virtual withRegistry(hook, ,! MODULE_TYPE_HOOK) { // ... function _installFallbackHandler(address handler, bytes calldata params) internal virtual ,! withRegistry(handler, MODULE_TYPE_FALLBACK) { // ... The smart account owner has the option to opt-in or opt-out of using the ERC-7484 registry by setting the registry variable. modifier withRegistry(address module, uint256 moduleType) { _checkRegistry(module, moduleType); _; } function _checkRegistry(address module, uint256 moduleType) internal view { IERC7484 moduleRegistry = registry; if (address(moduleRegistry) != address(0)) { // this will revert if attestations / threshold are not met moduleRegistry.check(module, moduleType); } } The withRegistry modifier first checks storage to see if an address has been set for registry. If it is set, then check() is called on the ERC-7484 registry, passing the module and the module type. If the number of attesters does not meet the threshold for this module / type combination, then the transaction reverts. The ERC-7579 standard states: the Adapter SHOULD implement the following functionality: Revert the transaction flow when the Reg- istry reverts. Query the Registry about module A on installation of A. Query the Registry about module A on execution of A. While the current logic does perform the query on installation, it fails to do so during execution of hooks, fallback handlers, and validations. If a user opts-in to using the registry, installs a validator that has sufficient support from the ERC7484 attesters, and then subsequently that validator is determined to be unsafe and the attesters remove their attestation, then this unsafe validator will continue to be used by the smart account since there is no check upon usage. The impact from using such an unsafe validator could be very high. It is reasonable to imagine a scenario where a module was initially deemed safe and later found to be unsafe, causing attesters to change their position. As such the likelihood is deemed to be medium with an overall severity of rating high.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: High Risk"
+        ]
+    },
+    {
+        "title": "Incorrect check in _enableMode prevents installing module types other than validator",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "It was decided based on a previous review that the intention is to allow any module types to be installed in Enable Mode. Current code has a check that prevents any module type other than a validator(or a multi type) from being installed on a nexus account via the enable mode. function _enableMode(bytes32 userOpHash, bytes calldata packedData) internal returns (bytes calldata ,! userOpSignature) { address module; uint256 moduleType; bytes calldata moduleInitData; bytes calldata enableModeSignature; ,! ,! (module, moduleType, moduleInitData, enableModeSignature, userOpSignature) = packedData.parseEnableModeData(); if (!_checkEnableModeSignature(_getEnableModeDataHash(module, moduleType, userOpHash, moduleInitData), enableModeSignature)) revert EnableModeSigError(); // Ensure the module type is VALIDATOR or MULTI if (moduleType != MODULE_TYPE_VALIDATOR && moduleType != MODULE_TYPE_MULTI) revert ,! InvalidModuleTypeId(moduleType); // <<< _installModule(moduleType, module, moduleInitData); }",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Timelock on emergencyUninstallHook() can be bypassed",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The emergencyUninstallHook() function is meant to allow the account owner to remove a hook from the account (minus the pre and post checks on the hook). It is an alternate to the uninstallModule() function which offers hook checks on calls to uninstall any type of modules. A timelock has been placed to only allow the account to emergency-uninstall the hook after 1 day of placing an uninstall request. But emergencyUninstallHook() fails to check that the hook was actually installed. ,! function emergencyUninstallHook(address hook, bytes calldata deInitData) external payable onlyEntryPoint { AccountStorage storage accountStorage = _getAccountStorage(); uint256 hookTimelock = accountStorage.emergencyUninstallTimelock[hook]; if (hookTimelock == 0) { // if the timelock hasnt been initiated, initiate it accountStorage.emergencyUninstallTimelock[hook] = block.timestamp; emit EmergencyHookUninstallRequest(hook, block.timestamp); } else if (block.timestamp >= hookTimelock + 3 * _EMERGENCY_TIMELOCK) { // if the timelock has been left for too long, reset it accountStorage.emergencyUninstallTimelock[hook] = block.timestamp; emit EmergencyHookUninstallRequest(hook, block.timestamp); } else if (block.timestamp >= hookTimelock + _EMERGENCY_TIMELOCK) { // if the timelock expired, clear it and uninstall the hook accountStorage.emergencyUninstallTimelock[hook] = 0; _uninstallHook(hook, deInitData); emit ModuleUninstalled(MODULE_TYPE_HOOK, hook); } else { // if the timelock is initiated but not expired, revert revert EmergencyTimeLockNotExpired(); } } This allows the timelock to be bypassed through the following steps :  Call emergencyUninstallHook() to place an uninstall request even before installing the hook ) this records a timestamp corresponding to the hook address.  After nearly a day has passed, install the hook and use it.  Immediately call emergencyUninstallHook() to utilize the request that was placed before.  As only a day has passed, the call will go through.  The timelock has been effectively bypassed by the account.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Not all calls forward msg.value",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "Most functions of the codebase are payable. When these functions perform an inner call, the msg.value is not always forwarded:  Nexus.executeUserOp does not forward it in target.call(data).  Nexus.fallback handler.  BiconomyMetaFactory.deployWithFactory does not forward it in factory.call(factoryData).  Other factories don't forward it in INexus(account).initializeAccount(initData). Native tokens can be stuck in these contracts, in case of the factory they are unrecoverable. The fallback handler calls will not work as expected when receiving msg.value.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Module can prevent itself from uninstalling",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "module.unUninstall(...) is called eventually. Nexus can be stopped from uninstalling if module.onUninstall() reverts as it reverts the call to Nexus as well. This can be an issue if a module is malicious (or is later discovered to be malicious) since they have the privilege of validating or executing a User Operation. called to uninstall is",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Setting the ERC-7484 registry may put modules in a insecure state",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "When the settings for the ERC-7484 registry are set, insecure modules may be left inactive or executor modules may become suddenly deactivated. The setRegistry function is used to configure the registry. Configurable options include updating the set of attester addresses, changing the threshold, updating the address of the registry or disabling it altogether by setting the registry to address zero. 12 function _configureRegistry(IERC7484 newRegistry, address[] calldata attesters, uint8 threshold) ,! internal { registry = newRegistry; if (address(newRegistry) != address(0)) { newRegistry.trustAttesters(threshold, attesters); } emit ERC7484RegistryConfigured(newRegistry); } Any one of these options may affect currently installed modules. For example, an executor may not meet the new threshold that was set and would instantly be disabled. Or worse, a validator may not have the required number of attestations and would continue to be active.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "fallback() can be used for direct unauthorised calls to fallback handlers",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The fallback() function in Nexus smart account is meant for handling calls that need to be routed to a fallback handler module corresponding to the selector in the calldata. It checks if a handler has been installed for the selector extracted from the calldata, and if a handler exists in the account, then makes a call to the registered handler with the supplied calldata. But the problem is that the fallback() function is unrestricted so it can also be called by anyone directly. If an attacker calls the smart account with a msg.sig == a particular selector, the call will be routed to the installed fallback handler from the account. This alternate call path does not check if the entrypoint is the caller, and also does not have any signature validation because there is no userOp and no validator modules are involved. This can compromise the security of the account in many ways. One example could be a handler having logic to use account's funds in some way so the account might have given large approvals of funds to the handler. But now the attacker gets to misuse the approvals by using the calldata he wishes. 13",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Modules other than validators cannot be installed in enable mode",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "According to the documentation, \"Any module type can be installed via Module Enable Mode\". This mode is meant for installing a module from within validateUserOp() before it gets used in the following execution defined by the userOp. This is helpful in cases where the account owner does not want to issue an explicit installModule in the userOp callData and for use cases where a module installation during the validation might be necessary for the execution to work, as highlighted in the documentation. This is how modules are installed in enable mode: function validateUserOp( PackedUserOperation calldata op, bytes32 userOpHash, uint256 missingAccountFunds ) external virtual payPrefund(missingAccountFunds) onlyEntryPoint returns (uint256 validationData) { address validator = op.nonce.getValidator(); if (!op.nonce.isModuleEnableMode()) { // Check if validator is not enabled. If not, return VALIDATION_FAILED. if (!_isValidatorInstalled(validator)) return VALIDATION_FAILED; validationData = IValidator(validator).validateUserOp(op, userOpHash); } else { PackedUserOperation memory userOp = op; userOp.signature = _enableMode(validator, op.signature); validationData = IValidator(validator).validateUserOp(userOp, userOpHash); } Contrary to the documentation, this logic will only allow validator modules and multi-type modules with a validator component to be installed in enable mode. This is because the module address that is to be installed is extracted from nonce, and then the same module address is used for the validation of userOp. This is incorrect because other module types (hooks, executors, and fallback handlers) cannot be expected to validate the userOp. Any standard implementation of these modules would not have a validateUserOp() function. 14 Biconomy intends to allow any module type to be installed in the \"Module Enable Mode,\" but the current logic results in broken functionality.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Missing call type validation in _installFallbackHandler",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "When installing a fallback handler, there is no check that the call type is either CALLTYPE_STATIC or CALLTYPE_SINGLE. This will result in a successful installation including completion of the initialization steps. However, when the fallback is called nothing will happen when the selector for the fallback handler is passed. Additionally, the fallback does not revert in this case. This could have a serious effect on an integrator depending on the fallback and it may not be caught immediately due to lack of reverting.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Cannot install fallback handler for empty calldata",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "When a call to a contract without any calldata is performed, the receive function is executed (if defined), otherwise, the fallback function is executed (if defined). The Nexus contract inherits from Receiver which defines the receive function. Meaning the contract's fallback function will never be called (for empty calldata) and all fallback handlers for msg.sig = bytes4(0) will be ignored. It's up to interpretation if a fallback handler for bytes4(0) should handle empty calldata, it is not specified in EIP-7579. The contract code indicates that empty calldata should be handled by a fallback handler; the _isModuleInstalled function defaults an empty selector to bytes4(0): if (additionalContext.length >= 4) { selector = bytes4(additionalContext[0:4]); } else { selector = bytes4(0x00000000); } Furthermore, if no receive() function is defined but a fallback(), the msg.sig of the fallback will also indicate bytes4(0).",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Cannot install fallback handler for NFT token callbacks",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "the ERC1155Received(address,address,uint256,uint256,bytes), onERC1155BatchReceived(address,address,uint256[],uint256[],bytes). Therefore, these function types cannot use custom fallback handlers. onERC721Received(address,address,uint256,bytes), the receiverFallback modifier performs a call context return when on- Note that equals one of While fallback handlers for these function types can be installed without errors, they will never be executed. Smart wallets cannot selectively reject NFTs.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "The ModuleTypeLib.bitEncode* functions error on duplicates",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "When encoding several ModuleTypes into a bitmask using the bitEncode* functions, the resulting bitmask will be wrong when the module types are not all unique. For example, encoding the MODULE_TYPE_VALIDATOR = 1 twice, will result in an encoding of MODULE_TYPE_EX- ECUTOR = 2. This EncodedModuleTypes type can be used in modules, like in mock executor's getModuleTypes() returns (EncodedModuleTypes). Proof of concept: function test_bitEncode_error() public { ModuleType[] memory moduleTypes = new ModuleType[](2); moduleTypes[0] = ModuleType.wrap(MODULE_TYPE_VALIDATOR); moduleTypes[1] = ModuleType.wrap(MODULE_TYPE_VALIDATOR); EncodedModuleTypes enc = bitEncode(moduleTypes); // these assertions fail assertEq(isType(enc, ModuleType.wrap(MODULE_TYPE_VALIDATOR)), true, \"should be a validator\"); assertEq(isType(enc, ModuleType.wrap(MODULE_TYPE_EXECUTOR)), false, \"should not be an executor\"); }",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "RegistryFactory.addAttester allows duplicate and unsorted attesters breaking ERC-7484 compli- ance",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The RegistryFactory.addAttester function allows adding duplicates and the new attester is pushed as the last element to the internal list. This leads to several issues: 1. Duplicate attesters are not removed by a single removeAttester call. 2. Upon deployment of a smart account, when REGISTRY.check(module, moduleType, attesters, thresh- old) is called, duplicates or unsorted elements in attesters will revert according to EIP-7484 registry. The attesters provided MUST be unique and sorted and the Registry MUST revert if they are not. Factory deployments can fail if the attesters are misconfigured. This misconfiguration will only be found out later, when an actual deployment is performed.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "withHook modifier is used on both the external and internal installModule function",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The hook is called multiple times when the external installModule function is called. Hooks not able to be called 2x will revert and may DOS module installation.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Refactor nested EIP-712 code",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The nested EIP-712 flow inlined functions that can be found in the Solady dependency. Solady's code has diverged by now. For ease of maintenance and to reduce mistakes from copying over the code, consider removing the inlined function and directly calling solady's functions.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Bootstrap installs modules before setting registry",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The Bootstrap.init* functions install modules before setting the registry. This will skip the registry check on these modules. Modules that are not validated could be installed during initialization.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Missing EIP-165 supportsInterface not EIP-7579 compliant",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "EIP-7579 states: ERC-165: Smart accounts MUST implement ERC-165. However, for every interface function that reverts instead of implementing the functionality, the smart account MUST return false for the corre- sponding interface id.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Medium Risk"
+        ]
+    },
+    {
+        "title": "Fallback handler can call into sensitive functions of fallback handler itself",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "Nexus smart account allows to install fallback handlers to route calls to certain module contracts based on function selectors in supplied calldata. When such a handler is installed via _installModule, two selectors (for onInstall and onUninstall) are re- stricted from being used as fallback selectors to protect the account from being compromised if the fallback handler gets manipulated by the calldata. But only restricting these two selectors is not enough. Any sensitive selector might need to be prevented from being present in fallback handlers. For example, if a fallback handler were created for transferOwnership() (or anything with that function signature) then anyone could call this function on the module and take ownership. From the module's perspective, it is unknown if this call originated from the SA or from an outside caller via the fallback. Other IFallback functions like isModuleType / isInitialized are not protected against either, the smart account could wrongly appear as a module itself. This is similar to a common vulnerability in early cross-chain bridge implementations that allowed calls to arbitrary functions on arbitrary addresses. A common solution for bridges is to restrict the call to a predetermined function selector such as onReceive()and leave it to the integrating developer to handle the message routing.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Execute functions may incorrectly report success for some calls",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "All execution methods (except the delegatecalls) use either _execute() or _tryExecute() to make low-level calls to the target address with the supplied calldata. _execute() reverts on failure, and _tryExe- cute() returns the call success variable. But both of these functions do not correctly mimic Solidity's behavior for external calls. 20 function _tryExecute(address target, uint256 value, bytes calldata callData) internal virtual returns ,! (bool success, bytes memory result) { assembly { result := mload(0x40) calldatacopy(result, callData.offset, callData.length) success := call(gas(), target, value, result, callData.length, codesize(), 0x00) mstore(result, returndatasize()) // Store the length. let o := add(result, 0x20) returndatacopy(o, 0x00, returndatasize()) // Copy the returndata. mstore(0x40, add(o, returndatasize())) // Allocate the memory. } The above snippet is from _tryExecute(). There is no consideration for low-level EVM calls returning call success as true when there is no code at the target address. In the case of _execute(), it will not revert When this happens, the code should behave identically to Solidity. though the call is actually considered to be a failure as per solidity, and in the case of _tryExecute(), it will skip emitting the TryExecuteUnsuccessful() event.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Events not emitted for failed tryExecute attempts",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "When calling excecute() with EXECTYPE_TRY and either CALLTYPE_SINGLE or CALLTYPE_DELEGATE- CALL, no event is emitted if the try fails. Whereas with CALLTYPE_BATCH, the TryExecuteUnsuccessful event is emitted for each failure. In executeFromExecutor TryDelegateCallUnsuccessful and TryExecuteUnsuccessful events are emitted ap- propriately.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Enable Mode can bypass the registry on multi-type validator modules",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "A validator that does not meet the minimum threshold of attestors in the ERC-7484 registry can be used to pass validation through \"enable mode\" during validateUserOp. Enable mode is intended as a feature whereby a new validator module can be installed and immediately used for validation of a user op when validateUserOp is called. Initially, the nonce is checked to see if enable mode has been requested, in which case the _enableMode internal function is called. function validateUserOp( PackedUserOperation calldata op, bytes32 userOpHash, uint256 missingAccountFunds ) external virtual payPrefund(missingAccountFunds) onlyEntryPoint returns (uint256 validationData) { address validator = op.nonce.getValidator(); if (!op.nonce.isModuleEnableMode()) { // Check if validator is not enabled. If not, return VALIDATION_FAILED. if (!_isValidatorInstalled(validator)) return VALIDATION_FAILED; validationData = IValidator(validator).validateUserOp(op, userOpHash); } else { PackedUserOperation memory userOp = op; userOp.signature = _enableMode(validator, op.signature); validationData = IValidator(validator).validateUserOp(userOp, userOpHash); However, the enableMode function logic does not check if the type of module is a validator. Therefore, as long as the signature is valid, any type of module can be installed through enable mode, not just a validator type. function _enableMode(address module, bytes calldata packedData) internal returns (bytes calldata ,! userOpSignature) { uint256 moduleType; bytes calldata moduleInitData; bytes calldata enableModeSignature; ,! (moduleType, moduleInitData, enableModeSignature, userOpSignature) = packedData.parseEnableModeData(); _checkEnableModeSignature( _getEnableModeDataHash(module, moduleInitData), enableModeSignature ); _installModule(moduleType, module, moduleInitData); } Upon installation of the new module, the control flow continues with the last line in validateUserOp() which calls the new module. userOp.signature = _enableMode(validator, op.signature); validationData = IValidator(validator).validateUserOp(userOp, userOpHash); Multi-type modules can be both validators and other types of modules as well. Each type must be attested to on the 7484 registry. A multi-type module may have many attestors in one module-type and few in another. For example, a multi-type module may meet the attestor threshold as a MODULE_TYPE_EXECUTOR module but not as a MODULE_TYPE_VALIDATOR. When this type of module is passed in enable mode with the type EXECUTOR selected, it will be successfully installed (as an executor) and then immediately used as a validator. Normally, upon installation of a new validator, there is a check made on the registry for the module address and module type VALIDATOR. But in this case, since it is being installed as an executor, it will not check the validator type.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "withdrawDepositTo overwrites free memory pointer for OOG",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "In the assembly block in the withdrawDepositTo function, The amount argument is written to 0x34 for the call to the entry point. This overwrites the top 20 bytes of the 0x40 memory slot (the free memory pointer). In the case of an unsuccessful call, the free memory ptr is then loaded to use as the offset for copying the return data. But now, with the upper bits overwritten, this is a very high number which will result in Out Of Gas revert due to quadratic memory expansion costs. Furthermore, the actual revert return data, if any, will not bubble up.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "createAccount actual salt not deterministic given parameters",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The createAccount(bytes calldata initData, bytes32 salt) function computes the actual create2 salt (actualSalt) as the hash of its calldata() skipping the 4-bytes selector. Note that this includes the offsets to the initData and salt parameters. The AccountCreated event is emitted with the initData and salt parameters. However, only knowing the initData and salt parameters used for the creation is not enough to uniquely recon- struct the actual salt (and thereby the actual address) because of the calldata offsets being included in the hash. A non-default ABI encoding will lead to the same parameters but a different address which can be confusing and result in errors. 23",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Unused return data fir successful calls",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "_execute(), _tryExecute(), _executeBatch(), _tryExecuteBatch(), _executeDelegatecall() and _tryExecuteDelegatecall() copy return and revert data to memory, which isn't used at all. You can create another version of these functions where you skip handling return data completely.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Inefficient signature validation",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "K1Validator.validateUserOp() validates signature as both smart contract signature and ECDSA signature. However, doing both the checks twice (isValidSignatureNow() is called twice) can be gas-inefficient as both the functions first validates the signature assuming an EOA owner, and if that fails, uses ERC1271 to validate smart contract signature. So consider an instance where the owner is a smart contract and just signs on userOpHash. The signature vali- dation has to go through 4 steps (2 failed validations for ECDSA.toEthSignedMessageHash(userOpHash), 1 failed validation for userOpHash assuming EOA owner and finally the successful validation). This wastes a lot of gas. Instead, you can do a quick check if owner.code.length == 0 and then validate the signature either through ecrecover or ERC1271. Although smart contract owner is not currently possible as onInstall() ensures that the owner doesn't have any code which means it's an EOA. (however, there's a chance that code is deployed later at the owner address).",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Consider flipping if/else condition to save gas",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "if condition takes a NOT of a boolean variable. To save gas, the code blocks inside if/else can be flipped to save on this extra NOT operation.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "K1Validator.validateUserOp can be optimized",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "K1Validator.validateUserOp uses the isValidSignatureNow function.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "_uninstallValidator can be optimized",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The _uninstallValidator function checks if the previous or the next element of the validator to be removed is a \"real address\", i.e., not the SENTINEL value.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Validation mode can be extracted from nonce more efficiently",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The 1-byte validation mode is extracted from nonce as shr(248, shl(24, nonce)).",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Enforce non-zero address for owner for K1Validator",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "K1Validator.onInstall() doesn't enforce that the owner has to be non-zero address. For compar- ison, transferOwnership() reverts if the new owner is the zero address.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Update code to align with Solady's ERC-7739 latest reference implementation",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The code currently utilizes an outdated version of Soladys ERC-7739 reference implementation. This may lead to inconsistencies with the latest version, potential security vulnerabilities, or missed optimizations introduced in the updated implementation.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "BaseAccount incorrectly inherits from Storage contract",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "Storage contract defines all storage variables to be used within the nexus smart account. Nexus inherits from ModuleManager and BaseAccount, and both of them inherit from this storage contract. This creates a convoluted inheritance pattern. BaseAccount/ ModuleManager is not intended to be used separately and thus only one of these needs inheritance from storage, for the nexus account to be able to access it.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Separate event can be added to represent the situation of hook emergency-uninstall request getting reset",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "emergencyUninstallHook() function is meant to place new uninstall requests as well as handle the requests placed earlier. In the case that 3 days have passed since the request was first placed, the request gets reset and now the hook can only be uninstalled after one more day has passed. function emergencyUninstallHook(address hook, bytes calldata deInitData) external payable ,! onlyEntryPoint { AccountStorage storage accountStorage = _getAccountStorage(); uint256 hookTimelock = accountStorage.emergencyUninstallTimelock[hook]; if (hookTimelock == 0) { // if the timelock hasnt been initiated, initiate it accountStorage.emergencyUninstallTimelock[hook] = block.timestamp; emit EmergencyHookUninstallRequest(hook, block.timestamp); } else if (block.timestamp >= hookTimelock + 3 * _EMERGENCY_TIMELOCK) { // if the timelock has been left for too long, reset it accountStorage.emergencyUninstallTimelock[hook] = block.timestamp; emit EmergencyHookUninstallRequest(hook, block.timestamp); } else if (block.timestamp >= hookTimelock + _EMERGENCY_TIMELOCK) { // if the timelock expired, clear it and uninstall the hook accountStorage.emergencyUninstallTimelock[hook] = 0; _uninstallHook(hook, deInitData); emit ModuleUninstalled(MODULE_TYPE_HOOK, hook); } else { // if the timelock is initiated but not expired, revert revert EmergencyTimeLockNotExpired(); } } The event that is emitted in the first else clause here (ie. reset) is not that helpful as it is equivalent to the situation when a new request is just being placed.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Modifiers onlyValidatorModule() and onlyAuthorized() are unused",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "Two new modifiers have been introduced to ModuleManager contract: onlyValidatorModule() and onlyAuthorized(). These are not used in the current codebase and the team clarified that there was no intention to use them in near future.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Space after comma in type hash preimage",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "Type hash preimages like the following usually don't have a space after argument separators (,): bytes32 constant MODULE_ENABLE_MODE_TYPE_HASH = keccak256(\"ModuleEnableMode(address module, bytes32 ,! initDataHash)\");",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Specify what functions should be hookable",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "Not all Nexus functions come with the withHook modifier. For example, executeUserOp, installMod- ule, and uninstallModule are not hookable while the latter two are hookable in the reference implementation.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Potential for Unrecoverable Smart Accounts Due to Lack of Active Validators",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The Nexus design prioritizes modularity, flexibility and customizability. While this approach offers significant benefits, it also introduces a critical vulnerability: if an account ends up with no active validators, it may become unrecoverable. Several scenarios could lead to this state:  Account initialization without validators as noted in the issue Nexus.initializeAccount does not check that a validator module has been installed.  Deactivation of all validators due ERC-7484 whitelist changes: the current solution for this is to skip the reg- istry check upon validator usage which contradicts the ERC-7484 recommendations and is further discussed in the issue \"ERC-7484 registry checks missing on calls to modules\".  User actions that alter the state of the module. For example see the issue \"newOwner may not have a private key\".  Unforeseen external factors that may alter the state of the module and cause it to become disabled. We cannot predict every possible use case and the flexibility offered by Nexus also allows for the possibility of complex interactions which may result in unexpected disabling of a module.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "newOwner may not have a private key",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "newOwner has to be an EOA capable of ECDSA signing. K1Validator.onInstall() just checks that this address has no code. For a stronger verification, it can also verify that newOwner is capable of signing by verifying an EOA signature here. In the worst case, any address with no code can be passed which bricks this validator later, or code can be deployed on this address after installation. Since validateUserOp() checks for ERC1271 style signatures as well, a smart contract owner will later be able to control this validator.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Security Model & Trust assumptions",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The smart account cannot protect against a user installing a malicious module. Therefore, we consider attacks relating to these out of scope. The smart account however enforces certain \"roles\" (module types) of the modules which can act as safeguards. For example, only an executor module can execute a transaction through executeFromExecutor (however a mali- cious install-type module could install an executor).",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Fallback handler static-calls not 7579 compliant",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "EIP-7579 states for the fallback: MUST use call to invoke the fallback handler The current code also allows a staticcall instead of a call to the fallback handler.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Missing memory-safe assembly annotation",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "Some assembly code blocks are memory-safe but are missing the memory-safe annotation. See the linked code blocks.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Lack of granular control over ERC-7484 registry checks",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "Currently, the use of the 7484 registry is an all-or-nothing proposition. Either the registry is turned on and the registry variable is set to the correct address, or else that variable is set to the zero address indicating the user has opted out of using the registry. Users who would like to use the registry for most modules, but want to integrate with one custom module are required to register the new custom module and obtain the requisite number of attestations in order to use it. It may be difficult or time consuming to get the attestations so the user is tempted to \"disable\" the registry altogether by setting the registry to the zero address. Ideally, the 7484 registry would be able to configure threshold limits on a per module basis but that is currently not possible.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "transferOwnership can be replaced with a two-step process",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "transferOwnership() is a sensitive function as it hands over the ownership of the smart account to a new address. This means that after the transfer, the new owner will be in charge of signing transactions that have to be executed on the smart account. A user may want to simply change to his own secondary address. There is a chance that they will lose access to the account forever, and it could even get into malicious hands. The smart account needs to be guarded against anything that could compromise its integrity.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Emitting the execution array index in case of a call failure might not be useful",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "In the case of batch executions with execution mode = try/catch, for all failed attempts, the TryExe- cuteUnsuccessful() event is emitted to mark that some calls failed. But this event is not that useful because it just returns the index position of the call in the batch of executions that was passed into the calldata. Since it correctly emits the returned data, it should also return the execution data, which could be handy while decoding and tracking off-chain.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "_SELF variable remains unused in Nexus",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "In Nexus.sol, a _SELF variable has been defined and set to address(this) in the constructor. The intended use of this variable seems to be as an immutable identifier of the smart account, but its usage is missing in the codebase.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Unnecessary module type check on uninstall",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The uninstallModule function checks if the module to be uninstalled is still of the module type when it was installed. This check seems unnecessary for non-malicious modules. For malicious modules this doesn't provide any further protection either.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Registry threshold might be unattainable by attesters",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The RegistryFactory defines attesters and a threshold that they need to reach. However, there is no check that the attesters can actually attain the threshold.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Payable versus non-payable functions",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "We noted there are functions that were marked as payable, presumably to allow for a delegatecall. However, we noted the following functions which it was not clear if they should be marked as payable or not:  withdrawDepositTo marked as payable.  setRegistry currently not marked as payable.  executeUserOp currently marked as payable but entry point sends 0 value.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Nexus.initializeAccount does not check that a validator module has been installed",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "It's important that a validator module is installed during the initialization phase. Otherwise, no other modules can be installed as they all require to be validated by a validator module. For this reason, initializeAccount delegatecalls into a bootstrap contract. However, it is not checked if a validator was indeed installed. Note that _uninstallValidator also reverts if the last validator would be removed.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Callers of executeFromExecutor cannot know what calls succeeded",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "EIP-7579 defines the following executeFromExecutor function: function executeFromExecutor(bytes32 mode, bytes calldata executionCalldata) external returns (bytes[] memory returnData); Note that when the mode is a TRY_* mode the inner calls can revert. The function does not indicate what subcalls succeeded to the caller as it only returns a bytes[] memory returnData but not bool[] memory success.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Document custom userOp.signature encoding for enableMode",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The parseEnableModeData function decodes the extended userOp.signature into (ModuleType moduleType, bytes moduleInitData, bytes enableModeSignature, bytes userOpSignature). The encod- ing must follow a specially packed encoding as follows:  First 32 bytes: ModuleType moduleType as a uint256.  Next 4 bytes: Length of moduleInitData.  Next <length-of-moduleInitData> bytes: moduleInitData.  Next 4 bytes: Length of enableModeSignature.  Next <length-of-enableModeSignature> bytes: enableModeSignature.  Rest of the bytes: userOpSignature. In Solidity, it would be encoded as follows: bytes memory extendedUserOpSignature = abi.encodePacked( uint256(moduleType), bytes4(uint32(moduleInitData.length)), moduleInitData, bytes4(uint32(enableModeSignature.length)), enableModeSignature, userOpSignature );",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Typos & Documentation errors",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "There are typos and documentation errors in the code: 1. LocalCallDataParserLib.sol#L35: isntall ! install. 2. ModuleManager.sol#L361: Hooks are always global, there is no signature specific hook. 3. ModuleManager.sol#L315: This is a bit confusing, the first time I read it I thought the intention was to batch install modules. Something like \"This function installs multi-type modules, iterating through the different types and installing each type as a separate module\": /// To make it easier to install multiple modules at once, this function will 4. Nexus.sol#L81: This was confusing to read, I think it was copy pasted from a different part of the code and it doesn't actually apply here: /// The entryPoint calls this only if validation succeeds. Fails by returning VALIDATION_FAILED ,! for invalid signatures. 5. Nexus.sol#L327: fron ! from. 34 6. RegistryAdapter.sol#L34: succicient ! 'sufficient. 7. IStorage.sol#L43: Only staticcall and call are allowed, not delegatecall. 8. K1Validator.sol#L25: After talking with the team, this contract is supposed to be used in production, not only for testing purposes.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "ModuleType type range should be restricted",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The ModuleType type is used as an index in a 256-bit mask. Therefore, its valid range is restricted to [0, 255] (inclusive). However, it is defined as a uint256 and allows creating this type with larger values which will revert when used in the isType or bitEncode* functions.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Undocumented CALLTYPE_STATIC call type",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The CALLTYPE_STATIC (value 0xFE) is not documented in EIP-7579 and is a new feature of Nexus. The fallback handlers can currently be configured to use this call type.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Missing owner address validation in K1ValidatorFactory",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "All factories besides K1ValidatorFactory check that the owner is non-zero.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Missing return parameters in natspec",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The definition of the return parameters is missing in natspec comments in the instances linked.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "RegistryFactory.createAccount assumes Bootstrap.initNexus will be used",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "The RegistryFactory.createAccount takes an initData parameter. This initData will be used to initialize the deployed Nexus with an INexus(account).initializeAccount(initData); call. This call then further delegatecalls into a Bootstrap contract function: function initializeAccount(bytes calldata initData) external payable virtual { _initModuleManager(); (address bootstrap, bytes memory bootstrapCall) = abi.decode(initData, (address, bytes)); (bool success, ) = bootstrap.delegatecall(bootstrapCall); require(success, NexusInitializationFailed()); } Note that Nexus.initializeAccount is opaque to what function to call on the bootstrap contract, however, the RegistryFactory assumes it will be calling a function of the Bootstrap.initNexus type, as it already decodes the initData according to it.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Rounding direction in token rates leads to inconsistent price between addLiquidity and removeLiq- uidity",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Balancer-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The Vault rounds balance up in addLiquidity rounds balance down in removeLiquidity. This in most cases favors the protocol. However, the minted amount depends not only on the price of the bpt but also on the price of each token. The token price in the pool would slightly change after rounding leading to inconsistent pricing between addLiquidity and removeLiquidity. Assume an extremely unbalanced pool where dai:sDai = 1e18:1, with sDai rate is 1.1. sDai = 2 when rounding up and sDai = 1 when rounding down. In this extreme case, dai is more expensive when adding liquidity and cheaper when removing liquidity. This creates a potentially profitable path. When dealing with tokens with rates, the pool. the VaultCommon.sol#L316-L330. To make sure users could not extract value from round-trip interactions, rounding directions are crafted carefully. However, the change of token amounts usually comes with second effects in AMM pools. In the addLiquidity and removeLiquidity cases, the minted amount depends not only on the price of the bpt but also on the price of each token. The token price in the pool would slightly change after rounding leading to inconsistent pricing between addLiquidity and removeLiquidity. the token balance is calculated within the vault so that As mentioned in the comment, the vault Round balances up when adding liquidity, and Round down when removing liquidity, favors the protocol in most cases. The rounding directions change not only the price of the bpt, but the price of the token. For unbalanced liquidity, the price of the provided token has a larger impact on the minted amount.  Vault.sol#L531: function computeAddLiquidityUnbalanced( ) { // ... // ... // Loop through each token, updating the balance with the added amount. for (uint256 i = 0; i < numTokens; ++i) { newBalances[i] = currentBalances[i] + exactAmounts[i]; } // Calculate the new invariant ratio by dividing the new invariant by the old invariant. // Rounding current invariant up reduces BPT amount out at the end (see comments below). uint256 currentInvariant = pool.computeInvariant(currentBalances, Rounding.ROUND_UP); // Round down to make taxableAmount uint256 invariantRatio = pool.computeInvariant(newBalances, larger below.   ,! Rounding.ROUND_DOWN).divDown(currentInvariant); // ... } In the above case, currentInvariant is larger when it rounds up, and lower when it rounds down. However, the rounding direction on the token balances contributes somehow equally to currentInvariant and the new invariant. Impact: As mentioned above, assume an extreme case where sDai : dai = 1 : 1e18 and it rounds to sDai : dai = 2: 1e18 when adding liquidity and sDai : dai = 1: 1e18 when removing liquidity. In this extreme case, the user can get profit by imbalanced adding dai into the pool and imbalanced removingdai from the pool. 4 The impact depends on the implementation of the pool. For pool like stable poo when the price grows exponentially when pool's unbalanced, the pool can be drained in edge case. function testMockPoolBalanceWithRate() public { uint tokenAmount = 1e6; uint dustAmount = 1; IERC20[] memory tokens = new IERC20[](2); tokens[0] = IERC20(usdc); tokens[1] = IERC20(wsteth); vault.manualSetPoolTokensAndBalances( pool, tokens, [tokenAmount, dustAmount].toMemoryArray(), [tokenAmount, dustAmount].toMemoryArray() ); rateProviderWstEth.mockRate(1.001e18); vm.startPrank(lp); uint256[] memory exactAmountsIn = [tokenAmount, uint(0)].toMemoryArray(); uint mintLp = router.addLiquidityUnbalanced(pool, exactAmountsIn, 0, false, \"\"); uint lpBurned = router.removeLiquiditySingleTokenExactOut(pool, 1e50, usdc, tokenAmount, false, ,! \"\"); vm.assertGt(mintLp, lpBurned); } Likelihood: This depends on whether the pool implementation allows such an edge case where 1 wei of token amount has a huge impact on the token price. It depends on the future development of the protocol. At this point, we can evaluate the weightedPool and the stablePool. For stable pools, the exploit would be difficult if not impossible. Invariant would be hard to converge when the token amount is low. The invariant would be hard to converge in edge cases. However, it's important to note that, there's no strong guarantee of this property. StableMath.computeInvariant( 2_000 * StableMath.AMP_PRECISION, [BigAmount, dust].toMemoryArray() ); StableMath.computeInvariant( 2_000 * StableMath.AMP_PRECISION, [BigAmount, dust + 1].toMemoryArray() ); There's no specific range where the invariant would revert. For the above two computations, one may revert while the other one converges. If we play around with the stablePool math, we can easily find a counter-example with ~100 runs. 5 function testFuzzEdgeTokenAmount(uint tokenAmount) public { tokenAmount = bound(tokenAmount, 1e6 ether, 1e12 ether); uint dustAmount = 2; uint[] memory currentBalances = [tokenAmount, dustAmount].toMemoryArray(); bool first = false; bool second = false; try StablePool(pool).computeInvariant(currentBalances, Rounding.ROUND_UP) returns (uint256 invariant) { ,! first = true; } catch { } if(first) { currentBalances = [tokenAmount, dustAmount + 1].toMemoryArray(); try StablePool(pool).computeInvariant(currentBalances, Rounding.ROUND_DOWN) returns (uint256 ,! invariant) { second = true; } catch { } } vm.assertTrue(!second); vm.assertTrue(!first); } Given the Balancer design encourages customized pool development and composability, this edge case is \"un- likely\" but not impossible.",
+        "labels": [
+            "Spearbit",
+            "Balancer",
+            "Severity: High Risk"
+        ]
+    },
+    {
+        "title": "ERC4626 buffer fails to rebalance for token deficits",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Balancer-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The current ERC4626 buffer logic is only able to rebalance itself when there is a surplus in the underlying tokens when a user wraps tokens using the buffer. It fails to rebalance itself when there is a deficit. In a similar manner, the buffer logic fails to rebalance itself when there is a deficit in wrapped tokens when a user requests to unwrap tokens using the buffer. Using the liquidity present in the ERC4626 token buffer, wrapped and underlying tokens can be exchanged at the current rate without requiring external calls to the ERC4626 contract. Without knowing the next user's swap direction beforehand, the buffer is in an optimal state when the underlying and wrapped assets have a 1:1 ratio measured in underlying value. Therefore, for optimization purposes, any call to the ERC4626 token will include additional tokens from the buffer in order to rebalance it's asset rate after the call. When the buffer is used to wrap tokens and not enough liquidity is present, the underlying token surplus is only measured if it is positive in getBufferUnderlyingSurplus. 6 uint256 surplus = 0; if (underlyingBalance > wrappedBalanceAsUnderlying) { unchecked { surplus = (underlyingBalance - wrappedBalanceAsUnderlying) / 2; } } The buffer does not not rebalance itself in the case that there is a deficit leading to an unbalanced buffer after an external call. Impact: Low: This issue does not lead to any loss of funds for the user or protocol. However, the buffer's main functionality of reducing external calls by using the buffer's balanced liquidity is impacted. Likelihood: Medium: This issue occurs when the buffer does not have enough liquidity to perform the wrap/unwrap operation and when there is a deficit for underlying tokens when wrapping or a deficit for wrapped tokens when unwrapping. Proof of Concept: The buffer remains unbalanced after the vault calls deposit on the wrapper contract. function test_unbalancedBuffer() public { ,! // Initializes the buffer with an amount that interacting // with the ERC4626 protocol. _wrapAmount = 100e18;  s enough to fulfill the deposit operation without vm.prank(lp); router.initializeBuffer(IERC4626(address(waDAI)), _wrapAmount / 2, _wrapAmount / 4); BufferAndLPBalances memory beforeBalances = _measureBuffer(); console.log(\"=== Buffer Balance ===\"); console.log(\" DAI %18e\", beforeBalances.buffer.dai); console.log(\"waDAI %18e\", beforeBalances.buffer.waDai); console.log(\"\"); IBatchRouter.SwapPathExactAmountIn[] memory paths = // _exactInWrapUnwrapPath(_wrapAmount, 0, dai, IERC20(address(waDAI)), IERC20(address(waDAI))); _exactInWrapUnwrapPath(_wrapAmount, 0, IERC20(address(waDAI)), dai, IERC20(address(waDAI))); (,, IERC20[] memory tokens) = _getTokenArrayAndIndexesOfWaDaiBuffer(); BaseVaultTest.Balances memory balancesBefore = getBalances(lp, tokens); vm.prank(lp); (uint256[] memory pathAmountsOut,,) = batchRouter.swapExactIn(paths, MAX_UINT256, false, bytes(\"\")); BufferAndLPBalances memory afterBalances = _measureBuffer(); console.log(\"=== Buffer Balance ===\"); console.log(\" DAI %18e\", afterBalances.buffer.dai); console.log(\"waDAI %18e\", afterBalances.buffer.waDai); } [PASS] test_unbalancedBuffer() (gas: 504993) Logs: === Buffer Balance === DAI 50 waDAI 25 === Buffer Balance === DAI 50 waDAI 25",
+        "labels": [
+            "Spearbit",
+            "Balancer",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Swap fees are not equivalent for EXACT_IN and EXACT_OUT cases",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Balancer-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The swap fees are applied in a way such that the effective fee is not equivalent for both swap kinds EXACT_IN and EXACT_OUT.  Compute Out Given Exact In (computeOutGivenExactIn): Currently, when the exact token input amounts a1 are specified (SwapKind.EXACT_IN), the aggregate swap fee percentage (cid:13)s is applied to the token output amount a0 in order to arrive at the net amount a0net . // amountOut. Round up to avoid losses during precision loss. locals.swapFeeAmountScaled18 = amountCalculatedScaled18.mulUp(swapState.swapFeePercentage); // Need to update amountCalculatedScaled18 -= locals.swapFeeAmountScaled18; amountCalculatedScaled18 for the onAfterSwap hook.   This translates to the following formula. a0net = computeOutGivenExactIn(a1) (cid:1) (1 (cid:0) (cid:13)s) = a0 (cid:1) (cid:13)s , where (cid:13)s = 1 (cid:0) (cid:13)s.  Compute In Given Exact Out (computeInGivenExactOut): In case the exact token output amount a0 is specified (SwapKind.EXACT_OUT) the fees are applied as follows. locals.swapFeeAmountScaled18 = amountCalculatedScaled18.mulDivUp( swapState.swapFeePercentage, swapState.swapFeePercentage.complement() ); amountCalculatedScaled18 += locals.swapFeeAmountScaled18; a1net = computeInGivenExactOut(a0) (cid:1) (1 + a1net = computeInGivenExactOut(a0) (cid:1) ( a1net = computeInGivenExactOut(a0) (cid:1) ( ) (cid:13)s 1 (cid:0) (cid:13)s 1 1 (cid:0) (cid:13)s 1 (cid:13)s ) ) However, when starting out with the formula a0net = a0 (cid:1) (cid:13)s, it is not possible to derive a closed form solution which applies a constant factor to the output of the computations to both cases, e.g. a1net = a1 (cid:1) (cid:13)s, as (cid:13)s will depend on the current balances, the output amount and the invariant formula. If we start by assuming that we want to apply the swap fees to the output when given the exact input amount a0net = computeOutGivenExactIn(a1) (cid:1) (cid:13)s, we can derive the following formulas (exemplified using the input/output formulas given the weighted pool's swap invariant). 8 a0 = b0 \" 1 (cid:0) a1 = b1 \"(cid:18) w1 w0 # b1 b1 + a1 (cid:19) (cid:18) b0 b0 (cid:0) a0 (cid:19) w0 w1 (cid:0) 1 # 0 In order to apply the fee to the output amount, we can make the following substitution for the formulas: a0 = a 0 (cid:13)s . =) a0 w1 w0 0 = (cid:13)sb0 1 (cid:0) \" b1 b1 + a1 (cid:19) = computeOutGivenExactIn(a1) (cid:1) (cid:13)s w0 w1 (cid:18) # =) a1 = b1 2 6 4 0 @ b0 b0 (cid:0) a0 0 (cid:13)s 1 A (cid:0) 13 7 5 = computeInGivenExactOut( a0 0 (cid:13)s ) In these new formulas, a0 0 can be seen as the net output amount a0net . In order to apply the fees equivalently, the fees need to scale the output amount first, before applying the formula which computes the output computeIn- GivenExactOut. In general, it is not possible to derive a formula applying a constant factor to the result for both cases. Impact: Low, the actual impact and difference in fees is quite low. This does not affect protocol solvency. In certain cases, the actual fees charged might differ when specifying EXACT_IN versus EXACT_OUT. One might lead to less or more fees applied (dependent on the pool's liquidity and input amount). Likelihood: High, this case is reached whenever the exact token output amount is specified.",
+        "labels": [
+            "Spearbit",
+            "Balancer",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "The _CONVERT_FACTOR is inconsistently applied to shares and assets",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Balancer-Spearbit-Security-Review-September-2024.pdf",
+        "body": "In the Vault contract, the constant _CONVERT_FACTOR is applied to share as well as asset amounts in 4 instances, and therefore has a different impact in terms of magnitude depending on the underlying token's decimals. wrappedToken.convertToShares(amountGiven) - _CONVERT_FACTOR // vs. wrappedToken.convertToAssets(amountGiven) + _CONVERT_FACTOR // applied to shares // applied to assets",
+        "labels": [
+            "Spearbit",
+            "Balancer",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "setGlobalProtocolSwap/YieldFeePercentage() allow specifying higher precision than allowed",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Balancer-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The precision of the new values newProtocolSwapFeePercentage and newProtocolYieldFeePer- centage aren't checked, it's possible to set higher precision percentages that will force creator fees to be set to only 0% or 100%. Proof of Concept: function testSetMaliciousGlobalFeePercentages(uint256 creatorFee) public { // same as _registerPoolWithMaxProtocolFees(); but higher precision bits for global percentages authorizer.grantRole( feeControllerAuth.getActionId(IProtocolFeeController.setGlobalProtocolSwapFeePercentage.selector), admin ); authorizer.grantRole( ,! feeControllerAuth.getActionId(IProtocolFeeController.setGlobalProtocolYieldFeePercentage.selector), admin ); vm.startPrank(admin); feeController.setGlobalProtocolSwapFeePercentage(CUSTOM_PROTOCOL_SWAP_FEE_PCT + 1234567890123); feeController.setGlobalProtocolYieldFeePercentage(CUSTOM_PROTOCOL_SWAP_FEE_PCT + 123456890123); vm.stopPrank(); pool = createPool(); vm.startPrank(lp); // cannot set any creator fee that isn  ,! but would be few) t 100% (perhaps there are some specific values that could be, creatorFee = bound(creatorFee, 1, FixedPoint.ONE - 1); vm.expectRevert(IVaultErrors.FeePrecisionTooHigh.selector); feeController.setPoolCreatorSwapFeePercentage(pool, creatorFee); }",
+        "labels": [
+            "Spearbit",
+            "Balancer",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Inability to batch router operations involving native funds",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Balancer-Spearbit-Security-Review-September-2024.pdf",
+        "body": "Multiple native operations cannot be batched because excess ETH is forcibly refunded at the end of each operation. In addition, a minor inconvenience exists where one has to use permitBatchAndCall() instead of multicall because the latter lacks the payable modifier. One won't be able to batch multiple operations involving native funds. For instance, adding liquidity to 2 separate pools WETH-USDC & WETH-DAI using ETH will revert, because the 1st operation would refund the ETH meant for the 2nd. Proof of Concept: function testPermitBatchCallWithMultipleNativeOps() public { // empty permit signatures, do \"normal\" approvals IRouterCommon.PermitApproval[] memory permitBatch; bytes[] memory permitSignatures; 10 IAllowanceTransfer.PermitBatch memory permit2Batch; bytes memory permit2Signature; // do a normal initialize + add liquidity with native funds bytes[] memory multicallData = new bytes[](2); // action 1: init pool multicallData[0] = abi.encodeWithSelector( router.initialize.selector, address(wethPoolNoInit), wethDaiTokens, wethDaiAmountsIn, initBpt, true, bytes(\"\") ); // action 2: add liquidity into existing WETH-DAI pool multicallData[1] = abi.encodeWithSelector( router.addLiquidityCustom.selector, address(wethPool), wethDaiAmountsIn, bptAmountOut, true, bytes(\"\") ); // do the call, expect revert because ETH for the 2nd call was refunded vm.startPrank(alice); vm.expectRevert(RouterCommon.InsufficientEth.selector); bytes[] memory results = router.permitBatchAndCall{value: 2 * ethAmountIn}( permitBatch, permitSignatures, permit2Batch, permit2Signature, multicallData ); }",
+        "labels": [
+            "Spearbit",
+            "Balancer",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Protocol fees are not counted in PoolBalanceChanged events",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Balancer-Spearbit-Security-Review-September-2024.pdf",
+        "body": "When adding and removing liquidity from pools, the PoolBalanceChanged event is emitted: 1. _addLiquidity(): 11 function _addLiquidity() { // ... // A pool poolData.updateRawAndLiveBalance(  s token balance increases by amounts in after adding liquidity, minus fees. i, poolData.balancesRaw[i] + amountInRaw - locals.totalFeesRaw, Rounding.ROUND_UP ); // ... emit PoolBalanceChanged(params.pool, params.to, amountsInRaw.unsafeCastToInt256(true)); } 2. _removeLiquidity(): function _removeLiquidity() {  // ... // A Pool // (potentially by 0). Also adjust by protocol and pool creator fees. poolData.updateRawAndLiveBalance( s token balance always decreases after an exit i, poolData.balancesRaw[i] - (amountOutRaw + locals.totalFeesRaw), Rounding.ROUND_DOWN ); // ... // 8) Off-chain events emit PoolBalanceChanged( params.pool, params.from, // We can unsafely cast to int256 because balances are stored as uint128 (see ,! PackedTokenBalance). amountsOutRaw.unsafeCastToInt256(false) ); } The amounts emitted in the events don't account for the protocol fee (which is not counted in pool balances): 1. when adding liquidity, the pool's balance is updated by the input amount minus the protocol fee, but the event reports the full input amount; 2. when removing liquidity, the pool's balance is updated by the output amount plus the protocol fee, but the event reports the full output amount. As a result, off-chain monitoring and analysis tools will be impacted, and the pool balances calculated by monitoring the events won't match the actual balances.",
+        "labels": [
+            "Spearbit",
+            "Balancer",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Global userData definition inconveniences parsing and decoding",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Balancer-Spearbit-Security-Review-September-2024.pdf",
+        "body": "userData is defined as a global parameter, but it could be necessary to specify different userData for each SwapPathStep, e.g: data that's parsed by pool hooks.",
+        "labels": [
+            "Spearbit",
+            "Balancer",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Tokens reverting on zero value may block operation flows",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Balancer-Spearbit-Security-Review-September-2024.pdf",
+        "body": "Some obscure tokens may revert on zero value. There are cases where sendTo() is called with zero value, eg. in the BatchRouter when wrapping / unwrapping ERC4626 & limits[i] == underlyingAmounts[i].",
+        "labels": [
+            "Spearbit",
+            "Balancer",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Missing payable modifier of router methods",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Balancer-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The router contract's permitBatchAndCall method is payable to enable natively funded batch op- erations. However, the underlying multicall relies on delegatecall and therefore requires all methods, which can be part of a batch operation, to be payable as well. The following methods of the Router contract are missing the payable modifier and are therefore incompatible with natively funded batch operations:  removeLiquidityCustom.  removeLiquidityRecovery.",
+        "labels": [
+            "Spearbit",
+            "Balancer",
+            "Severity: Low Risk"
+        ]
+    },
+    {
+        "title": "Buffer's underlying surplus is recomputed unnecessarily",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Balancer-Spearbit-Security-Review-September-2024.pdf",
+        "body": "When wrapping underlying tokens while specifying the swap kind as EXACT_IN, in the buffer's under- lying surplus value is recomputed inside the _wrapWithBuffer function. vaultUnderlyingDeltaHint = amountInUnderlying + bufferUnderlyingSurplus; // ... bufferUnderlyingSurplus = vaultUnderlyingDeltaHint - amountInUnderlying; The buffer's underlying surplus amount has not changed, however, and this line can be omitted. The same applies to the EXACT_IN swap kind path for unwrapping tokens in the _unwrapWithBuffer function. Here, the buffer's wrapped surplus (bufferWrappedSurplus) is recomputed unnecessarily.",
+        "labels": [
+            "Spearbit",
+            "Balancer",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "Redundancies",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Balancer-Spearbit-Security-Review-September-2024.pdf",
+        "body": "Self approval of BPT in Router is redundant because _spendAllowance() skips the allowance check for self-spending. function _spendAllowance(address pool, address owner, address spender, uint256 amount) internal { uint256 currentAllowance = _allowance(pool, owner, spender); if (currentAllowance != type(uint256).max) {/*...*/ } } function _allowance(address pool, address owner, address spender) internal view returns (uint256) { // Owner can spend anything without approval if (owner == spender) { return type(uint256).max; } }  WETH approval to the Vault is redundant because of the settle mechanism; there doesn't seem to be a circumstance where the vault will pull funds in.  Query hooks don't need to be payable because the vault always calls back with zero msg.value.",
+        "labels": [
+            "Spearbit",
+            "Balancer",
+            "Severity: Gas Optimization"
+        ]
+    },
+    {
+        "title": "unchecked blocks do not extend to internal functions",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Balancer-Spearbit-Security-Review-September-2024.pdf",
+        "body": "When incrementing or decrementing the non-zero delta count variable _nonZeroDeltaCount(), the internal library functions .tDecrement() and .tIncrement() are being used inside an unchecked arithmetic block. The idea is to save gas by omitting safemath operations, as they should not be required in this context. The unchecked block, however, does not extend to code contained in other function bodies. This means that the unchecked effectively does nothing.",
+        "labels": [
+            "Spearbit",
+            "Balancer",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Returned amounts from buffer wrap operations differ in query context",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Balancer-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The amounts returned by buffer wrap/unwrap operations subtract a _CONVERT_FACTOR from the amounts returned. This behavior differs compared to when in a query context. In a query context the wrapped token output amount is determined by the previewDeposit function. amountOutWrapped = wrappedToken.previewDeposit(amountGiven) In a normal context, however, the token output amount is given by the convertToShares function and by subtracting a fixed constant from the result. amountOutWrapped = wrappedToken.convertToShares(amountGiven) - _CONVERT_FACTOR The actual difference should be negligible for most practical purposes. Yet there should not be any reason to have the calculations diverge in a query context. The same applies to the SwapKind.EXACT_OUT path.",
+        "labels": [
+            "Spearbit",
+            "Balancer",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Pool creator fee is levied on the complement of protocol fee",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Balancer-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The pool creator's fee is charged on the complement of the protocol fee. This might lead to pool creators receiving less fees than anticipated. The natspec of the setPoolCreatorSwapFeePercentage does not mention this detail. /** * @notice Assigns a new pool creator swap fee percentage to the specified pool. * @param pool The address of the pool for which the pool creator fee will be changed * @param poolCreatorSwapFeePercentage The new pool creator swap fee percentage to apply to the pool */ function setPoolCreatorSwapFeePercentage(address pool, uint256 poolCreatorSwapFeePercentage) external; As an example, assume the current protocolFeePercentage = 10% and Alice wants sets her pool swap fee to 5%. She therefore inputs 0.05e18 into setPoolCreatorSwapFeePercentage. The effective pool swap fee for the creator is however, 5% * 90% = 4.5%.",
+        "labels": [
+            "Spearbit",
+            "Balancer",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Unused return value accumulation in ethAmountIn variable",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Balancer-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The _settlePaths method of the BatchRouter contract iteratively accumulates the return values of the calls to _takeTokenIn in a local variable named ethAmountIn. However, this variable is not used anywhere in the subsequent context.  BatchRouter.sol#L1031: ethAmountIn += _takeTokenIn(sender, IERC20(tokenIn), _currentSwapTokenInAmounts().tGet(tokenIn), ,! wethIsEth);",
+        "labels": [
+            "Spearbit",
+            "Balancer",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Silent truncation of uint256 amounts to uint160 and uint64",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Balancer-Spearbit-Security-Review-September-2024.pdf",
+        "body": "1. In a total of 5 instances in the BatchRouter, Router and RouterCommon contracts, amounts of type uint256 are silently cast/truncated to uint160. 2. In a total of 4 instances in the ProtocolFeeController contract, amounts of type uint256 are silently cast/truncated to uint64. In case of amounts exceeding type(uint160).max/type(uint64).max, this can lead to unexpected behavior or subsequent unexpected/unrelated errors further down the execution path.",
+        "labels": [
+            "Spearbit",
+            "Balancer",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Superfluous payable modifier in router query hooks",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Balancer-Spearbit-Security-Review-September-2024.pdf",
+        "body": "Both, the queryAddLiquidityHook and querySwapHook methods of the Router contract have the payable modifier. However, these hooks are only invoked in a strictly non-payable context via the Vault contract's query method. Therefore, the payable modifier is unnecessary.",
+        "labels": [
+            "Spearbit",
+            "Balancer",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Comment Improvements",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Balancer-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The referenced lines have typos or incorrect / unclear comments that can be modified for better clarity.",
+        "labels": [
+            "Spearbit",
+            "Balancer",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Clearer revert reason for EXACT_OUT if swapFeePercentage is 100%",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Balancer-Spearbit-Security-Review-September-2024.pdf",
+        "body": "The swapFeePercentage could be set to 100% for pools with dynamic fee hooks. In such a scenario, EXACT_OUT swaps will revert from ZeroDivision() as the complement() would be 0.",
+        "labels": [
+            "Spearbit",
+            "Balancer",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "Different rounding directions could lead to an extra charge on protocol yield fees for tokens with a rate below 1",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Balancer-Spearbit-Security-Review-September-2024.pdf",
+        "body": "Different rounding directions could lead to an extra charge on protocol yield fees for tokens with a rate below 1. PoolDataLib.sol#L185-L214 The protocol charges yield fees based on the difference between current live balances and the last recorded live balances. Since different rounding directions can lead to a 1 wei difference in live balances, pool tokens with a rate below 1 may be double charged. A 1 wei difference in live balances would result in a raw balance greater than 1 after scaling for tokens with a rate below 1. Consequently, an extra protocol fee would be charged for every operation 22 aggregateYieldFeeAmountRaw = aggregateYieldFeeAmountScaled18.toRawUndoRateRoundDown( poolData.decimalScalingFactors[tokenIndex], poolData.tokenRates[tokenIndex] );",
+        "labels": [
+            "Spearbit",
+            "Balancer",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "StableMath.ComputeBalance tends to return a higher value when pools are unbalanced",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Balancer-Spearbit-Security-Review-September-2024.pdf",
+        "body": "StableMath.computeBalance is intended to calculate the correct token amount for a given invariant. However, computeBalance may converge to a higher value when the pool is unbalanced due to precision issues. This results in an implicit tax charged to users. Since the protocol cannot charge this implicit tax from the pool's liquidity providers (LPs), it would lead to slightly lower protocol revenue. Proof of Concept: The following script demonstrates that computeBalance converges to the wrong result. function testComputeBalanceCase1() public { uint amp = 2000; uint256[] memory balances = new uint256[](2); balances[0] = 1e10 ether + 1586633207475; balances[1] = 1335700565212; uint invariant = StableMath.computeInvariant(amp, balances); uint balance = StableMath.computeBalance(amp, balances, invariant, 0); if(balance > balances[0]) { console2.log(\"diff:\", balance - balances[0]); } }",
+        "labels": [
+            "Spearbit",
+            "Balancer",
+            "Severity: Informational"
+        ]
+    },
+    {
+        "title": "fallback() logic prevents hook's postCheck from getting executed",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "It was decided that all functions be hooked with the withHook() modifier to enforce pre and post- checks on the hook for all functions on nexus account. But the hook post-check do not work correctly on the fallback() because of the current logic. This is the withHook() modifier: modifier withHook() { address hook = _getHook(); if (hook == address(0)) { _; } else { bytes memory hookData = IHook(hook).preCheck(msg.sender, msg.value, msg.data); _; IHook(hook).postCheck(hookData); } } In case a hook exists, it first does a hook.preCheck(), then runs through the execution of the relevant function that was called, followed by a postCheck() call to the hook contract. This is the fallback() function for the nexus acocunt: fallback() external payable withHook { FallbackHandler storage $fallbackHandler = _getAccountStorage().fallbacks[msg.sig]; address handler = $fallbackHandler.handler; CallType calltype = $fallbackHandler.calltype; if (handler != address(0)) { if (calltype == CALLTYPE_STATIC) { assembly { calldatacopy(0, 0, calldatasize()) // The msg.sender address is shifted to the left by 12 bytes to remove the padding // Then the address without padding is stored right after the calldata mstore(calldatasize(), shl(96, caller())) if iszero(staticcall(gas(), handler, 0, add(calldatasize(), 20), 0, 0)) { returndatacopy(0, 0, returndatasize()) revert(0, returndatasize()) } returndatacopy(0, 0, returndatasize()) return(0, returndatasize()) } } if (calltype == CALLTYPE_SINGLE) { assembly { calldatacopy(0, 0, calldatasize()) // The msg.sender address is shifted to the left by 12 bytes to remove the padding // Then the address without padding is stored right after the calldata mstore(calldatasize(), shl(96, caller())) if iszero(call(gas(), handler, callvalue(), 0, add(calldatasize(), 20), 0, 0)) { returndatacopy(0, 0, returndatasize()) 5 revert(0, returndatasize()) } returndatacopy(0, 0, returndatasize()) return(0, returndatasize()) } } } /// @solidity memory-safe-assembly assembly {    let s := shr(224, calldataload(0)) // 0x150b7a02: // 0xf23a6e61: // 0xbc197c81: if or(eq(s, 0x150b7a02), or(eq(s, 0xf23a6e61), eq(s, 0xbc197c81))) { msg.sig  onERC721Received(address,address,uint256,bytes) onERC1155Received(address,address,uint256,uint256,bytes) onERC1155BatchReceived(address,address,uint256[],uint256[],bytes) mstore(0x20, s) // Store return(0x3c, 0x20) // Return msg.sig  . .  .    .  . } } revert MissingFallbackHandler(msg.sig); } The problem is that for all calls inside this fallback logic that succeed, an assembly return statement is used to return the data. The issue with the assembly return statement is that it ends the whole execution then and there and turns away from the current call context, which means that anything after that return is skipped from the call. This causes the hook.postCheck() to be skipped for all fallback handled calls that are successful, and it anyway reverts if the fallback-handled call fails. This is the flow:  For all fallback handled calls...  ) reaches fallback() on nexus account...  ) reaches withHook() modifier...  ) preCheck() is called and works...  ) if external call inside fallback is successful there's an assembly return...  ) call ends and the postCheck() inside withHook() modifier will never get called. This will prevent the hook's postCheck from ever being reached, skipping important logic required by the hook to enforce constraints on the calls to the account.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: High Risk"
+        ]
+    },
+    {
+        "title": "fallback() logic prevents hook's postCheck from getting executed",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "It was decided that all functions be hooked with the withHook() modifier to enforce pre and post- checks on the hook for all functions on nexus account. But the hook post-check do not work correctly on the fallback() because of the current logic. This is the withHook() modifier: modifier withHook() { address hook = _getHook(); if (hook == address(0)) { _; } else { bytes memory hookData = IHook(hook).preCheck(msg.sender, msg.value, msg.data); _; IHook(hook).postCheck(hookData); } } In case a hook exists, it first does a hook.preCheck(), then runs through the execution of the relevant function that was called, followed by a postCheck() call to the hook contract. This is the fallback() function for the nexus acocunt: fallback() external payable withHook { FallbackHandler storage $fallbackHandler = _getAccountStorage().fallbacks[msg.sig]; address handler = $fallbackHandler.handler; CallType calltype = $fallbackHandler.calltype; if (handler != address(0)) { if (calltype == CALLTYPE_STATIC) { assembly { calldatacopy(0, 0, calldatasize()) // The msg.sender address is shifted to the left by 12 bytes to remove the padding // Then the address without padding is stored right after the calldata mstore(calldatasize(), shl(96, caller())) if iszero(staticcall(gas(), handler, 0, add(calldatasize(), 20), 0, 0)) { returndatacopy(0, 0, returndatasize()) revert(0, returndatasize()) } returndatacopy(0, 0, returndatasize()) return(0, returndatasize()) } } if (calltype == CALLTYPE_SINGLE) { assembly { calldatacopy(0, 0, calldatasize()) // The msg.sender address is shifted to the left by 12 bytes to remove the padding // Then the address without padding is stored right after the calldata mstore(calldatasize(), shl(96, caller())) if iszero(call(gas(), handler, callvalue(), 0, add(calldatasize(), 20), 0, 0)) { returndatacopy(0, 0, returndatasize()) 5 revert(0, returndatasize()) } returndatacopy(0, 0, returndatasize()) return(0, returndatasize()) } } } /// @solidity memory-safe-assembly assembly {    let s := shr(224, calldataload(0)) // 0x150b7a02: // 0xf23a6e61: // 0xbc197c81: if or(eq(s, 0x150b7a02), or(eq(s, 0xf23a6e61), eq(s, 0xbc197c81))) { msg.sig  onERC721Received(address,address,uint256,bytes) onERC1155Received(address,address,uint256,uint256,bytes) onERC1155BatchReceived(address,address,uint256[],uint256[],bytes) mstore(0x20, s) // Store return(0x3c, 0x20) // Return msg.sig    .  .  . .  . } } revert MissingFallbackHandler(msg.sig); } The problem is that for all calls inside this fallback logic that succeed, an assembly return statement is used to return the data. The issue with the assembly return statement is that it ends the whole execution then and there and turns away from the current call context, which means that anything after that return is skipped from the call. This causes the hook.postCheck() to be skipped for all fallback handled calls that are successful, and it anyway reverts if the fallback-handled call fails. This is the flow:  For all fallback handled calls...  ) reaches fallback() on nexus account...  ) reaches withHook() modifier...  ) preCheck() is called and works...  ) if external call inside fallback is successful there's an assembly return...  ) call ends and the postCheck() inside withHook() modifier will never get called. This will prevent the hook's postCheck from ever being reached, skipping important logic required by the hook to enforce constraints on the calls to the account.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: High Risk"
+        ]
+    },
+    {
+        "title": "fallback() logic prevents hook's postCheck from getting executed",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "It was decided that all functions be hooked with the withHook() modifier to enforce pre and post- checks on the hook for all functions on nexus account. But the hook post-check do not work correctly on the fallback() because of the current logic. This is the withHook() modifier: modifier withHook() { address hook = _getHook(); if (hook == address(0)) { _; } else { bytes memory hookData = IHook(hook).preCheck(msg.sender, msg.value, msg.data); _; IHook(hook).postCheck(hookData); } } In case a hook exists, it first does a hook.preCheck(), then runs through the execution of the relevant function that was called, followed by a postCheck() call to the hook contract. This is the fallback() function for the nexus acocunt: fallback() external payable withHook { FallbackHandler storage $fallbackHandler = _getAccountStorage().fallbacks[msg.sig]; address handler = $fallbackHandler.handler; CallType calltype = $fallbackHandler.calltype; if (handler != address(0)) { if (calltype == CALLTYPE_STATIC) { assembly { calldatacopy(0, 0, calldatasize()) // The msg.sender address is shifted to the left by 12 bytes to remove the padding // Then the address without padding is stored right after the calldata mstore(calldatasize(), shl(96, caller())) if iszero(staticcall(gas(), handler, 0, add(calldatasize(), 20), 0, 0)) { returndatacopy(0, 0, returndatasize()) revert(0, returndatasize()) } returndatacopy(0, 0, returndatasize()) return(0, returndatasize()) } } if (calltype == CALLTYPE_SINGLE) { assembly { calldatacopy(0, 0, calldatasize()) // The msg.sender address is shifted to the left by 12 bytes to remove the padding // Then the address without padding is stored right after the calldata mstore(calldatasize(), shl(96, caller())) if iszero(call(gas(), handler, callvalue(), 0, add(calldatasize(), 20), 0, 0)) { returndatacopy(0, 0, returndatasize()) 5 revert(0, returndatasize()) } returndatacopy(0, 0, returndatasize()) return(0, returndatasize()) } } } /// @solidity memory-safe-assembly assembly {    let s := shr(224, calldataload(0)) // 0x150b7a02: // 0xf23a6e61: // 0xbc197c81: if or(eq(s, 0x150b7a02), or(eq(s, 0xf23a6e61), eq(s, 0xbc197c81))) { msg.sig  onERC721Received(address,address,uint256,bytes) onERC1155Received(address,address,uint256,uint256,bytes) onERC1155BatchReceived(address,address,uint256[],uint256[],bytes) mstore(0x20, s) // Store return(0x3c, 0x20) // Return msg.sig .  . .    .   . } } revert MissingFallbackHandler(msg.sig); } The problem is that for all calls inside this fallback logic that succeed, an assembly return statement is used to return the data. The issue with the assembly return statement is that it ends the whole execution then and there and turns away from the current call context, which means that anything after that return is skipped from the call. This causes the hook.postCheck() to be skipped for all fallback handled calls that are successful, and it anyway reverts if the fallback-handled call fails. This is the flow:  For all fallback handled calls...  ) reaches fallback() on nexus account...  ) reaches withHook() modifier...  ) preCheck() is called and works...  ) if external call inside fallback is successful there's an assembly return...  ) call ends and the postCheck() inside withHook() modifier will never get called. This will prevent the hook's postCheck from ever being reached, skipping important logic required by the hook to enforce constraints on the calls to the account.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: High Risk"
+        ]
+    },
+    {
+        "title": "fallback() logic prevents hook's postCheck from getting executed",
+        "html_url": "https://github.com/spearbit/portfolio/tree/master/pdfs/Biconomy-Spearbit-Security-Review-October-2024.pdf",
+        "body": "It was decided that all functions be hooked with the withHook() modifier to enforce pre and post- checks on the hook for all functions on nexus account. But the hook post-check do not work correctly on the fallback() because of the current logic. This is the withHook() modifier: modifier withHook() { address hook = _getHook(); if (hook == address(0)) { _; } else { bytes memory hookData = IHook(hook).preCheck(msg.sender, msg.value, msg.data); _; IHook(hook).postCheck(hookData); } } In case a hook exists, it first does a hook.preCheck(), then runs through the execution of the relevant function that was called, followed by a postCheck() call to the hook contract. This is the fallback() function for the nexus acocunt: fallback() external payable withHook { FallbackHandler storage $fallbackHandler = _getAccountStorage().fallbacks[msg.sig]; address handler = $fallbackHandler.handler; CallType calltype = $fallbackHandler.calltype; if (handler != address(0)) { if (calltype == CALLTYPE_STATIC) { assembly { calldatacopy(0, 0, calldatasize()) // The msg.sender address is shifted to the left by 12 bytes to remove the padding // Then the address without padding is stored right after the calldata mstore(calldatasize(), shl(96, caller())) if iszero(staticcall(gas(), handler, 0, add(calldatasize(), 20), 0, 0)) { returndatacopy(0, 0, returndatasize()) revert(0, returndatasize()) } returndatacopy(0, 0, returndatasize()) return(0, returndatasize()) } } if (calltype == CALLTYPE_SINGLE) { assembly { calldatacopy(0, 0, calldatasize()) // The msg.sender address is shifted to the left by 12 bytes to remove the padding // Then the address without padding is stored right after the calldata mstore(calldatasize(), shl(96, caller())) if iszero(call(gas(), handler, callvalue(), 0, add(calldatasize(), 20), 0, 0)) { returndatacopy(0, 0, returndatasize()) 5 revert(0, returndatasize()) } returndatacopy(0, 0, returndatasize()) return(0, returndatasize()) } } } /// @solidity memory-safe-assembly assembly {    let s := shr(224, calldataload(0)) // 0x150b7a02: // 0xf23a6e61: // 0xbc197c81: if or(eq(s, 0x150b7a02), or(eq(s, 0xf23a6e61), eq(s, 0xbc197c81))) { msg.sig  onERC721Received(address,address,uint256,bytes) onERC1155Received(address,address,uint256,uint256,bytes) onERC1155BatchReceived(address,address,uint256[],uint256[],bytes) mstore(0x20, s) // Store return(0x3c, 0x20) // Return msg.sig    . .  .  .  . } } revert MissingFallbackHandler(msg.sig); } The problem is that for all calls inside this fallback logic that succeed, an assembly return statement is used to return the data. The issue with the assembly return statement is that it ends the whole execution then and there and turns away from the current call context, which means that anything after that return is skipped from the call. This causes the hook.postCheck() to be skipped for all fallback handled calls that are successful, and it anyway reverts if the fallback-handled call fails. This is the flow:  For all fallback handled calls...  ) reaches fallback() on nexus account...  ) reaches withHook() modifier...  ) preCheck() is called and works...  ) if external call inside fallback is successful there's an assembly return...  ) call ends and the postCheck() inside withHook() modifier will never get called. This will prevent the hook's postCheck from ever being reached, skipping important logic required by the hook to enforce constraints on the calls to the account.",
+        "labels": [
+            "Spearbit",
+            "Biconomy",
+            "Severity: High Risk"
+        ]
     }
 ]

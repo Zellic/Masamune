@@ -18556,5 +18556,14 @@
             "Oak Security",
             "Severity: Informational"
         ]
+    },
+    {
+        "title": "2. Notications settings are not cleared when a user unsubscribes from a channel",
+        "html_url": "https://github.com/oak-security/audit-reports/tree/master/Push/2024-11-29 Audit Report - Push Protocol - Comm Cairo.pdf",
+        "body": "In src/lib.cairo:320-323, the user_to_channel_notifs mapping is written within the change_user_channel_settings method according to the users specied settings. However, when a user unsubscribes from a communication channel, the corresponding notication settings are never cleared from the user_to_channel_notifs mapping. Consequently, when a user unsubscribes from a channel and re-subscribes at a later point in time, the prior notication settings still persist which might be unexpected.",
+        "labels": [
+            "Oak Security",
+            "Severity: Low"
+        ]
     }
 ]
