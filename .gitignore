@@ -4,5 +4,5 @@ __pycache__/
 embedding/*_openai/*
 .env
 results/split_final_results/*
-results/zellic_findings.json
 logs/
+results/zellic_findings.json 
